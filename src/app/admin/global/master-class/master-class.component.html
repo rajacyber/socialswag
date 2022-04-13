@@ -1,0 +1,338 @@
+
+<div class="remedia-container">
+  <mat-sidenav-container *ngIf="showMasterTable" class="remedia-sidenav-container" (backdropClick)="close()"  style="height: 100vh;">
+    <mat-sidenav-content>
+      <app-s-table aria-label="MasterClass" role="table" [sTableOptions]="masterClassTableOptions"
+        (sortCallback)="masterClasssortCall($event)"
+        (filterCallback)="masterClassfilterCall($event)"
+        (actionCallback)="masterClassactionCall($event)"
+        (pageCallback)="masterClasspageCall($event)" (refreshCallback)="getMasterClass()"
+        (addCallback)="masterClassaddTableData()"
+        (timerCallback)="masterClasstimerCallData()">
+      </app-s-table>
+    </mat-sidenav-content>
+    <mat-sidenav #snav [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150" style="height: 100vh;">
+      <mat-card class="w-100">
+        <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                (click)="snav.close();"><mat-icon>close</mat-icon>
+        </button>
+        <mat-card-header>
+          <mat-card-title class="fs1 fw2 mr-4">Details View</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="overflow-auto">
+          <mat-tab-group>
+            <mat-tab label="Tamil">
+              <ng-template matTabContent>
+                <app-s-crud-t 
+                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
+                  [tOption]="masterClassColOptions">
+                </app-s-crud-t>
+                <ul>
+                  <li>Other Information: <span>Raja</span></li>
+                  <li>Masterclass Description: <span>Raja</span></li>
+                  <li>Preview Thumbnail: <span>Raja</span></li>
+                  <li>Preview URL: <span>Raja</span></li>
+                  <li>Name: <span>Raja</span></li>
+                </ul>
+              </ng-template>
+            </mat-tab>
+            <mat-tab label="Hindi">
+              <ng-template matTabContent>
+                <app-s-crud-t 
+                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
+                  [tOption]="masterClassColOptions">
+                </app-s-crud-t>
+              </ng-template>
+            </mat-tab>
+            <mat-tab label="English">
+              <ng-template matTabContent>
+                <app-s-crud-t 
+                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
+                  [tOption]="masterClassColOptions">
+                </app-s-crud-t>
+              </ng-template>
+            </mat-tab>
+          </mat-tab-group>
+        </mat-card-content>
+      </mat-card>
+    </mat-sidenav>
+
+    <mat-sidenav #cat [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
+      <mat-card class="w-100">
+        <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                (click)="cat.close();"><mat-icon>close</mat-icon>
+        </button>
+        <mat-card-header>
+          <mat-card-title>Add Category</mat-card-title>
+        </mat-card-header>
+        <form #adcat="ngForm" name="credentials" autocomplete="off">
+          <mat-card-content>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Category Name</mat-label>
+              <input type="text" [(ngModel)]="category.name" minlength="2" appNameCheck required matInput
+                     placeholder="Enter Category Name"
+                     class="inp-width" name="category" id="category">
+              <mat-error> Category is required.</mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Description</mat-label>
+              <textarea type="text" class="inp-width" cols="3" [(ngModel)]="category.desc" matInput
+                     placeholder="Enter description"
+                     name="description" id="description"></textarea>
+            </mat-form-field>
+          </mat-card-content>
+          <div mat-dialog-actions class="mt-2">
+            <button type="button" [disabled]="!adcat.form.valid" mat-raised-button color="primary" class="mr-2"
+                    (click)="saveCategory()" id="usrSavebtn">Save
+            </button>
+            <button mat-raised-button (click)="cat.close();">Cancel</button>
+          </div>
+        </form>
+      </mat-card>
+    </mat-sidenav>
+  </mat-sidenav-container>
+
+  <mat-sidenav-container >
+    <mat-card class="mt-20" *ngIf="!showMasterTable">
+      <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                (click)="showMasterTable=true;"><mat-icon>close</mat-icon>
+        </button>
+      <mat-vertical-stepper #stepper linear="'true'">
+        <mat-step>
+          <form #adddMasterClass="ngForm">
+            <ng-template matStepLabel>Add Masterclass</ng-template>
+            <mat-form-field class="col-md-8 w-70p" appearance="outline">
+              <mat-label>Select Category</mat-label>
+              <mat-select [multiple]="true" required placeholder="Choose category" name="roleLists" [(ngModel)]="materClassData.category">
+                <mat-option *ngFor="let item of categoryList"
+                  [value]="item.name" [id]="item.id">
+                  {{item.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error> Category is required</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Meta Data</mat-label>
+              <textarea matInput type="text" col="6" placeholder="Enter meta-data" required></textarea>
+            </mat-form-field>
+            <div class="my-2">
+              <mat-label class="">Mode of Upload</mat-label>
+              <mat-radio-group [(ngModel)]="materClassData.modeOfUpload" name="uploadData"
+                               class="d-flex flex-row align-items-center pt-3">
+                <mat-radio-button color="primary" class="mr-3" value="file">xlsx Upload</mat-radio-button>
+                <mat-radio-button color="primary" value="manual">Manual Upload</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <ng-container *ngIf="materClassData.modeOfUpload === 'file'">
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="w-100 p-4">
+                    <p class="mb-4">Upload xlsx File</p>
+                    <input type="file" accept=".xlsx, .xls, .csv"  name="file" (change)="uploadFile($event, 'uploadfile')"/>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </form>
+          <div mat-dialog-actions class="mt-2">
+            <button type="button" [disabled]="false" *ngIf="materClassData.modeOfUpload === 'file'" mat-raised-button color="primary" class="mr-2"
+            (click)="saveMasterData()" id="usrSavebtn">Submit
+            </button>
+            <button  *ngIf="materClassData.modeOfUpload === 'manual'" [disabled]="!adddMasterClass.form.valid" mat-raised-button (click)="stepperNext('MasterClass', 0)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>Select Language</ng-template>
+          <section class="example-section">
+            <mat-label class="">Select Language</mat-label>
+            <ul class="asssetCheck">
+              <span  *ngFor="let data of languagesList; let a = index">
+                <li class="mat-cell">
+                  <mat-checkbox name="sel{{a}}" [(ngModel)]="data.selected" value="" class="pt-2 mr-3" color="primary">
+                    {{data.language}} </mat-checkbox>
+                </li>
+              </span>
+            </ul>
+          </section>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button (click)="stepperNext('Language', 1)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>Select Pricing</ng-template>
+          <section class="example-section">
+            <mat-label class="mb-4">Select Pricing</mat-label>
+            <ul class="asssetCheck">
+              <span  *ngFor="let data of pricingList; let a = index">
+                <li class="mat-cell">
+                  <mat-checkbox name="sel{{a}}" [(ngModel)]="data.selected" value="" class="pt-2 mr-3" color="primary">
+                    {{data.pricing}} </mat-checkbox>
+                </li>
+              </span>
+            </ul>
+          </section>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button (click)="stepperNext('Pricing', 2)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>Episodes Count</ng-template>
+          <form #episodeCount="ngForm">
+            <mat-form-field class="w-30p" appearance="outline">
+              <mat-label>Episodes Count</mat-label>
+              <input matInput placeholder="Episodes Count" required />
+              <mat-error> Episodes Count is required</mat-error>
+            </mat-form-field>
+          </form>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" [disabled]="!episodeCount.form.valid" mat-button (click)="stepperNext('EpisodeCount', 3)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>Default Content</ng-template>
+          <form action="" method="post" #defaultForm="ngForm">
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Video Link</mat-label>
+              <input matInput type="url" placeholder="Enter Video URL" required>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Trailer Video</mat-label>
+              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Preview Video</mat-label>
+              <input matInput type="url" placeholder="Enter Preview Video URL" required>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Audio Track</mat-label>
+              <input matInput type="url" placeholder="Enter Audio Track URL" required>
+            </mat-form-field>
+          </form>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button [disabled]="!defaultForm.form.valid" (click)="stepperNext('DefaultContent', 4)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>English Video</ng-template>
+          <form action="" method="post" #videoData="ngForm">
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Name</mat-label>
+              <input matInput type="url" placeholder="Enter Video URL" required>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Short Description</mat-label>
+              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
+            </mat-form-field>
+            <div class="tprime my-2">
+              <mat-label>Trailer Video</mat-label>
+              <mat-radio-group name="uploadData" class="d-flex flex-row align-items-center pt-3">
+                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
+                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Link</mat-label>
+              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
+            </mat-form-field>
+            <div class="tprime my-2">
+              <mat-label>Preview Video</mat-label>
+              <mat-radio-group name="uploadPreview" class="d-flex flex-row align-items-center pt-3">
+                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
+                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Link</mat-label>
+              <input matInput type="url" placeholder="Enter Preview Video Link" required>
+            </mat-form-field>
+            <div class="tprime my-2">
+              <mat-label>Audio Track</mat-label>
+              <mat-radio-group name="uploadAudio" class="d-flex flex-row align-items-center pt-3">
+                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
+                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Link</mat-label>
+              <input matInput type="url" placeholder="Enter Audio Link" required>
+            </mat-form-field>
+          </form>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button [disabled]="!videoData.form.valid" (click)="stepperNext('EpisodeDetails', 5)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
+          <ng-template matStepLabel>Pricing</ng-template>
+          <form action="" method="post" #pricingForm="ngForm">
+            <mat-form-field class="col-md-8 w-70p" appearance="outline">
+              <mat-label>Mode</mat-label>
+              <mat-select required placeholder="Select mode" name="modeLists">
+                <mat-option *ngFor="let item of mode"
+                  [value]="item" [id]="item">
+                  {{item}}
+                </mat-option>
+              </mat-select>
+              <mat-error> Mode is required</mat-error>
+            </mat-form-field>
+            <div class="col-md-12 no_padd mb-4" style="display: inline-flex">
+              <div class="col-md-10 no_padd" style="display: inline-flex">
+                <div class="col-md-4">
+                  <mat-card class="mr-2 text-center">
+                    <mat-card-subtitle>Website</mat-card-subtitle>
+                    <mat-card-content>
+                      <mat-form-field appearance="outline">
+                        <mat-label>INR</mat-label>
+                        <input matInput placeholder="Enter Amount" />
+                      </mat-form-field>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+                <div class="col-md-4">
+                  <mat-card class="mr-2 text-center">
+                    <mat-card-subtitle>Andriod</mat-card-subtitle>
+                    <mat-card-content>
+                      <mat-form-field appearance="outline">
+                        <mat-label>INR</mat-label>
+                        <input matInput placeholder="Enter Amount" />
+                      </mat-form-field>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+                <div class="col-md-4">
+                  <mat-card class="text-center">
+                    <mat-card-subtitle>IOS</mat-card-subtitle>
+                    <mat-card-content>
+                      <mat-form-field appearance="outline">
+                        <mat-label>INR</mat-label>
+                        <input matInput placeholder="Enter Amount" />
+                      </mat-form-field>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+              </div>
+              <div class="col-md-1">
+                <mat-card class="col-md-12 text-center add_more">
+                  <mat-card-content>
+                    <mat-icon class="mat_icon">add</mat-icon>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </form>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button [disabled]="!pricingForm.form.valid" (click)="stepperNext('PricingDetails', 0)">Next</button>
+          </div>
+        </mat-step>
+      </mat-vertical-stepper>
+    </mat-card>
+    <mat-card>
+
+    </mat-card>
+  </mat-sidenav-container>
+</div>

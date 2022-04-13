@@ -1,0 +1,10 @@
+.mat-form-field{
+  display: block !important;
+}
+
+::ng-deep .mat-select-panel mat-option.mat-option {
+  height: unset !important;
+}
+::ng-deep .mat-option-text {
+  white-space: normal !important;
+}

@@ -1,0 +1,32 @@
+<!--<button mat-icon-button aria-label="close icon" (click)="onDismiss()">
+    <mat-icon>close</mat-icon>
+  </button>-->
+<mat-toolbar-row class="p-0">
+  <mat-icon *ngIf="isIcon" class="float-left mt-1 mr-1 mat-warn">warning</mat-icon>
+  <h2>{{title}}</h2>
+</mat-toolbar-row>
+<div mat-dialog-content>
+  <p *ngIf="!HtmlMsg">{{message}}</p>
+  <div *ngIf="HtmlMsg" [innerHTML]="message"></div>
+</div>
+<div mat-dialog-actions *ngIf="Reverse" class="float-right pb-3">
+  <button mat-raised-button class="mat-primary" (click)="onDismiss()" *ngIf="!CancelColor"
+          id="cnclaBtn">{{CancelText}}</button>
+  <button mat-raised-button (click)="onDismiss()" class="mat-primary" [ngStyle]="{color: CancelColor}"
+          *ngIf="CancelColor"
+          id="cnclbBtn">{{CancelText}}</button>
+  <button mat-stroked-button class="mat-warn" (click)="onConfirm()" *ngIf="!AcceptColor"
+          id="accptaBtn">{{AcceptText}}</button>
+  <button mat-stroked-button (click)="onConfirm()" *ngIf="AcceptColor" id="accptbBtn" class="mat-warn"
+          [ngStyle]="{'background-color': AcceptColor}">{{AcceptText}}</button>
+</div>
+<div mat-dialog-actions *ngIf="!Reverse" class="float-right pb-3">
+  <button mat-raised-button class="mat-primary" (click)="onConfirm()" *ngIf="!AcceptColor"
+          id="accpt1Btn">{{AcceptText}}</button>
+  <button mat-raised-button class="mat-primary" (click)="onConfirm()" *ngIf="AcceptColor" id="accpt2Btn"
+          [ngStyle]="{'background-color': AcceptColor}">{{AcceptText}}</button>
+  <button mat-stroked-button class="mat-warn" (click)="onDismiss()" *ngIf="!CancelColor"
+          id="cncl1Btn">{{CancelText}}</button>
+  <button mat-stroked-button class="mat-warn" (click)="onDismiss()" [ngStyle]="{color: CancelColor}" *ngIf="CancelColor"
+          id="cncl2Btn">{{CancelText}}</button>
+</div>

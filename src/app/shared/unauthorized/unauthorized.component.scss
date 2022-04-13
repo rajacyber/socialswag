@@ -1,0 +1,36 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(to right, #00005d, #0b0b2b);
+  .content {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .app-name {
+      margin-top: 0px;
+      padding-bottom: 10px;
+      font-size: 28px;
+    }
+    .login-form {
+      padding: 40px;
+      background: white;
+      max-width: 250px;
+      box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2), 0px 24px 38px 3px rgba(0,0,0,0.14), 0px 9px 46px 8px rgba(0,0,0,0.12);
+      border-radius: 10px;
+      input:-webkit-autofill {
+        box-shadow: 0 0 0 30px white inset;
+        -webkit-box-shadow: 0 0 0 30px white inset;
+      }
+    }
+    .secondary-content{
+      color: #90a4ae;
+      font-size: 0.75rem;
+      font-weight: 400;
+      line-height: 1.66;
+    }
+  }
+}

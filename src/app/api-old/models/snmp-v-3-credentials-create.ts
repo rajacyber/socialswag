@@ -1,0 +1,15 @@
+/* tslint:disable */
+/* eslint-disable */
+import { AgentSnmpV3CredentialsRef } from './agent-snmp-v-3-credentials-ref';
+import { CompanySnmpV3CredentialsRef } from './company-snmp-v-3-credentials-ref';
+export interface SnmpV3CredentialsCreate {
+  agentRef?: AgentSnmpV3CredentialsRef;
+  assetid?: string;
+  authPass: string;
+  authProtocol: string;
+  companyRef: CompanySnmpV3CredentialsRef;
+  name: string;
+  privacyPass: string;
+  privacyProtocol: string;
+  securityName: string;
+}

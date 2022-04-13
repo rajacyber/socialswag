@@ -1,0 +1,82 @@
+<as-split direction="horizontal" class="rc-container">
+  <as-split-area [order]="1" [minSize]="15" [maxSize]="20" [size]="15" class="bg-theme float-left" *ngIf="showMenu">
+    <mat-toolbar class="pl-0 app-action-bar toolbar-bottom">
+      <button (click)="showMenu = !showMenu" mat-icon-button="">
+        <mat-icon class="mat-24">menu</mat-icon>
+      </button>
+    </mat-toolbar>
+    <mat-list dense class="pt-0 cnav-list overflow-auto">
+      <ng-container>
+          <mat-list dense class="pt-0 subnav-list" *ngIf="subItems && subItems.length">
+            <ng-container *ngFor="let item of subItems">
+              <mat-list-item class="toolbar-bottom " appPreventMultiClick [ngClass]="{'menu-category': item.category}"
+                             *ngIf="item && item.name !== '' && item.isVisible && item.category">
+                <span class="fw7 ibtn" [id]="item.id">{{item.name}}</span>
+              </mat-list-item>
+              <mat-list-item class="toolbar-bottom" appPreventMultiClick (click)="setCurrentView(item)"
+                             *ngIf="item && item.name !== '' && item.isVisible && !item.category"
+                             [ngClass]="{'active': cView === item.name}">
+                <span class="ml-2" *ngIf="item.categoryName"></span>
+                <i class="ms-Icon ms-font-m ms-Icon--{{item.icon}} px-1 ms-fontColor-themePrimary"></i>
+                <span class="ml-2 ibtn" [id]="item.id">{{item.name}}</span>
+                <span class="spacer"></span>
+                <span class="badge mat-badge-small" *ngIf="item.total">{{item.total}}</span>
+              </mat-list-item>
+            </ng-container>
+          </mat-list>
+        </ng-container>
+    </mat-list>
+  </as-split-area>
+  <as-split-area [order]="2" [minSize]="80" [maxSize]="85" [size]="85" class="rc-container c-height">
+    <mat-toolbar class="pl-2 app-action-bar toolbar-bottom">
+      <ng-container *ngIf="!showMenu">
+        <button (click)="showMenu = !showMenu" mat-icon-button="">
+          <mat-icon class="mat-24">menu</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="cView === 'Masterclass'">
+        <button mat-button="" class="tprime px-1 mr-2" appPreventMultiClick (click)="masterService.addCategoryData()">
+          <span class="d-flex flex-row align-items-center">
+            <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+            <span class="ibtn pl-1" id="DepAssetAddAsset">Add Category</span>
+          </span>
+        </button>
+        
+      </ng-container>
+      <ng-container *ngIf="cView === 'Notification Rules'"></ng-container>
+      <ng-container *ngIf="cView === 'Integrations'"></ng-container>
+      <ng-container *ngIf="cView === 'Alerts'"></ng-container>
+      <ng-container *ngIf="cView === 'Roles'"></ng-container>
+      <ng-container *ngIf="cView === 'Login Audit'"></ng-container>
+      <ng-container *ngIf="cView === 'Policies'"></ng-container>
+      <ng-container *ngIf="cView === 'Settings'"></ng-container>
+      <ng-container *ngIf="cView === 'Microsoft Secure Score'"></ng-container>
+      <ng-container *ngIf="cView === 'Authentication Providers'"></ng-container>
+      <ng-container *ngIf="cView === 'Vulnerabilities'"></ng-container>
+      <ng-container *ngIf="cView === 'Application Baseline'">
+        <button mat-button="" class="tprime px-1 mr-2" appPreventMultiClick
+                (click)="integrationActionService.processAction()">
+          <span class="d-flex flex-row align-items-center">
+            <i class="ms-Icon ms-font-lg ms-Icon--SiteScan px-1 ms-fontColor-themePrimary"></i>
+            <span class="ibtn pl-1" id="AppBaseRules">Process Rules</span>
+          </span>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="cView === 'Probes / Agents'">
+      </ng-container>
+      <ng-container *ngIf="cView === 'Scheduler'"></ng-container>
+      <ng-container *ngIf="cView === 'Report Builder(Beta)'"></ng-container>
+      <ng-container *ngIf="cView === 'Report Customization'"></ng-container>
+      <ng-container *ngIf="cView === 'Custom Reports(Beta)'"></ng-container>
+    </mat-toolbar>
+    <div class="row mt-3 mx-0" *ngIf="cView === 'Masterclass'">
+      <div class="col-12">
+        <app-master-class></app-master-class>
+      </div>
+    </div>
+    <div class="row mt-3 mx-0" *ngIf="cView === 'Dashboards'">
+      <div class="col-12">
+      </div>
+    </div>
+  </as-split-area>
+</as-split>

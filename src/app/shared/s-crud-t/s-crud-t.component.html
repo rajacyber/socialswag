@@ -1,0 +1,263 @@
+<mat-card class="table-card mb-2">
+  <mat-toolbar class="table-tools" role="heading">
+    <div fxFlex fxLayout fxLayoutAlign="start">
+      <span class="t-title fs1">{{tOption.title}} <span class="fw3" *ngIf="tOption.pTotal && tOption.pTotal > 0 && tOption.title">
+      ({{tOption.pTotal | shortNumber}}) </span></span>
+      <button class="px-1 lh-25" mat-stroked-button *ngIf="tOption.add" type="button"  matTooltip="Add New Record"  color="primary"
+          (click)="addTableRecord()" id ="addbtn{{tOption.title}}">
+      <mat-icon class="mat-18 mb-1">add</mat-icon> Add
+    </button>
+    </div>
+    <div fxFlex fxLayout fxLayoutAlign="end">
+      <div fxLayout fxLayoutGap="15px" class="navigation-items">
+        <form fxLayout="row" fxLayoutAlign="center center">
+          <mat-form-field class="search-tool" floatLabel="never">
+            <input matInput name="valuesearch" [id]="tOption.id" [(ngModel)]="value" (ngModelChange)="filterUpdate.next($event)"
+                   placeholder="Search" autocomplete="off">
+            <button color="primary" mat-button *ngIf="!value || value === ''" aria-label="Search"
+                    matSuffix mat-icon-button> <mat-icon>search</mat-icon>
+            </button>
+            <button color="primary" mat-button *ngIf="value" matSuffix mat-icon-button aria-label="Clear"
+                    (click)="value=''; applyFilter('');"> <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+          <div fxFlex fxLayout fxLayoutAlign="end" >
+            <button matSuffix mat-icon-button matTooltip="Reload Table Data" (click)="refreshTableData();"
+                    color="primary" > <mat-icon id="rfrbtn{{tOption.title}}">refresh</mat-icon>
+            </button>
+            <button mat-icon-button menuOpen="false" matTooltip="Filter List"
+                  *ngIf="tOption.cFilter" color="primary"
+                  [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger">
+            <mat-icon class="">filter_list</mat-icon></button>
+          <mat-menu #filterMenu="matMenu" class="col-filters">
+            <mat-card class="filter-card" (click)="$event.stopPropagation();">
+              <mat-card-header>
+                <mat-card-title>Filter</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form #filterForm="ngForm" role="form">
+                  <mat-form-field *ngIf="tOption.columns && tOption.columns.length" class="w-100" appearance="outline">
+                    <mat-label>Choose filter column</mat-label>
+                    <mat-select placeholder="Choose filter column" name="chooseFilter" required [(ngModel)]="cFilter.selectedCol">
+                      <mat-option value="">Choose filter column</mat-option>
+                      <mat-option *ngFor="let val of tOption.columns" [value]="val.col" [id]="val.id">{{val.header}}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field *ngIf="cFilter.selectedCol" class="w-100" appearance="outline">
+                    <mat-label>Search {{colHash[cFilter.selectedCol].header}}</mat-label>
+                    <input matInput type="text" trim="blur" *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'text'"
+                           placeholder="Search {{colHash[cFilter.selectedCol].header}}" required
+                            name="{{colHash[cFilter.selectedCol].col}}s" [(ngModel)]="colHash[cFilter.selectedCol].val" >
+                    <mat-select placeholder="Search {{colHash[cFilter.selectedCol].header}}" name="{{colHash[cFilter.selectedCol].col}}s"
+                                *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'select'" required
+                                [(ngModel)]="colHash[cFilter.selectedCol].val">
+                      <mat-option *ngFor="let val of colHash[cFilter.selectedCol].colFilters.options" [value]="val.value">{{val.name}}</mat-option>
+                    </mat-select>
+                    <ng-container *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'range'">
+                      <mat-date-range-input [rangePicker]="picker">
+                        <input matStartDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].start"
+                               placeholder="Start date">
+                        <input matEndDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].end"
+                               placeholder="End date">
+                      </mat-date-range-input>
+                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                      <mat-date-range-picker #picker></mat-date-range-picker>
+                    </ng-container>
+                  </mat-form-field>
+                  <button (click)="columnFilter(colHash[cFilter.selectedCol])" [disabled]="!filterForm.form.valid"
+                          color="primary" mat-raised-button="">Add Filter</button>
+                   <button class="ml-2" (click)="cFilter.selectedCol = ''"  mat-stroked-button="">Clear</button>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </mat-menu>
+          <button id="gbtn{{tOption.title}}" color="primary" matSuffix mat-icon-button
+                  matTooltip="Download as XLSx" [matMenuTriggerFor]="xlsMenu"
+              aria-label="download xlsx menu">
+            <mat-icon class="mat-24">file_download</mat-icon>
+            </button>
+            <mat-menu #xlsMenu="matMenu">
+              <button mat-menu-item id="currentSelection" (click)="downloadAsXls('filtered')">
+                <mat-icon class="mat-24">filter_list</mat-icon>
+                <span>Filtered Data</span>
+              </button>
+              <button mat-menu-item id="fullData" (click)="downloadAsXls('full')">
+                <mat-icon class="mat-24">file_download</mat-icon>
+                <span>Full Data</span>
+              </button>
+            </mat-menu>
+          </div>
+        </form>
+      </div>
+    </div>
+  </mat-toolbar>
+  <mat-toolbar class="select-tools" *ngIf="selection.selected.length > 0">
+    <span>{{selection.selected.length}} {{tOption.selectText}} selected.</span>
+    <div fxFlex fxLayout fxLayoutAlign="end">
+      <ng-container *ngIf="!tOption.isHideGlobal">
+        <button mat-flat-button color="primary" id="gbtnSelction{{tOption.title}}" mat-raised-button
+                [matMenuTriggerFor]="gactionSMenu" [disabled]="selection.selected.length === 0"
+                aria-label="global action with a menu"> Global Actions
+        </button>
+        <mat-menu #gactionSMenu="matMenu">
+          <ng-container *ngFor="let item of tOption.actionMenuItems">
+            <a id="ganchsel{{item.text}}" class="mat-primary"
+               *ngIf=item.isGlobal mat-menu-item (click)="globalActionCall(selection.selected, item)">
+              <mat-icon class="mat-18" *ngIf=item.icon>{{item.icon}}</mat-icon>
+              <mat-icon class="mat-18" *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+              <span>{{ item.text }}</span>
+            </a>
+          </ng-container>
+        </mat-menu>
+      </ng-container>
+      <button class="gray" matSuffix mat-icon-button (click)="clearSelection();">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+  <mat-chip-list aria-label="Column Filters" class="mb-2">
+    <mat-chip class="ml-2 my-2" *ngFor="let filter of colFilters" (removed)="removeFilter(filter)">
+      {{filter.name}} = *{{filter.value}}* <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-list>
+  <mat-card-content>
+    <mat-progress-bar mode="indeterminate" *ngIf="tOption.loading"></mat-progress-bar>
+    <div #MTABLEDIV class="overflow-auto">
+      <table mat-table [dataSource]="dataSource" cdkDropList cdkDropListOrientation="horizontal"
+       (cdkDropListDropped)="drop($event)" matSort (matSortChange)="applySorting($event)" class="w-100 crud-table" >
+        <ng-container matColumnDef="select" *ngIf="tOption.rowSelection" sticky>
+          <th mat-header-cell *matHeaderCellDef class="ww-break">
+            <mat-checkbox color="primary" (change)="$event ? masterToggle() : null" id="_selectDeselectAll"
+              [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()"></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" class="ww-break">
+            <mat-checkbox color="primary" (click)="$event.stopPropagation()" [id]="row._id"
+              (change)="$event ? rowToggle(row) : null" [checked]="selection.isSelected(row)"></mat-checkbox>
+          </td>
+        </ng-container>
+        <ng-container *ngFor="let column of tOption.columns; let i = index;" [matColumnDef]="column.col">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header cdkDrag (click)="applySorting($event)">
+            <span>{{ column.header }}</span>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <ng-container *ngIf="column.hyperLinkCall">
+              <a href="javascript:" (click)="hyperLinkCall(row, column.col)">
+                <ng-container *ngIf="column.hyperLinkCall.filter && column.hyperLinkCall.filter !== ''">
+                  <span>{{ getProperty(row, column.col) | formatCell:column.hyperLinkCall.filter }} </span>
+                </ng-container>
+                <ng-container *ngIf="column.hyperLinkCall.isHtml">
+                  <div [innerHTML]="getProperty(row, column.col) | safeHTML"></div>
+                </ng-container>
+                <ng-container *ngIf="column.hyperLinkCall.noFilter">
+                  <span>{{getProperty(row, column.col)}}</span>
+                </ng-container>
+              </a>
+            </ng-container>
+            <ng-container *ngIf="column.hyperLink">
+              <ng-container *ngIf="getProperty(row, column.col)">
+                <a *ngIf="getProperty(row, column.col).indexOf(column.hyperLink.match) > -1"
+                   target="_blank"
+                   [href]="column.hyperLink.hotLink + getProperty(row, column.col)">
+                  <span>{{getProperty(row, column.col)}}</span>
+                </a>
+                <div *ngIf="getProperty(row, column.col).indexOf(column.hyperLink.match) === -1">
+                  <span>{{getProperty(row, column.col)}}</span>
+                </div>
+              </ng-container>
+            </ng-container>
+            <ng-container *ngIf="column.htmlCols">
+              <div *ngIf="getProperty(row, column.col) && column.htmlCols['_success']"
+                   [innerHTML]="column.htmlCols['_success'] | safeHTML"></div>
+              <div *ngIf="!getProperty(row, column.col) && column.htmlCols['_failure']"
+                   [innerHTML]="column.htmlCols['_failure'] | safeHTML"></div>
+              <div *ngIf="(getProperty(row, column.col) === undefined) && column.htmlCols['_undefined']"
+                   [innerHTML]="column.htmlCols['_undefined'] | safeHTML"></div>     
+              <div *ngIf="column.htmlCols[getProperty(row, column.col)]"
+                   [innerHTML]="column.htmlCols[getProperty(row, column.col)] | safeHTML"></div>
+            </ng-container>
+            <ng-container *ngIf="column.conditionalClass">
+              <ng-container *ngFor="let cond of column.conditionalClass;">
+                <div *ngIf="cond.operation === 'gt' && getProperty(row, column.col) > cond.value">
+                  <span [ngClass]="cond.class">{{getProperty(row, column.col)}}</span>
+                </div>
+                <div *ngIf="cond.operation === 'lt' && getProperty(row, column.col) < cond.value">
+                  <span [ngClass]="cond.class">{{getProperty(row, column.col)}}</span>
+                </div>
+              </ng-container>
+            </ng-container>
+            <ng-container *ngIf="column.arrayCols">
+              <span>{{arrayToString(getProperty(row, column.col), column.arrayCols.key)}}</span>
+            </ng-container>
+            <ng-container *ngIf="column.filter && column.filter !== ''">
+              <span [matTooltip]="getProperty(row, column.col) | formatCell:column.filter" *ngIf="column.filter.indexOf('arrayToObjWithEllipsis') > -1"> {{ getProperty(row, column.col) | formatCell:column.filter }} </span>
+              <span [matTooltip]="getProperty(row, column.col)" *ngIf="column.filter.indexOf('arrayToObjWithEllipsis') === -1"> {{ getProperty(row, column.col) | formatCell:column.filter }} </span>
+            </ng-container>
+            <ng-container *ngIf="column.isHtml">
+              <div [innerHTML]="getProperty(row, column.col) | safeHTML"></div>
+            </ng-container>
+            <ng-container *ngIf="column.noFilter">
+              <span>{{getProperty(row, column.col)}}</span>
+            </ng-container>
+          </td>
+        </ng-container>
+        <!-- Star Column -->
+        <ng-container matColumnDef="star" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <mat-icon>more_vert</mat-icon>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="action" *ngIf="tOption.showAction" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef class="wwbreak"
+            [ngClass]="tOption.showAction ? 'color1' : 'color2' ">Action
+            <mat-menu #gactionMenu="matMenu">
+              <ng-container *ngFor="let item of tOption.actionMenuItems">
+                <a id="ganch{{item.text}}" *ngIf=item.isGlobal mat-menu-item (click)="globalActionCall(selection.selected, item)">
+                  <mat-icon class="mat-18" *ngIf=item.icon>{{item.icon}}</mat-icon>
+                  <mat-icon class="mat-18" *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+                  <span>{{ item.text }}</span>
+                </a>
+              </ng-container>
+            </mat-menu>
+          </th>
+          <td mat-cell *matCellDef="let element" class="wwbreak"
+            [ngClass]="tOption.showAction ? 'color1' : 'color2' ">
+            <button id="btn{{tOption.title}}" mat-icon-button  color="primary" [matMenuTriggerFor]="actionMenu" aria-label="row action with a menu"
+              [disabled]="selection.selected.length > 0">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionMenu="matMenu">
+              <ng-container *ngFor="let item of tOption.actionMenuItems">
+                <a  id="anch{{item.text}}" *ngIf="item.callback && !item.hideLocal" mat-menu-item (click)="actionCall(element, item)">
+                  <mat-icon *ngIf=item.icon>{{item.icon}}</mat-icon>
+                  <mat-icon *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+                  <span>{{ item.text }}</span>
+                </a>
+              </ng-container>
+            </mat-menu>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <p class="ml-3 mt-2" *ngIf="!dataSource || !dataSource.data || !dataSource.data.length">
+        <span *ngIf="tOption.loading">Please wait!</span>
+        <span *ngIf="!tOption.loading && tOption.pTotal === 0 && !tOption.nomsg">
+          No data available!
+        </span>
+        <span *ngIf="!tOption.loading && tOption.pTotal === 0 && tOption.nomsg">
+         {{tOption.nomsg}}
+        </span>
+      </p>
+      <mat-paginator class="mr20 t-paginator" *ngIf="tOption.pagination && tOption.pTotal < 10000"
+                     [pageSize]="tOption.pSize" showFirstLastButtons
+                     [length]="tOption.pTotal" #paginator [pageSizeOptions]="tOption.pList"
+                     (page)="pageChanged($event)"></mat-paginator>
+      <mat-paginator class="mr20 t-paginator" *ngIf="tOption.pagination && tOption.pTotal > 9999"
+                     [pageSize]="tOption.pSize"
+                     [length]="tOption.pTotal" #paginator [pageSizeOptions]="tOption.pList"
+                     (page)="pageChanged($event)"></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

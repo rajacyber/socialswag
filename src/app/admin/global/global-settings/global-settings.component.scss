@@ -1,0 +1,32 @@
+.row-fix{
+    margin-left: -2px;
+      margin-right: -2px;
+  }
+  .infoccns{
+      border-radius: 3px;
+      padding: 8px;
+      min-width: 48px;
+      display: flex;
+      -webkit-box-align: baseline;
+      align-items: baseline;
+      word-break: break-word;
+      background-color: rgb(222, 235, 255);
+      border: none;
+      color: inherit;
+      font-size: smaller;
+  }
+  .infoccns p{
+    margin: 0;
+  }
+  .f-w-initial{
+    font-size: initial;
+  }
+
+
+.example__form {
+  display: flex;
+  flex-flow: row;
+  span{
+    width: 10rem;
+  }
+}

@@ -1,0 +1,50 @@
+/* tslint:disable */
+/* eslint-disable */
+import { AgentAssetSystemInfoRef } from './agent-asset-system-info-ref';
+import { AssetAssetSystemInfoRef } from './asset-asset-system-info-ref';
+import { CompanyAssetSystemInfoRef } from './company-asset-system-info-ref';
+export interface AssetSystemInfo {
+  Status?: string;
+  '_id'?: string;
+  agentRef?: AgentAssetSystemInfoRef;
+  assetRef?: AssetAssetSystemInfoRef;
+  bootDevice?: string;
+  buildNumber?: string;
+  buildType?: string;
+  'c'?: string;
+  caption?: string;
+  codeSet?: string;
+  companyRef?: CompanyAssetSystemInfoRef;
+  countryCode?: string;
+  currentTimezone?: number;
+  description?: string;
+  freePhysicalMemory?: number;
+  freeVirtualMemory?: number;
+  free_spaceInPagingFiles?: number;
+  installDate?: string;
+  lastBootUpTime?: string;
+  localDateTime?: string;
+  locale?: string;
+  manufacturer?: string;
+  maxNumberOfProcesses?: number;
+  maxProcessMemorySize?: number;
+  name?: string;
+  numberOfLicensedUsers?: number;
+  numberOfProcesses?: number;
+  numberOfUsers?: number;
+  organization?: string;
+  osArchitecture?: string;
+  osType?: number;
+  registeredUser?: string;
+  serialNumber?: string;
+  systemDevice?: string;
+  systemDirectory?: string;
+  systemDrive?: string;
+  tid?: string;
+  totalSwapSpaceSize?: number;
+  totalVirtualMemorySize?: number;
+  totalVisibleMemorySize?: number;
+  'u'?: string;
+  version?: string;
+  windowsDirectory?: string;
+}

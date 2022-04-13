@@ -1,0 +1,192 @@
+<mat-toolbar class="pl-2 position-absolute mat-elevation-z0 app-header-bar toolbar-bottom">
+  <img class="logo-img" alt="Socialswag" [style.height.px]="logoHeight"
+       routerLink="/admin" aria-label="Socialswag" src="/assets/images/socialswag/logo.svg" />
+  <span class="w-40">&nbsp;</span>
+  <!--suppress TypeScriptUnresolvedVariable -->
+  <mat-form-field class="w-25 company-selector"
+                  *ngIf="(baseService.showCompany || baseService.showAssessment) && authService.hasPermission('company', 'read') ">
+    <mat-select #companySelect id="SearchCompanyInput" class="mat-small round-select" placeholder="" (openedChange)="closeCurrentCompany($event)"
+                [formControl]="companyCtrl" (selectionChange)="updateCurrentCompany($event.value)">
+      <mat-option>
+        <ngx-mat-select-search [formControl]="companyFilterCtrl" [placeholderLabel]="searchTxt"
+          [noEntriesFoundLabel]="'No matching company found'" [searching]="searching"></ngx-mat-select-search>
+      </mat-option> <!--|ellipsis: 60 -->
+      <mat-option [matTooltip]="company.name" *ngFor="let company of filteredCompanies | async" [id]="company.name" [value]="company._id"> {{company.name }}  
+        <span *ngIf="company.score"> - </span>
+        <span *ngIf="company.score" matTooltip="Avg. Vulnerability Score"
+              class="mat-small scritical-line nbadge float-right"> {{company.score| number:'1.0-0'}}</span>
+        <span class="float-right small fw2" *ngIf="showTimeAgo && !company.score"> {{company.c + 'Z' | timeAgo}} </span>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  
+  <div class="d-flex align-items-center ml-2" *ngIf="baseService.showCompany && commonService.currentCompany && commonService.currentCompany.customerInfo">
+    <div class="d-flex flex-column justify-content-start">
+      <span class="mat-small fw2" *ngIf=commonService.currentCompany.customerInfo.name>
+        {{commonService.currentCompany.customerInfo.name}}
+         <span *ngIf="commonService.currentCompany.customerInfo.uniqueIdentifier" class="text-muted">
+        ({{commonService.currentCompany.customerInfo.uniqueIdentifier}})</span>
+      </span>
+      <span class="mat-small fw2" *ngIf="commonService.currentCompany.customerInfo.address.city && commonService.currentCompany.customerInfo.address.state ">
+        {{commonService.currentCompany.customerInfo.address.city}}, {{commonService.currentCompany.customerInfo.address.state}}
+      </span>
+    </div>
+  </div>
+  <span class="nav-spacer"></span>
+  <button *ngIf="commonService && authService && authService.isAuthenticated" matTooltip="API Documentation"
+          color="primary" class="mr10" mat-icon-button (click)="apiLink()">
+    <mat-icon>integration_instructions</mat-icon>
+  </button>
+  <div class="d-flex align-items-center">
+    <div class="mr-1 mt-1 pointer" [matMenuTriggerFor]="profile" matTooltip="View Build Info, Vuls Feed Info">
+      <mat-icon  color="primary"  class="mt-1 material-icons mini-avatar">account_circle</mat-icon>
+    </div>
+    <div class="d-flex flex-column justify-content-start">
+      <span class="mat-small fw2" *ngIf="authService && authService.currentUser">Welcome,
+        {{authService.currentUser.given_name | camelToHuman:true}}</span>
+      <span class="mat-small fw2"  *ngIf="authService && authService.currentUser">
+        {{authService.currentUser.email}}
+      </span>
+    </div>
+  </div>
+  <mat-menu #profile="matMenu" [overlapTrigger]="false">
+    <a mat-menu-item class="visible-sm" href="javascript:" (click)="onLogOut()" color="primary">
+      <mat-icon id="logoutbtn">exit_to_app</mat-icon> <span>Logout</span>
+    </a>
+  </mat-menu>
+  <button  mat-icon-button (click)="onLogOut()" id="logoutbtn1" color="primary">
+    <mat-icon>exit_to_app</mat-icon>
+  </button>
+</mat-toolbar>
+<mat-drawer-container class="base-container t-48">
+  <mat-drawer-content class="main-drawer-content">
+    <router-outlet>
+      <div *ngIf="loading$ | async " class="loader-class custom-class">
+        <img src="/assets/images/loading.gif" width="30" alt="">
+        <p *ngIf="!contentText || contentText === ''">Loading... </p>
+        <p class="m-0">{{contentText}}</p>
+      </div>
+      <div *ngIf="authService.sessionTimeout$ | async " class="loader-class custom-class p-3">
+        <span class="mb-3 mt-3">Session about to expire in {{authService.timeoutSec}}s. Do you want to continue current session?</span>
+        <div class="d-flex flex-row align-items-center">
+          <span class="mr-2"><button (click)="authService.resetSession()" mat-raised-button color="primary">Yes</button></span>
+          <span><button (click)="authService.logout()" mat-stroked-button color="warn">Logout</button></span>
+        </div>
+      </div>
+    </router-outlet>
+    <mat-sidenav-container class="cve-container" (backdropClick)="closeSideNav('backdrop')">
+      <mat-sidenav class="sideNavCss"
+                   [ngClass]="{'trans-none': sideNavView === 'cveSearch', 'gtrans-none': sideNavView === 'gettingStarted'}"
+                   position="end" #sidenav (keydown.escape)="closeSideNav('escape')" disableClose>
+        <ng-container *ngIf="sideNavView === 'cveSearch'">
+          <mat-card class="p-1 mat-elevation-z0">
+          <mat-card-header class="bb-1 br-4 px-1 py-2">
+            <button class="position-absolute r-1p" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                  (click)="closeSideNav('toggle button');"><mat-icon>close</mat-icon>
+            </button>
+            <form #cveFrm="ngForm">
+              <mat-form-field class="px-1" floatLabel="never" matTooltip="Search Common Vulnerabilities and Exposures">
+                <span matPrefix>CVE-</span>
+                <input autofocus type="text" trim="blur"  [(ngModel)]="cveid" #cveInput required matInput
+                       pattern="((1999|2\d{3})-(0\d{2}[1-9]|[1-9]\d{3,}))" placeholder="YEAR-NNNNNN" name="cveid"
+                       autocomplete="off">
+                <button type="button" *ngIf="!ccve" [disabled]="!cveFrm.form.valid"  (click)="searchCVEDetail(cveid)"
+                        aria-label="Search CVE" color="primary" matSuffix mat-icon-button>
+                  <mat-icon>search</mat-icon>
+                </button>
+                <button mat-button *ngIf="ccve" matSuffix mat-icon-button aria-label="Clear"
+                        (click)="ccve = undefined; cveid = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <mat-hint>Ex. 2021-21166</mat-hint>
+              </mat-form-field>
+              <button (click)="searchCVEDetail(cveid)" [disabled]="!cveFrm.form.valid" mat-stroked-button=""
+                      color="primary">Search</button>
+            </form>
+          </mat-card-header>
+        </mat-card>
+          <mat-card *ngIf="ccve">
+          <div class="mat-title">
+            <a href="https://nvd.nist.gov/vuln/detail/{{ccve.cve}}" target="_blank">
+              <span>{{ccve.cve}}</span>
+            </a>
+          </div>
+          <div class="main-section mt-2">
+            <p class="pb-2">{{ccve.title}}</p>
+            <mat-list dense class="w-100 bor-1">
+              <mat-list-item class="bb-1">
+                <span class="w-25">Severity:</span>
+                <span class="badge px-1 py-1 shigh" *ngIf="ccve.severity.toUpperCase()==='HIGH'">{{ccve.severity}}</span>
+                <span class="badge px-1 py-1 smedium" *ngIf="ccve.severity.toUpperCase()==='MEDIUM'">{{ccve.severity}}</span>
+                <span class="badge px-1 py-1 scritical" *ngIf="ccve.severity.toUpperCase()==='CRITICAL'">{{ccve.severity}}</span>
+                <span class="badge px-1 py-1 slow" *ngIf="ccve.severity.toUpperCase()==='LOW'">{{ccve.severity}}</span>
+              </mat-list-item>
+              <mat-list-item class="bb-1">
+                <span class="w-25 float-left">Base Score:</span>
+                <span class="badge px-1 py-1 scritical">{{ccve.baseScore}}</span>
+              </mat-list-item>
+              <mat-list-item class="bb-1">
+                <span class="w-25 float-left">Exploitability Score:</span>
+                <span class="badge px-1 py-1 scritical">{{ccve.exploitableScore}}</span>
+              </mat-list-item>
+              <mat-list-item>
+                <span class="w-25 float-left">Impact Score:</span>
+                <span class="badge px-1 py-1 scritical">{{ccve.impactScore}}</span>
+              </mat-list-item>
+            </mat-list>
+          </div>
+          <div class="main-section mt-3">
+            <h3 class="mb-1">Affected Assets <span *ngIf="ccve.assets && ccve.assets.length">({{ccve.assets.length}})</span></h3>
+            <mat-list dense class="w-100 bor-1">
+              <mat-list-item [ngClass]="{'bb-1': i !== ccve.assets.length - 1}"
+                             *ngFor="let asset of ccve.assets; let i = index">
+                <span class="pointer" (click)="navToAsset()">{{asset.name}}</span>
+              </mat-list-item>
+              <mat-list-item *ngIf="!ccve.assets || !ccve.assets.length">
+               <i class="fa fa-check-circle text-success fa-lg mr-1"></i>  All good, no assets affected.
+              </mat-list-item>
+            </mat-list>
+          </div>
+        </mat-card>
+        </ng-container>
+        <ng-container *ngIf="sideNavView === 'partnerOverview'">
+          <mat-card class="mat-elevation-z0">
+            <mat-card-header>
+              <button class="position-absolute r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                      (click)="closeSideNav('toggle button');">
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-card-title>Insights</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="mt-2 pb-6">
+            </mat-card-content>
+          </mat-card>
+        </ng-container>
+        <ng-container *ngIf="sideNavView === 'gettingStarted'">
+          <mat-card class="mat-elevation-z0">
+            <mat-card-header>
+              <button class="position-absolute r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                      (click)="closeSideNav('toggle button');">
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-card-title>Getting Started</mat-card-title>
+              <mat-checkbox class="position-absolute r-10p mt--20" [(ngModel)]="isHidden"
+              (change)="gettingStartedtoggle(isHidden)"
+              [checked]="isHidden"
+              >Do not show</mat-checkbox>
+            </mat-card-header>
+            <mat-card-content class="mt-2 pb-6">
+            </mat-card-content>
+          </mat-card>
+        </ng-container>
+      </mat-sidenav>
+    </mat-sidenav-container>
+  </mat-drawer-content>
+</mat-drawer-container>
+
+
+
+
+
+
+

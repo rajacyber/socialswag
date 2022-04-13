@@ -1,0 +1,177 @@
+<mat-card class="table-card mb-2">
+  <mat-toolbar class="table-tools" role="heading" >
+    <div fxFlex fxLayout fxLayoutAlign="start">
+      <span class="fs1">{{title}}
+        <span class="fw3" *ngIf="dataSource && dataSource.data && dataSource.data.length && title">
+      ({{dataSource.data.length}}) </span></span>
+    </div>
+    <div fxFlex fxLayout fxLayoutAlign="end">
+      <div fxLayout fxLayoutGap="15px" class="navigation-items">
+        <form fxLayout="row" fxLayoutAlign="center center">
+          <mat-form-field class="filter-tool mr-3" *ngIf="isFilterTable && filterSource && filterSource.length">
+            <mat-label>{{title}}</mat-label>
+            <mat-select [multiple]="false" (selectionChange)="updateTable($event)"
+              placeholder="" name="filterkey" [(ngModel)]="filterKey">
+              <mat-option *ngFor="let item of filterSource" [value]="item.value"> {{item.name}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="filter-tool mr-3" *ngIf="isFilterTable && filterSource && filterSource.length">
+            <mat-label>Status</mat-label>
+            <mat-select [multiple]="false" (selectionChange)="updateSubFilterTable($event)"
+              placeholder="" name="filtersubkey" [(ngModel)]="filterSubKey">
+              <mat-option *ngFor="let item of filterSubSource" [value]="item.value" [id]="item.name"> {{item.name}} </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="search-tool" floatLabel="never">
+            <input matInput name="valuesearch" [(ngModel)]="value" (keyup)="applyFilter($event)" placeholder="Search"
+                   autocomplete="off">
+            <button mat-button *ngIf="!value || value === ''" aria-label="Search" matSuffix mat-icon-button>
+              <mat-icon>search</mat-icon>
+            </button>
+            <button mat-button *ngIf="value" matSuffix mat-icon-button aria-label="Clear"
+                    (click)="value=''; applyFilter('');">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+          <!--<button mat-icon-button menuOpen="false" matTooltip="Filter List"
+                  *ngIf="tableOptions.showColFilter && customCols && customCols.length"
+                  [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger">
+            <mat-icon class="mat-18">filter_list</mat-icon>
+          </button>
+          <mat-menu #filterMenu="matMenu" class="col-filters">
+            <mat-card class="filter-card" (click)="$event.stopPropagation();">
+              <mat-card-header>
+                <mat-card-title>Filter</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form>
+                  <ng-container *ngFor="let column of columnsList">
+                    <mat-form-field *ngIf="column" class="w-100">
+                      <input matInput type="text" trim="blur" placeholder="Search {{column | camelToHuman: true}}"
+                             name="{{column}}" [(ngModel)]="colfilter[column.columnDef]"
+                             (input)='columnFilter($any($event.target).value,column.columnDef)'
+                             [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch ">
+                      <mat-select placeholder="Choose filter value" name="{{column.columnDef}}"
+                                  *ngIf="column.selectFilter" [(ngModel)]="colfilter[column.columnDef]"
+                                  [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch "
+                                  (selectionChange)="columnFilter($event.value, column.columnDef)">
+                        <mat-option value="">All</mat-option>
+                        <mat-option *ngFor="let val of column.selectFilterArr"
+                                    [value]="val.value">{{val.name}}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </ng-container>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </mat-menu>-->
+
+          <button mat-icon-button menuOpen="false" #listMenuTrigger="matMenuTrigger"
+          [matMenuTriggerFor]="belowMenu" color="primary" matTooltip="View Column, Reorder Columns">
+          <mat-icon>view_column</mat-icon>
+        </button>
+        <mat-menu #belowMenu="matMenu" [hasBackdrop]="true" yPosition="below">
+          <div cdkDropList (cdkDropListDropped)="drop($event)">
+            <div class="dhandle"
+              *ngFor="let col of columnsList; let i = index" cdkDrag>
+              <i class="material-icons color_icon"> drag_handle </i>
+              <mat-checkbox color="primary" [checked]="true" (click)="$event.stopPropagation()"
+              (change)="showhide(i, col)" class="left-align" [id]="col"> {{col | titlecase}} </mat-checkbox>
+            </div>
+          </div>
+        </mat-menu>
+          <div fxFlex fxLayout fxLayoutAlign="end" *ngIf="tableOptions.refreshData">
+            <button class="gray" matSuffix mat-icon-button matTooltip="Reload Table Data" (click)="refreshTableData();"
+                    color="primary" >
+              <mat-icon id="rfrbtn{{tableOptions.title}}">refresh</mat-icon>
+            </button>
+          </div>
+
+          <button id="gbtn{{title}}" color="primary"  matSuffix mat-icon-button *ngIf="isFilterTable"
+                matTooltip="Download as XLSx" [matMenuTriggerFor]="xlsMenu" aria-label="download xlsx menu">
+            <mat-icon class="mat-24">file_download</mat-icon>
+          </button>
+          <mat-menu #xlsMenu="matMenu">
+            <button mat-menu-item id="currentSelection" (click)="downloadAsXls('filtered')">
+              <mat-icon class="mat-24">filter_list</mat-icon>
+              <span>Filtered Data</span>
+            </button>
+            <button mat-menu-item id="fullData" (click)="downloadAsXls('full')">
+              <mat-icon class="mat-24">file_download</mat-icon>
+              <span>Full Data</span>
+            </button>
+          </mat-menu>
+        </form>
+      </div>
+    </div>
+  </mat-toolbar>
+  <mat-chip-list aria-label="Column Filters" class="mb10">
+    <mat-chip *ngFor="let filter of colFilters" (removed)="removeFilter(filter)">
+      {{filter.name}} = *{{filter.value}}* <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-list>
+  <mat-card-content>
+    <div #MTABLEDIV class="overflow-auto">
+      <table mat-table [dataSource]="dataSource" cdkDropList cdkDropListOrientation="horizontal"
+       (cdkDropListDropped)="drop($event)" matSort class="w-100 crud-table" >
+       <div *ngFor="let column of columns; let i = index;">
+        <ng-container *ngIf="column.isvisible" [matColumnDef]="column.columnDef">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header cdkDrag [ngClass]="{'text-center': isTextCenterCol(column.header) }">
+            <span *ngIf="showHeaderUpperCase">{{ column.header| camelToHuman:true | uppercase }}</span>
+            <span *ngIf="!showHeaderUpperCase">{{ column.header|camelToHuman:true }}</span>
+          </th>
+          <td mat-cell *matCellDef="let row" [ngClass]="{'text-center': isTextCenterCol(column.header) }">
+            <ng-container *ngIf="customCols && isExistCustomCols(column.header)">
+              <ng-container *ngFor="let c of customCols">
+                <span *ngIf="c.col === column.header" >
+                  <ng-container *ngIf="c.hyperLinkCall">
+                    <a href="javascript:" (click)="hyperLinkCall(row, c.col)">
+                      <ng-container *ngIf="c.hyperLinkCall.filter && c.hyperLinkCall.filter !== ''">
+                        <span>{{ getProperty(row, c.col) | formatCell:c.hyperLinkCall.filter }} </span>
+                      </ng-container>
+                      <ng-container *ngIf="c.hyperLinkCall.isHtml">
+                        <div [innerHTML]="getProperty(row, c.col) | safeHTML"></div>
+                      </ng-container>
+                      <ng-container *ngIf="c.hyperLinkCall.noFilter">
+                        <span>{{getProperty(row, c.col)}}</span>
+                      </ng-container>
+                    </a>
+                  </ng-container>
+                  <ng-container *ngIf="c.htmlCols">
+                    <div *ngIf="isBool(column.cell(row)) && column.cell(row) && column.cell(row) !== 'false'"
+                       [innerHTML]="c.htmlCols['_success'] | safeHTML"></div>
+                    <div *ngIf="isBool(column.cell(row)) && (!column.cell(row) || column.cell(row) === 'false')"
+                         [innerHTML]="c.htmlCols['_failure'] | safeHTML"></div>
+                    <div *ngIf="!isBool(column.cell(row)) && c.htmlCols[column.cell(row)]"
+                         [innerHTML]="c.htmlCols[column.cell(row)] | safeHTML"></div>
+                  </ng-container>
+                  <ng-container *ngIf="c.filter && c.filter !== ''">
+                    <span  *ngIf="c.filter.indexOf('ellipsis') === -1">{{ column.cell(row) | formatCell:c.filter }} </span>
+                    <span *ngIf="c.filter.indexOf('ellipsis') > -1"
+                          [matTooltip]="column.cell(row)">{{ column.cell(row) | formatCell:c.filter }} </span>
+                  </ng-container>
+                  <ng-container *ngIf="c.isHtml">
+                    <div [innerHTML]="column.cell(row) | safeHTML"></div>
+                  </ng-container>
+                </span>
+              </ng-container>
+            </ng-container>
+            <ng-container *ngIf="!customCols || !isExistCustomCols(column.header)">{{ column.cell(row) }}</ng-container>
+          </td>
+
+        </ng-container>
+      </div>
+        <!-- Star Column -->
+        <ng-container matColumnDef="star" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <mat-icon>more_vert</mat-icon>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <mat-paginator class="t-paginator" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50, 100, 200 ]"></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,20 @@
+ul.asssetCheck {
+    // margin-left: 1.8em;
+    // padding: 0px !important;
+    list-style: none;
+    max-height: 120px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .mat_icon {
+    font-size: 2em;
+    text-align: center;
+    display: contents;
+  }
+  .no_padd {
+    padding: 0px !important;
+  }
+  .add_more {
+    margin: 40px 0px 40px 0px;
+    cursor: pointer;
+  }

@@ -1,0 +1,312 @@
+<div class="remedia-container">
+  <mat-sidenav-container class="h-100vh remedia-sidenav-container" (backdropClick)="closeSnav('backdrop')">
+    <mat-sidenav-content>
+      <app-s-table aria-label="Users" role="table" [sTableOptions]="userTableOptions"
+        (sortCallback)="sortCall($event)"
+        (addCallback)="addUser()" (globalActionCallback)="globalActionCall($event)"
+        (filterCallback)="filterCall($event)"  (colFilterCallback)="colFilterCall($event)"
+        (actionCallback)="actionCall($event)" (pageCallback)="pageCall($event)" (refreshCallback)="refreshCall()"
+        (timerCallback)="refreshCall()"></app-s-table>
+    </mat-sidenav-content>
+    <mat-sidenav #snav [mode]="'over'" fixedTopGap="56" class="w-50 z-index-150" position="end">
+      <mat-card class="mat-elevation-z0 w-100" *ngIf="userData && !userData.id">
+        <button class="position-absolute r-1p mt--10" mat-icon-button (click)="backFun()"> <mat-icon>close</mat-icon> </button>
+        <mat-card-header>
+          <mat-card-title>Add User</mat-card-title>
+        </mat-card-header>
+        <form #adusr="ngForm" name="credentials" autocomplete="off" *ngIf="userData">
+          <mat-card-content>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>First Name</mat-label>
+              <input type="text" [(ngModel)]="userData.firstName" minlength="2" appNameCheck required matInput
+                     placeholder="Enter First Name"
+                     class="inp-width" name="firstName" id="usrfname">
+              <mat-error> First Name is required. Min 4 chars.</mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Last Name</mat-label>
+              <input type="text" class="inp-width" [(ngModel)]="userData.lastName" required matInput
+                     placeholder="Enter Last Name"
+                     name="lastName" autocomplete="new-password" id="usrlname">
+              <mat-error>
+                Last name is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Email</mat-label>
+              <input type="email" [(ngModel)]="userData.email" class="inp-width" required matInput
+                     placeholder="Enter Email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,12}$"
+                     name="email" autocomplete="new-password" id="email">
+              <mat-error>
+                Email is required
+              </mat-error>
+            </mat-form-field>
+            <!--<mat-form-field class="w-70p"  appearance="outline" *ngIf="isLocalConfig">
+              <mat-label>Password</mat-label>
+              <input type="password" [(ngModel)]="userData.password" required matInput placeholder="Enter Password"
+                     name="password" class="inp-width" appPasswordCheck autocomplete="new-password" id="usrpwd">
+              <mat-error>
+                Password is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline" *ngIf="isLocalConfig">
+              <mat-label>Confirm Password</mat-label>
+              <input type="password" [(ngModel)]="userData.cpassword" required matInput placeholder="Confirm Password"
+                     name="cpassword" appPasswordCheck class="inp-width" autocomplete="new-password" id="usrcpwd">
+              <mat-error>
+                Confirm password is required
+              </mat-error>
+            </mat-form-field>-->
+            <mat-form-field class="w-70p" appearance="outline">
+                <mat-label>Role</mat-label>
+                <mat-select [multiple]="false" required (ngModelChange)="updateCurrentRole($event)"
+                  placeholder="Choose role" name="roleLists"
+                [(ngModel)]="userData.roleid">
+                  <mat-option *ngFor="let role of roles"
+                    [value]="role.id" [id]="role.name">
+                    {{role.name}}
+                  </mat-option>
+                </mat-select>
+              <mat-error> Role is required</mat-error>
+            </mat-form-field>
+          </mat-card-content>
+          <ng-container *ngIf="selectedRole !== 'admin'">
+            <div class="tprime my-2">
+              <span class="fw3"> <i class="fa fa-info-circle mr5"></i> Company level access </span>
+              <mat-radio-group [(ngModel)]="companyLevelAccess" name="companyLevelAccess"
+                               class="d-flex flex-row align-items-center pt-3">
+                <mat-radio-button color="primary" class="mr-3" value="allCompanies">All Companies</mat-radio-button>
+                <mat-radio-button color="primary" value="specificCompanies">Specific Companies</mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <button *ngIf="companyLevelAccess === 'specificCompanies'"
+                    mat-stroked-button color="primary" (click)="getAcl()">Choose Companies
+            </button>
+          </ng-container>
+          <ng-container *ngIf="selectedRole === 'admin'">
+            <p class="fw3"> <i class="fa fa-info-circle mr5"></i> Company level access - All Companies </p>
+          </ng-container>
+          <div mat-dialog-actions class="mt-2">
+            <button type="button" [disabled]="!adusr.form.valid" mat-raised-button color="primary" class="mr-2"
+                    (click)="saveUser()" id="usrSavebtn">Save
+            </button>
+            <button mat-raised-button (click)="backFun()">Cancel</button>
+          </div>
+        </form>
+      </mat-card>
+      <mat-card class="mat-elevation-z0 w-100" *ngIf="userData && userData.id">
+        <button class="position-absolute r-1p mt--10" mat-icon-button (click)="backFun()"> <mat-icon>close</mat-icon> </button>
+        <mat-card-header><mat-card-title>Edit User</mat-card-title></mat-card-header>
+        <form #updusr="ngForm" name="updatecredentials" autocomplete="off">
+          <mat-card-content>
+            <p>{{userData.email}}</p>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>First Name</mat-label>
+              <input type="text" class="inp-width" [(ngModel)]="userData.firstName" minlength="2" appNameCheck required
+                     matInput placeholder="Enter First Name"
+                     name="firstName" required id="eusrfname">
+              <mat-error> First Name is required</mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Last Name</mat-label>
+              <input type="text" class="inp-width" [(ngModel)]="userData.lastName" matInput
+                     placeholder="Enter Last Name"
+                     id="eusrlname" name="lastName" required>
+              <mat-error>
+                Last Name is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+                <mat-label>Role</mat-label>
+                <mat-select [multiple]="false" placeholder="Choose role" name="roleid" [(ngModel)]="userData.roleid"
+                (ngModelChange)="updateCurrentRole($event)">
+                  <mat-option *ngFor="let role of roles" [value]="role.id"> {{role.name}} </mat-option>
+                </mat-select>
+              <mat-error> Role is required</mat-error>
+            </mat-form-field>
+            <ng-container *ngIf="selectedRole.toLocaleString() !== 'admin'">
+              <div class="tprime my-2">
+                <span class="fw3"> <i class="fa fa-info-circle mr5"></i> Company level access </span>
+                <mat-radio-group [(ngModel)]="companyLevelAccess" name="companyLevelAccess"
+                                 class="d-flex flex-row align-items-center pt-3">
+                  <mat-radio-button color="primary" class="mr-3" value="allCompanies">All Companies</mat-radio-button>
+                  <mat-radio-button color="primary" value="specificCompanies">Specific Companies</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <button *ngIf="companyLevelAccess === 'specificCompanies'"
+                      mat-stroked-button color="primary" (click)="getAcl()">Choose Companies
+              </button>
+            </ng-container>
+            <ng-container *ngIf="selectedRole.toLocaleString() === 'admin'">
+              <p class="fw3"> <i class="fa fa-info-circle mr5"></i> Company level access - All Companies </p>
+            </ng-container>
+          </mat-card-content>
+          <div mat-dialog-actions>
+            <button type="button" [disabled]="!updusr.form.valid" mat-raised-button color="primary" class="mr-2"
+                    (click)="updateUser(updusr.form.value, updusr)" id="euserSavebtn">Save
+            </button>
+            <button mat-raised-button (click)="backFun()">Cancel</button>
+          </div>
+        </form>
+      </mat-card>
+      <!--<mat-card class="mat-elevation-z0 w-100" *ngIf="updPass">
+        <button mat-icon-button (click)="backFun()"><mat-icon>close</mat-icon></button>
+        <mat-card-header><mat-card-title>Update Password</mat-card-title></mat-card-header>
+        <form #updpass="ngForm" name="updatepassword" autocomplete="off" *ngIf="userData">
+          <mat-card-content>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Old Password</mat-label>
+              <input type="password" [(ngModel)]="userData.opassword" matInput placeholder="Enter Old Password"
+                     name="opassword" class="inp-width" required id="upuserOldpwd">
+              <mat-error>
+                Old password is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>New Password</mat-label>
+              <input type="password" [(ngModel)]="userData.password" matInput placeholder="Enter New Password"
+                     appPasswordCheck name="password" class="inp-width" required id="upuserNewpwd">
+              <mat-error>
+                New Password is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-70p" appearance="outline">
+              <mat-label>Confirm Password</mat-label>
+              <input type="password" [(ngModel)]="userData.cpassword" matInput placeholder="Confirm Password"
+                     name="cpassword" class="inp-width" required id="upuserCpwd">
+              <mat-error>
+                Confirm password is required
+              </mat-error>
+            </mat-form-field>
+          </mat-card-content>
+          <div mat-dialog-actions>
+            <button type="button" [disabled]="!updpass.form.valid" mat-raised-button color="primary" class="mr20"
+                    (click)="updatePass(updpass.form.value, updpass)" id="usrUptbtn">Update
+            </button>
+            <button type="button" mat-button (click)="closeUpdatePwd(updpass)" id="usrUptClosebtn">Close</button>
+          </div>
+        </form>
+      </mat-card>-->
+    </mat-sidenav>
+  </mat-sidenav-container>
+</div>
+<s-modal id="apiKey">
+  <mat-card class="modal w600">
+    <button type="button" class="float-right mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Back"
+            (click)="modalService.close('apiKey')">
+      <mat-icon>close</mat-icon>
+    </button>
+    <mat-card-title>API Key</mat-card-title>
+    <mat-card-content *ngIf="apiClient" class="p-3">
+      <div class="row">
+        <div class="col-lg-12">
+          <mat-list dense class="bor-1">
+            <mat-list-item class="bb-1">
+              <span class="w-25 text-muted">Client ID</span>
+              <span class="w-75">
+                <span class="apikey">{{apiClient.clientid}}</span>
+                <i class="pointer fa fa-clipboard copyIcon float-right mr5" aria-hidden="true"
+             (click)="cs.copyClip(apiClient.clientid)" matTooltip="Copy Client ID to clipboard"
+             mattooltipclass="example-tooltip-black"></i>
+              </span>
+            </mat-list-item>
+            <mat-list-item class="bb-1 w-100">
+              <span class="w-25 text-muted">Client Secret</span>
+              <span class="w-75 apikey">
+                <span class="apikey">{{apiClient.clientsecret}}</span>
+                <i class="pointer fa fa-clipboard copyIcon float-right mr5" aria-hidden="true"
+             (click)="cs.copyClip(apiClient.clientsecret)" matTooltip="Copy Client Secret to clipboard"
+             mattooltipclass="example-tooltip-black"></i>
+              </span>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </div>
+    </mat-card-content>
+    <div mat-dialog-actions>
+      <button type="button" mat-raised-button class="mr20" (click)="deleteAPIkey()" class="scritical"
+              id="purgeapi">Delete API Client
+      </button>
+      <button type="button" mat-button (click)="modalService.close('apiKey')" id="clsapi">Close</button>
+    </div>
+  </mat-card>
+</s-modal>
+<s-modal id="mfa">
+  <mat-card class="modal w600">
+    <button type="button" class="float-right mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Back"
+            (click)="modalService.close('mfa')">
+      <mat-icon>close</mat-icon>
+    </button>
+    <mat-card-title>MFA</mat-card-title>
+    <mat-card-content>
+        <table class="table rounded-corner w-100" >
+          <thead>
+          <tr>
+            <th>User Devices</th>
+            <th>Created Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let mfa of apiMFA;">
+          <td>
+           <span *ngIf="mfa.userLabel ==''">-</span>
+           <span class="mfa" *ngIf="mfa.userLabel" [matTooltip]="mfa.userLabel">{{mfa.userLabel}}</span>
+          </td>
+            <td>
+              <span class="mfa">{{mfa.createdDate| epochToDate}}</span>
+            </td>
+            <td>
+              <button mat-icon-button color="primary" matTooltip="Delete this MFA"
+              [disabled]="apiMFA.length === 1"
+               (click)="deleteMFA(mfa)" class="mr5"><mat-icon class="mat-18">delete</mat-icon></button>
+            </td>
+          </tr>
+        </tbody>
+        </table>
+    </mat-card-content>
+  </mat-card>
+</s-modal>
+<s-modal id="Aclmodal">
+  <mat-card class="modal w500">
+    <button type="button" class="float-right" mat-icon-button aria-label="close modal icon" matTooltip="Back"
+            (click)="closeAcl()"><mat-icon>close</mat-icon></button>
+    <mat-card-header>
+      <span class="mr-2 mt-3 fs1 fw3">Choose companies as</span>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-radio-group [(ngModel)]="acl.companies" class="d-flex flex-row align-items-center pt-3">
+        <mat-radio-button class="pr-4" value="allowed">Allowed Companies
+          <span class="ml-1" *ngIf="acl.companies === 'allowed' && selectedComp.length">({{selectedComp.length}})</span>
+        </mat-radio-button>
+        <mat-radio-button class="pr-4" value="denied">Denied Companies
+          <span class="ml-1" *ngIf="acl.companies === 'denied' && selectedComp.length">({{selectedComp.length}})</span>
+        </mat-radio-button>
+      </mat-radio-group>
+      <mat-form-field floatLabel="never" class="search-tool w-100">
+        <input matInput class="form-control mat-small" [(ngModel)]="searchString" type="text" trim="blur" name="filterText"
+          id="filterText" placeholder="Search Company">
+        <button class="gray" matSuffix mat-icon-button *ngIf="searchString === ''" color="primary" >
+          <mat-icon>search</mat-icon>
+        </button>
+        <button class="gray" matSuffix mat-icon-button *ngIf="searchString && searchString !== ''"
+          (click)="searchString = '';" color="primary" >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+      <div class="max-height-200 overflow-auto mt--10">
+        <mat-list dense class="bor-1 w-100 mat-small " *ngIf="companyList && companyList.length">
+          <mat-list-item class="bb-1" *ngFor="let comp of companyList | filter : 'name' : searchString; let i = index">
+            <mat-checkbox [checked]="isSelected" (change)="onCompanySelection($event, comp)"
+                   [value]="comp._id" [(ngModel)]="comp.selected"
+              color="primary">{{comp.name}}</mat-checkbox>
+          </mat-list-item>
+        </mat-list>
+        <p *ngIf="companyList && !companyList.length">No matching company found!</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="start">
+      <button mat-raised-button color="primary" (click)="closeAcl()">Update</button>
+    </mat-card-actions>
+  </mat-card>
+</s-modal>

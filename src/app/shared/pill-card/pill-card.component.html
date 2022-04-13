@@ -1,0 +1,43 @@
+<mat-card [ngClass]="{'ad-pill': pilltype === 'ad-pill'}">
+  <div class="row mb-1">
+    <div class="col-lg-8 fs1-2 fw2 text-left">{{chartData.title }}</div>
+    <div class="col-lg-4 fs1-2 fw5 text-right" matTooltip="{{chartData.count}}">{{chartData.count | shortNumber}}</div>
+  </div>
+  <div class="d-flex mb-1">
+    <span class="spacer"></span>
+    <img class="pic-img" [src]="chartData.img | safe" alt="{{chartData.title}}">
+    <span class="spacer"></span>
+  </div>
+  <mat-card-content class="mt-2">
+    <mat-form-field class="w-100 compliance-field" *ngIf="chartData.complianceData">
+        <mat-label>Compliance</mat-label>
+        <mat-select [multiple]="false" (selectionChange)="updateCompliance($event)"
+          placeholder="Choose Compliance"
+        [(ngModel)]="chartData.compliance">
+          <mat-option *ngFor="let item of chartData.complianceData; let i = index;"
+            [value]="item.value">
+            {{item.name}}
+          </mat-option>
+        </mat-select>
+    </mat-form-field>
+    <ng-container *ngFor="let item of chartData.data">
+      <div class="d-flex" > <!--*ngIf="inArray.indexOf(item.name.toLowerCase()) > -1"-->
+        <i class="ms-Icon ms-font-lg ms-Icon--RadioBtnOn px-1 " [ngClass]="{
+        't-c': item.name.toLowerCase() === 'critical',
+        't-h': item.name.toLowerCase() === 'high',
+        't-m': item.name.toLowerCase() === 'medium',
+        't-l': item.name.toLowerCase() === 'low',
+        't-d': item.name.toLowerCase().indexOf('inactive') > -1 || item.name.toLowerCase() === 'disabled' || item.name.toLowerCase() === 'non compliant',
+        't-g': item.name.toLowerCase() === 'active' || item.name.toLowerCase() === 'enabled' || item.name.toLowerCase() === 'compliant' || item.name.toLowerCase() === 'active policy'
+        }"></i>
+        <span [ngClass]="{'t-c': item.name.toLowerCase() === 'critical'}">
+          {{item.name | camelToHuman:true}}</span>
+        <span class="spacer"></span>
+        <span class="float-right fw4 pointer" (click)="setFilter(chartData, item.name)"
+              [ngClass]="{'t-c': item.name.toLowerCase() === 'critical'}">
+          {{item.value| shortNumber}}
+        </span>
+      </div>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

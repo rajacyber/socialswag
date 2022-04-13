@@ -1,0 +1,23 @@
+<s-modal id="unauthorized">
+  <form #uauthorized="ngForm">
+    <mat-card class="d-flex flex-row is-align-items-flex-start py-0">
+      <div class="d-flex flex-row align-items-center list-right list-right">
+        <div class="col-lg-12 text-center">
+          <img src="/assets/images/unauthorized.png" alt="Release Notes" width="200px">
+          <p class="mat-body-1"></p>
+        </div>
+      </div>
+      <mat-card class="modal mat-elevation-z0 pr-0 w-100">
+        <div class="mat-title">Unauthorized</div>
+        <mat-card-content class="">
+          <h1>You are not authorized to access this page. Please contact administrator.</h1>
+        </mat-card-content>
+        <mat-card-footer class="mat-card-footer text-right pt-3 pb-3 pr-3 toolbar-top">
+          <button mat-raised-button class="mat-warn" (click)="logout()"
+                  id="cancel11">LOGOUT
+          </button>
+        </mat-card-footer>
+      </mat-card>
+    </mat-card>
+  </form>
+</s-modal>

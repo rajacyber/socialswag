@@ -1,0 +1,223 @@
+<!--<ng-particles [id]="id" class="position-absolute h-100 z-1 w-100" [url]="particlesUrl"
+              (particlesLoaded)="particlesLoaded($event)" (particlesInit)="particlesInit($event)"></ng-particles>-->
+<div class="login-page" *ngIf="baseService && authenticationService.isAuthenticated === false">
+  <div class="content px20">
+    <h1 class="greeting">{{greetings}} <span *ngIf="baseService && baseService.cyberLabel"> {{baseService.cyberLabel.productName}}.</span></h1>
+    <form class="login-form" #loginForm="ngForm" name="loginForm" (ngSubmit)="authenticationService.checkSession()"
+          *ngIf="loginView === 'login'">
+      <div class="text-center" >
+        <img src="/assets/images/socialswag/icon.png" [ngStyle]="{'max-width.px': 169}" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row mt-4 mb-5">
+        <!--<mat-radio-group [(ngModel)]="loginView" name="loginType"
+                         aria-label="Choose Partner Login / Customer Login" required>
+            <mat-radio-button color="primary" matTooltip="Partner Login" value="login">
+              <i class="far fa-building  text-primary"></i> Partner Login</mat-radio-button>
+            <mat-radio-button color="primary" matTooltip="Customer Login" value="customer">
+              <i class="fas fa-user-shield text-primary"></i> Customer Login</mat-radio-button>
+          </mat-radio-group>-->
+      </div>
+      <!--<div fxLayout="row">
+        <div fxFlexFill>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" type="email" required name="email" [(ngModel)]="loginUser.email"
+                   autocomplete="OFF">
+          </mat-form-field>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" placeholder="Password" name="password" [(ngModel)]="loginUser.password"
+                   required autocomplete="OFF">
+          </mat-form-field>
+        </div>
+      </div>-->
+      <div class="text-center secondary-content mt-4">
+        <p class="mat-small danger" *ngIf="errMsg && errMsg !== ''">{{errMsg}}</p>
+        <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}}
+          <!-- <a target="_blank" [href]="baseService.cyberLabel.eulaLink">Terms of Service</a></p> -->
+      </div>
+      <div fxLayout="row mt-4">
+        <div fxFlexFill>
+          <button type="submit"  [disabled]="loginForm.invalid" class="to-UC"
+                  mat-raised-button color="primary" class="w-100" id="lgn1btn">Sign In
+          </button>
+        </div>
+      </div>
+      <!--<p class="mt-1 mb0">
+        <a href="javascript:void(0)" (click)="updateView('recoverPassword')" class="black mat-caption">Forgot your
+          password ?</a>
+      </p>-->
+    </form>
+    <form class="login-form" #loginForm="ngForm" name="loginForm" (ngSubmit)="authenticationService.checkSession()"
+          *ngIf="loginView === 'customer'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row mt-4 mb-4">
+        <mat-radio-group [(ngModel)]="loginView" name="loginType"
+                         aria-label="Choose Partner Login / Customer Login" required>
+            <mat-radio-button color="primary" matTooltip="Partner Login" value="login">
+              <i class="far fa-building  text-primary"></i> Partner Login</mat-radio-button>
+            <mat-radio-button color="primary" matTooltip="Customer Login" value="customer">
+              <i class="fas fa-user-shield text-primary"></i> Customer Login</mat-radio-button>
+          </mat-radio-group>
+      </div>
+      <!--<div fxLayout="row">
+        <div fxFlexFill>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" type="text" trim="blur" required name="email"
+                   [(ngModel)]="loginUser.email" autocomplete="OFF">
+          </mat-form-field>
+          <mat-form-field class="w-100" appearance="outline" *ngIf="showOTP">
+            <mat-label>OTP</mat-label>
+            <input matInput type="password" placeholder="Enter OTP" name="mfa" autofocus [(ngModel)]="loginUser.otp"
+                   required autocomplete="OFF">
+          </mat-form-field>
+        </div>
+      </div>-->
+      <div class="text-center secondary-content mt-4">
+        <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}}
+          <a target="_blank" [href]="baseService.cyberLabel.eulaLink">Terms of Service</a></p>
+      </div>
+      <div fxLayout="row mt-4">
+        <div fxFlexFill>
+          <button type="submit" [disabled]="loginForm.invalid" id="lgnbtn1" mat-raised-button
+                  color="primary" class="w-100">Sign In
+          </button>
+          <!--<button type="button" (click)="showOTP = !showOTP" *ngIf="loginForm.valid && !showOTP"
+                  mat-raised-button color="primary" id="gobtn1ss" class="w-100">Send OTP
+          </button>
+          <button type="submit" *ngIf="loginForm.valid && showOTP"
+                  mat-raised-button color="primary" id="gobtn1" class="w-100">GO
+          </button>-->
+        </div>
+      </div>
+      <div class="text-center secondary-content mt-4">
+        <p class="mat-small danger" *ngIf="errMsg && errMsg !== ''">{{errMsg}}</p>
+      </div>
+    </form>
+    <!--<form class="login-form" #loginForm="ngForm" name="loginForm" (ngSubmit)="doLogin(loginUser)"
+          *ngIf="loginView === 'mfa'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" (click)="updateView('login')" type="text" trim="blur" required name="email"
+                   [(ngModel)]="loginUser.email" autocomplete="OFF">
+          </mat-form-field>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>MFA Token</mat-label>
+            <input matInput type="text" trim="blur" placeholder="MFA Token" name="mfa" autofocus [(ngModel)]="loginUser.mfa"
+                   required autocomplete="OFF">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="text-center secondary-content">
+        <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}}
+          <a target="_blank" [href]="baseService.cyberLabel.eulaLink">Terms of Service</a></p>
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <button type="submit" *ngIf="loginForm.invalid" [disabled]="loginForm.invalid" id="lgnbtn" mat-raised-button
+                  color="primary" class="w-100">Login
+          </button>
+          <button type="submit" *ngIf="loginForm.valid" mat-raised-button color="primary" id="gobtn" class="w-100">Go
+          </button>
+        </div>
+      </div>
+      <div class="text-center secondary-content">
+        <p class="mat-small danger" *ngIf="errMsg && errMsg !== ''">{{errMsg}}</p>
+      </div>
+    </form>-->
+    <!--<form class="login-form" #recoverForm="ngForm" name="recoverForm" *ngIf="loginView === 'recoverPassword'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <p class="mat-caption">Enter your email address to reset your password:</p>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" type="email" required name="email"
+                   [(ngModel)]="loginUser.email" autocomplete="OFF">
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row" fxLayoutAlign="center center">
+        <button (click)="updateView('login')" class="to-UC mr-1" mat-button color="primary">Back</button>
+        <button [disabled]="recoverForm.invalid" mat-raised-button color="primary" class="to-UC"
+                (click)="doResetRequest()">Submit
+        </button>
+      </div>
+    </form>-->
+    <!--<form class="login-form" #loginForm="ngForm" name="loginForm" *ngIf="loginView === 'resetPassword'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <h2> Update Password </h2>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" minlength="6" (change)="resetFormValidation(resetUser)"
+                   appPasswordCheck autocomplete="new-password"
+                   placeholder="Password" name="password" [(ngModel)]="resetUser.password" required>
+          </mat-form-field>
+          <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" minlength="6" (change)="resetFormValidation(resetUser)"
+                   appPasswordCheck autocomplete="new-password"
+                   placeholder="Confirm Password" name="cpassword" [(ngModel)]="resetUser.cpassword" required>
+          </mat-form-field>
+          <p class="secondary-content mat-caption bold mb0">{{baseService.resources.passwordmustcontain}}</p>
+          <ul class="secondary-content mat-caption">
+            <li class="mb0"> At least 6 characters</li>
+            <li class="mb0"> At least one must be a ! @ # $ % _ -</li>
+            <li class="mb0"> At least one must be a number</li>
+            <li class="mb0"> At least one must be a capital letter</li>
+            <li class="mb0"> At least one must be a lower case letter</li>
+          </ul>
+        </div>
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <button type="button" [disabled]="resetFormValidation(resetUser)" (click)="doUpdatePassword(resetUser)"
+                  mat-raised-button color="primary" class="to-UC w-100">Update Password
+          </button>
+        </div>
+      </div>
+    </form>
+    <form class="login-form" #loginForm="ngForm" name="loginForm" *ngIf="loginView === 'GoogleAuth'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <div class="text-center">
+            <img class="pointer mt20" (click)="authenticationService.checkSession()"
+                 matTooltip="Please login using your Google / GSuite Email"
+                 src="/assets/images/btn_google_signin_light.png" alt="Sign in with Google">
+          </div>
+        </div>
+      </div>
+    </form>
+    <form class="login-form" #loginForm="ngForm" name="loginForm" *ngIf="loginView === 'Office365Auth'">
+      <div class="text-center">
+        <img src="/assets/images/cybercns_login_logo.png" [alt]="baseService.cyberLabel.productName">
+      </div>
+      <div fxLayout="row">
+        <div fxFlexFill>
+          <div class="text-center">
+            <img class="pointer mt20" (click)="authenticationService.checkSession()"
+                 matTooltip="Please login using your Office365 Email"
+                 src="/assets/images/btn_office365_signin.png" alt="Sign in with Office365">
+          </div>
+        </div>
+      </div>
+    </form>-->
+  </div>
+</div>

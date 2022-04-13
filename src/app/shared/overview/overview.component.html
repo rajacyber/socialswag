@@ -1,0 +1,44 @@
+<mat-form-field class="w-50 position-absolute z-index-10 mtop-10">
+    <mat-label>Dashboard view</mat-label>
+    <mat-select [multiple]="false" (ngModelChange)="updateDash($event)" placeholder="Choose dashboard view"
+    [(ngModel)]="dashUrl">
+      <mat-select-trigger class="d-flex">
+        <span><mat-icon color="primary">dashboard</mat-icon> </span>
+        <span class="mt-1 ml-2">{{currentDashboard}}</span>
+      </mat-select-trigger>
+      <mat-option *ngFor="let dash of dashList"
+        [value]="dash.url">
+        <span><mat-icon color="primary">dashboard</mat-icon> </span>
+        <span class="ml-1">{{dash.name}}</span>
+      </mat-option>
+    </mat-select>
+</mat-form-field>
+<ng-container *ngIf="dashUrl">
+  <div class="h-100vh position-rel-t44">
+    <div class="iframe-container">
+      <iframe [src]="dashUrl | safe" allowfullscreen></iframe>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="!dashUrl">
+  <mat-card>
+    <mat-card-content>
+      <div class="loader-class">
+        <img src="/assets/images/loading.gif" width="30" alt="Loading">
+        <p>Loading... </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+<!--<mat-tab-group mat-align-tabs="start">
+  <mat-tab [label]="dash.name" *ngFor="let dash of dashList">
+    <ng-template matTabContent>
+      <div  class="full-height">
+        <div class="iframe-container">
+          <iframe [ngClass]="{'top-0': dash.name === 'Insights', '': dash.name !== 'Insights'}"
+                  [src]="dash.url | safe" allowfullscreen></iframe>
+        </div>
+      </div>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>-->

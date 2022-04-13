@@ -1,0 +1,4 @@
+﻿Name,Subnet,IsExcluded,IsExternalDevice,Tags
+SubnetRule1,192.168.1.1/24,FALSE,FALSE,sample
+SubnetRule2,192.168.1.1-192.168.1.2,FALSE,FALSE,
+SubnetRule3,192.168.1.69,FALSE,FALSE,

@@ -1,0 +1,191 @@
+<div [formGroup]="form">
+  <div [ngSwitch]="formElement.type">
+    <!-- TextBox -->
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'text'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput [placeholder]="formElement.label"
+             [id]="formElement.key"
+             [type]="formElement.type"
+             [readonly]="formElement.readonly"
+             [required]="formElement.required"
+             [(ngModel)]="outputValue[formElement.key]"
+             [formControlName]="formElement.key"
+             (keydown)="onKeydownMain($event)"
+             autocomplete="(formElement.label === 'username')? 'new-username' : 'OFF'">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+
+    <!-- TextBox -->
+
+    <!-- Static -->
+
+    <!--&lt;!&ndash; File &ndash;&gt;
+    <div *ngSwitchCase="'file'">
+      <app-file-upload [chooseLabel]="formElement.label"
+                       (fileCallbackEvent)="selectedFile($event,formElement.key)">
+      </app-file-upload>
+    </div>-->
+
+    <!-- File -->
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'number'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput
+             [placeholder]="formElement.label"
+             [id]="formElement.key" [type]="formElement.type"
+             [readonly]="formElement.readonly"
+             [required]="formElement.required"
+             [min]="formElement.min" [max]="formElement.max"
+             [(ngModel)]="outputValue[formElement.key]"
+             autocomplete="OFF"
+             [formControlName]="formElement.key">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'int'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput
+             [placeholder]="formElement.label"
+             [id]="formElement.key" [type]="formElement.type"
+             [readonly]="formElement.readonly"
+             [required]="formElement.required"
+             [(ngModel)]="outputValue[formElement.key]"
+             autocomplete="OFF"
+             [formControlName]="formElement.key">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon> {{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'integer'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput
+             [placeholder]="formElement.label"
+             [id]="formElement.key" [type]="formElement.type"
+             [readonly]="formElement.readonly"
+             [required]="formElement.required"
+             [(ngModel)]="outputValue[formElement.key]"
+             autocomplete="OFF"
+             [formControlName]="formElement.key">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+
+    <!-- HiddenTextBox -->
+    <mat-form-field appearance="outline" class="form-element display-none"  *ngSwitchCase="'hidden'">
+      <input matInput
+             [placeholder]="formElement.label"
+             [id]="formElement.key"
+             [type]="'text'"
+             [required]="formElement.required"
+             [(ngModel)]="outputValue[formElement.key]"
+             [readonly]="true"
+             [formControlName]="formElement.key">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+    <!-- HiddenTextBox -->
+
+    <!-- Password -->
+    <mat-form-field appearance="outline" class="form-element"
+                    *ngSwitchCase="'password'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput
+             [placeholder]="formElement.label"
+             [id]="formElement.key"
+             [type]="formElement.type"
+             [required]="formElement.required"
+             autocomplete="new-password"
+             [(ngModel)]="outputValue[formElement.key]"
+             [formControlName]="formElement.key">
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+    <!-- Password -->
+
+    <!-- DropDown -->
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'dropdown'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <mat-select [(ngModel)]="outputValue[formElement.key]" [formControlName]="formElement.key"
+                  (valueChange)="callBack($event, formElement.callback, formElement.key)" [id]="formElement.key">
+        <!--            (selectionChange)="formElement.callback && callBack($event)" (valueChange)="formElement.callback && callBack($event)"-->
+        <mat-option *ngFor="let item of formElement.options" [id]="item.key" [value]="item.value">{{item.key}}
+        </mat-option>
+      </mat-select>
+      <!--<mat-hint *ngIf="formElement.example !== undefined">
+        <mat-icon>info_outline</mat-icon>{{formElement.example}}</mat-hint>-->
+      <mat-error>
+        {{formElement.label}} is required. <span class="ml10">{{formElement.errmsg}}</span>
+      </mat-error>
+    </mat-form-field>
+    <!-- DropDown -->
+
+    <!-- CheckBox -->
+    <div class="form-element" *ngSwitchCase="'checkbox'">
+      <mat-checkbox color="primary" [(ngModel)]="outputValue[formElement.key]" [id]="formElement.key"
+                  [value]="formElement.value" [formControlName]="formElement.key">
+        {{formElement.label}}
+      </mat-checkbox>
+    </div>
+    <!-- CheckBox -->
+
+    <!-- SlideToggle -->
+    <div class="form-element" *ngSwitchCase="'slidetoggle'">
+      <mat-slide-toggle [(ngModel)]="outputValue[formElement.key]" [id]="formElement.key"
+                      [formControlName]="formElement.key"> {{formElement.label}}
+      </mat-slide-toggle>
+    </div>
+    <!-- SlideToggle -->
+
+    <!-- RadioButton -->
+    <div class="form-element" *ngSwitchCase="'radiobutton'">
+      <mat-radio-group [(ngModel)]="outputValue[formElement.key]" [formControlName]="formElement.key"
+                       aria-label="Select an option">
+        <mat-radio-button *ngFor="let items of formElement.options" [id]="items.key" [value]="items.value">
+          {{items.key}}
+        </mat-radio-button>
+
+      </mat-radio-group>
+    </div>
+    <!-- RadioButton -->
+
+    <!-- TextArea -->
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'textarea'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <textarea matInput [(ngModel)]="outputValue[formElement.key]" [placeholder]="formElement.label"
+               [formControlName]="formElement.key" [id]="formElement.key"
+                [value]="formElement.value"></textarea>
+      <mat-error>
+        {{formElement.label}} is required
+      </mat-error>
+    </mat-form-field>
+    <!-- TextArea -->
+
+    <!-- DatePicker -->
+    <mat-form-field appearance="outline" class="form-element" *ngSwitchCase="'datepicker'">
+      <mat-label>{{formElement.label}}</mat-label>
+      <input matInput [(ngModel)]="outputValue[formElement.key]" [formControlName]="formElement.key"
+             [matDatepicker]="picker" [placeholder]="formElement.label">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error> {{formElement.label}} is required </mat-error>
+    </mat-form-field>
+    <!-- DatePicker -->
+  </div>
+</div>

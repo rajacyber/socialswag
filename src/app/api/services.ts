@@ -1,0 +1,12 @@
+export { ApiService } from './services/api.service';
+export { ContentEpisodesService } from './services/content-episodes.service';
+export { GetMasterClassService } from './services/get-master-class.service';
+export { ContentPricingService } from './services/content-pricing.service';
+export { CategoryService } from './services/category.service';
+export { ContentDataService } from './services/content-data.service';
+export { TrailerService } from './services/trailer.service';
+export { UtilitiesService } from './services/utilities.service';
+export { IdentityProvidersService } from './services/identity-providers.service';
+export { UsersService } from './services/users.service';
+export { RolesService } from './services/roles.service';
+export { ApiClientsService } from './services/api-clients.service';

@@ -1,0 +1,41 @@
+<div *ngIf="listOfFormElements && listOfFormElements.length">
+  <form [formGroup]="form" novalidate="off">
+    <div *ngFor="let formControl of listOfFormElements" class="form-row">
+      <ng-container *ngIf="formControl.type !== 'companypicker' &&  formControl.type !== 'agentpicker'">
+         <app-dynamic-control [outputValue]="Valuesoutput" [formElement]="formControl" [form]="form"
+      (valChange)="fieldValChange($event)"></app-dynamic-control>
+      </ng-container>
+      <!-- Company Selector -->
+    <mat-form-field appearance="outline" class="form-element" *ngIf="formControl.type === 'companypicker'">
+      <mat-select #companySelect class="" [placeholder]="formControl.label"
+                  (openedChange)="closeCurrentCompany($event, formControl.key)" [(ngModel)]="Valuesoutput[formControl.key]"
+                  [formControl]="companyCtrl" (selectionChange)="updateCurrentCompany($event.value, formControl.key)">
+        <mat-option>
+          <ngx-mat-select-search [formControl]="companyFilterCtrl"  [placeholderLabel]="'Search Company'"
+            [noEntriesFoundLabel]="'No matching company found'" [searching]="searching"></ngx-mat-select-search>
+        </mat-option>
+        <mat-option [matTooltip]="company.name" *ngFor="let company of filteredCompanies | async" [value]="company._id">
+          {{company.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <!-- Company Selector-->
+
+    <!--Agent Selector-->
+    <mat-form-field appearance="outline" class="form-element" *ngIf="formControl.type === 'agentpicker' && Valuesoutput.companyId">
+      <mat-label>{{formControl.label}}</mat-label>
+      <mat-select [(ngModel)]="Valuesoutput[formControl.key]" [formControlName]="formControl.key">
+        <mat-option *ngFor="let item of agentList" [value]="item.value">{{item.key}}</mat-option>
+      </mat-select>
+      <mat-error>{{formControl.label}} is required. <span class="ml10">{{formControl.errmsg}}</span></mat-error>
+    </mat-form-field>
+    <!--Agent Selector-->
+    </div>
+    <div class="form-row">
+      <button type="submit" id="Savebtn" *ngIf="isSaveBtn" [disabled]="!form || !form.valid" class="mr-2" mat-raised-button color="primary"
+              (click)="Save(form)">{{fnBtnName}}
+      </button>
+      <button type="submit" id="Closebtn" (click)="Cancel()" *ngIf="isCloseBtn" mat-raised-button>{{closeBtnName}}</button>
+    </div>
+  </form>
+</div>

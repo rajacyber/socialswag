@@ -1,0 +1,16 @@
+<div class="card">
+  <div class="card-body p--5">
+    <div class="mb-0">
+      <form #suppressForm="ngForm" class="mt20">
+        <mat-form-field class="col-lg-6" appearance="outline">
+          <input matInput min="0" placeholder="Snooze Days" name="suppress" [(ngModel)]="snoozeDays"
+                 matTooltip="No of days to suppress vulnerabilities after initial release." type="number" required>
+          <mat-hint>{{snoozeDays}} day(s) to suppress vulnerabilities after initial release. </mat-hint>
+        </mat-form-field>
+        <button mat-raised-button color="primary" [disabled]="!suppressForm.form.valid"
+                class="ml20 mr20 mat-small p2" (click)="setSnoozeDays(snoozeDays)">Update
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
