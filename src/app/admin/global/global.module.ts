@@ -19,9 +19,11 @@ import {SettingsComponent} from './settings/settings.component';
 import {NgxMatSelectSearchModule} from 'ngx-mat-select-search';
 import {AngularEditorModule} from '@kolkov/angular-editor';
 import { MasterClassComponent } from './master-class/master-class.component';
+import { UsersComponent } from './users/users.component';
+
 @NgModule({
   declarations: [
-    SettingsComponent, MasterClassComponent,
+    SettingsComponent, MasterClassComponent, UsersComponent
   ],
   imports: [
     CommonModule,

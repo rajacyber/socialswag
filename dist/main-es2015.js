@@ -5388,10 +5388,11 @@ class CustomErrorHandlerService {
         }
     }
     sendSlackMessage(msg) {
-        this.baseService.doRequest('/api/cyberutils/dummy/sendSlackMsg', 'post', { message: msg })
-            .subscribe((result) => {
-            console.log('500 error captured!');
-        });
+        // this.baseService.doRequest('/api/cyberutils/dummy/sendSlackMsg',
+        //   'post', {message: msg})
+        //   .subscribe((result: any) => {
+        //     console.log('500 error captured!');
+        //   });
     }
 }
 CustomErrorHandlerService.ɵfac = function CustomErrorHandlerService_Factory(t) { return new (t || CustomErrorHandlerService)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_authentication_service__WEBPACK_IMPORTED_MODULE_2__["AuthenticationService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_common_services__WEBPACK_IMPORTED_MODULE_3__["CommonService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_base_service__WEBPACK_IMPORTED_MODULE_5__["BaseRequestService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_toastr_service__WEBPACK_IMPORTED_MODULE_6__["MyToastrService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_loader_service__WEBPACK_IMPORTED_MODULE_7__["LoaderService"])); };

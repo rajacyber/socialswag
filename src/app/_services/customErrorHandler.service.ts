@@ -90,10 +90,10 @@ export class CustomErrorHandlerService implements ErrorHandler {
     }
   }
   sendSlackMessage(msg: string): void {
-    this.baseService.doRequest('/api/cyberutils/dummy/sendSlackMsg',
-      'post', {message: msg})
-      .subscribe((result: any) => {
-        console.log('500 error captured!');
-      });
+    // this.baseService.doRequest('/api/cyberutils/dummy/sendSlackMsg',
+    //   'post', {message: msg})
+    //   .subscribe((result: any) => {
+    //     console.log('500 error captured!');
+    //   });
   }
 }

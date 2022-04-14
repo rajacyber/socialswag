@@ -48,10 +48,11 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.subItems = [
       {name: 'Dashboard', icon: 'PreviewLink', id: 'dashboard', isVisible: true},
-      {name: 'Masterclass', icon: 'OfficeAddinsLogo', id: 'masterclass', isVisible: true},
+      {name: 'Masterclasses', icon: 'OfficeAddinsLogo', id: 'masterclass', isVisible: true},
       {name: 'Live Learning', icon: 'TestPlan', id: 'live_learning', isVisible: true },
       {name: 'Socialswag Live', icon: 'Admin', id: 'social_live', isVisible: true },
-      {name: 'Channel', icon: 'Devices3', id: 'channel', isVisible: true },
+      {name: 'Channels', icon: 'Devices3', id: 'channels', isVisible: true },
+      {name: 'Celebrity Users', icon: 'Group', id: 'users', isVisible: true },
       {name: 'Metadata', icon: 'GroupedList', id: 'metadata', isVisible: true },
     ];
   }

@@ -223,7 +223,7 @@ export class MasterClassComponent implements OnInit {
       _pageData: [],
       tableOptions: {
         id: 'masterclass',
-        title: 'Masterclass',
+        title: 'Masterclasses',
         isServerSide: true,
         selectText: '',
         loading: true,
@@ -319,6 +319,8 @@ export class MasterClassComponent implements OnInit {
         await this.stepperAction('', this.materClassData, 1, '');
         break;
       case 'Language':
+        // const selectedLanguage = ? this.currentRm.assets.filter((x: any) => x.selected && x.patchable) : (this.selectAssetsLevel ? ['Assets'] : []);
+        
         await this.stepperAction('', this.language, 2, '');
         break;
       case 'Pricing':

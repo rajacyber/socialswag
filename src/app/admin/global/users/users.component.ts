@@ -9,7 +9,7 @@ import {ConfirmDialogService} from '../../../_services/confirmdialog.service';
 import {MyToastrService} from '../../../_services/toastr.service';
 import {MatSidenav} from '@angular/material/sidenav';
 import {AuthenticationService} from '../../../_services/authentication.service';
-import {CompanyService} from '../../../api/services/company.service';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-users',
@@ -19,6 +19,7 @@ import {CompanyService} from '../../../api/services/company.service';
 
 export class UsersComponent implements OnInit {
   @ViewChild('snav', {static: true}) snav: MatSidenav;
+  @ViewChild('upload', {static: true}) upload: MatSidenav;
   userTableOptions: any;
   user: any;
   companyLevelAccess = 'allCompanies';
@@ -52,7 +53,17 @@ export class UsersComponent implements OnInit {
   apiClient: any = {};
   apiMFA: any = {};
 
-  constructor(public baseService: BaseRequestService, private companyService: CompanyService,
+  countryList: any = [];
+  languagesList: any = [];
+  fromMaxDate = new Date();
+  thumbnail_image: any;
+  preview_image: any;
+  images: any = {};
+  user_id: any;
+  Objectkeys = Object.keys;
+
+
+  constructor(public baseService: BaseRequestService, private httpClient: HttpClient, 
               public loaderService: LoaderService, private aS: AuthenticationService,
               public modalService: ModalService, public toast: MyToastrService,
               private readonly router: Router, public confirmDialog: ConfirmDialogService,
@@ -70,33 +81,12 @@ export class UsersComponent implements OnInit {
     this.userTableOptions = {
       columns: [
         {
-          header: 'First Name',
-          col: 'firstName',
-          columnDef: 'firstName',
+          header: 'Name',
+          col: 'name',
+          columnDef: 'name',
           filter: '',
-          cell: '(element: any) => `${element.firstName}`',
+          cell: '(element: any) => `${element.name}`',
           order: 0,
-          visible: true,
-          isToolTip: false,
-          isToolTipCol: '',
-          hasMultiData: false,
-          class: '',
-          color: '',
-          isProgressCntrl: false,
-          isColoredCntrl: false,
-          colList: [],
-          isfaicon: false,
-          isAddingText: false,
-          addingText: '',
-          img: false,
-          imgPath: ''
-        }, {
-          header: 'Last Name',
-          col: 'lastName',
-          columnDef: 'lastName',
-          filter: '',
-          cell: '(element: any) => `${element.lastName}`',
-          order: 1,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -133,11 +123,11 @@ export class UsersComponent implements OnInit {
           img: false,
           imgPath: ''
         }, {
-          header: 'Role',
-          col: 'role',
-          columnDef: 'role',
-          filter: 'cameltohuman',
-          cell: '(element: any) => `${element.role}`',
+          header: 'Phone Number',
+          col: 'phone',
+          columnDef: 'phone',
+          filter: '',
+          cell: '(element: any) => `${element.phone}`',
           order: 3,
           visible: true,
           isToolTip: false,
@@ -154,95 +144,182 @@ export class UsersComponent implements OnInit {
           addingText: '',
           img: false,
           imgPath: ''
+        }, {
+          header: 'Languages',
+          col: 'languages',
+          columnDef: 'languages',
+          filter: '',
+          cell: '(element: any) => `${element.languages}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: ''
+        }, {
+          header: 'Country',
+          col: 'country.name',
+          columnDef: 'country.name',
+          filter: '',
+          cell: '(element: any) => `${element.country.name}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: ''
         }],
-      sortOptions: {active: 'firstName', direction: 'asc'},
-      faClass: 'User',
+      sortOptions: {active: 'name', direction: 'asc'},
+      faClass: 'CelebrityUser',
       _pageData: [],
       tableOptions: {
         id: 'users',
-        title: 'Users',
-        isServerSide: true, add: (this.aS.hasPermission('kusers', 'create')),
+        title: 'Celebrity User',
+        isServerSide: true, 
+        // add: (this.aS.hasPermission('kusers', 'create')),
         selectText: 'user(s)',
         loading: true,
         floatingFilter: true,
-        rowSelection: true,
+        rowSelection: false,
         showAction: true,
-        actionMenuItems: [],
+        actionMenuItems: [{
+          text: 'Upload Images',
+          icon: 'cloud_upload',
+          callback: 'uploadFn',
+          isGlobal: true
+        }],
         pagination: true,
         pageOptions: [5, 10, 25, 100],
-        pageSize: 30,
+        pageSize: 10,
         search: true,
+        add: true,
         showhideList: true,
         refreshData: true,
         exportExcel: true,
-        saveData: true
+        saveData: false,
+        hideDownload: true
       }
     };
-    if (this.aS.hasPermission('kusers', 'update')) {
-      this.userTableOptions.tableOptions.actionMenuItems.unshift({
-        text: 'Edit',
-        icon: 'edit',
-        callback: 'editFn',
-        isGlobal: false
-      });
-    }
-    if (this.aS.hasPermission('kusers', 'delete')) {
-      this.userTableOptions.tableOptions.actionMenuItems.push({
-        text: 'Delete',
-        icon: 'delete',
-        callback: 'deleteFn',
-        isGlobal: true
-      });
-    }
-    if (this.aS.hasPermission('kapiclients', 'create')) {
-      this.userTableOptions.tableOptions.actionMenuItems.push({
-        text: 'API Key',
-        icon: 'vpn_key',
-        callback: 'deleteFn',
-        isGlobal: false
-      });
-    }
-    if (this.aS.hasPermission('kusers', 'create')) {
-      this.userTableOptions.tableOptions.actionMenuItems.push({
-        text: 'MFA',
-        icon: 'fingerprint',
-        callback: 'deleteFn',
-        isGlobal: false
-      });
-    }
-    if (this.aS.hasPermission('kusers', 'delete')) {
-      this.userTableOptions.tableOptions.actionMenuItems.push({
-        text: 'Reset MFA',
-        icon: 'restore',
-        callback: 'deleteFn',
-        isGlobal: true
-      });
-    }
+    // if (this.aS.hasPermission('kusers', 'update')) {
+    //   this.userTableOptions.tableOptions.actionMenuItems.unshift({
+    //     text: 'Edit',
+    //     icon: 'edit',
+    //     callback: 'editFn',
+    //     isGlobal: false
+    //   });
+    // }
+    // if (this.aS.hasPermission('kusers', 'delete')) {
+    //   this.userTableOptions.tableOptions.actionMenuItems.push({
+    //     text: 'Delete',
+    //     icon: 'delete',
+    //     callback: 'deleteFn',
+    //     isGlobal: true
+    //   });
+    // }
+    // if (this.aS.hasPermission('kapiclients', 'create')) {
+    //   this.userTableOptions.tableOptions.actionMenuItems.push({
+    //     text: 'API Key',
+    //     icon: 'vpn_key',
+    //     callback: 'deleteFn',
+    //     isGlobal: false
+    //   });
+    // }
+    // if (this.aS.hasPermission('kusers', 'create')) {
+    //   this.userTableOptions.tableOptions.actionMenuItems.push({
+    //     text: 'MFA',
+    //     icon: 'fingerprint',
+    //     callback: 'deleteFn',
+    //     isGlobal: false
+    //   });
+    // }
+    // if (this.aS.hasPermission('kusers', 'delete')) {
+    //   this.userTableOptions.tableOptions.actionMenuItems.push({
+    //     text: 'Reset MFA',
+    //     icon: 'restore',
+    //     callback: 'deleteFn',
+    //     isGlobal: true
+    //   });
+    // }
   }
 
-  getCompanies(): void {
-    const cq = {query: {bool: {must: [{exists: {field: 'description'}}], must_not: [{exists: {field: 'companyRef'}}]}}};
-    const q = JSON.stringify(cq);
-    const skip = 0;
-    const limit = 3000;
-    const sort = JSON.stringify([{'name.keyword': {order: 'asc'}}]);
-    const fields = JSON.stringify(['name']);
-    this.companyService.getAllApiCompanyGet({q, skip, limit, sort, fields}).subscribe((result: any) => {
-      if (result.data.length) {
 
-      } else {
-
-      }
-    });
-  }
 
   ngOnInit(): void {
     this.userTableOptions.pageData = [];
     setTimeout(() => {
-      this.getRoles();
+      this.getUsers();
     }, 1000);
+    this.getLanguageAndCountry();
   }
 
+  uploadFile(event: any, key: string): void {
+    if (event.target.files.length > 0) {
+      this.images[key] = event.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(event.target.files[0]);
+      reader.onload = (ev) => {
+        // @ts-ignore
+        this[key] = reader.result;
+      };
+    }
+  }
+
+  imagesUpload(): void {
+    const titleName = 'Confirmation';
+    const message = 'This action requires a page refresh. Are you sure you would like to update the images ?';
+    const cancelText = 'No';
+    const acceptText = 'Yes';
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText);
+    this.confirmDialog.dialogResult.subscribe(res => {
+      if (res) {
+        const formData = new FormData();
+        this.Objectkeys(this.images).forEach(obj => {
+          formData.append(obj, this.images[obj]);
+        });
+        formData.append('user_id',this.user_id);
+        this.loaderService.display(true, 'Uploading images...');
+        this.httpClient.post<any>('/api/entity/updatePreviewImages',
+          formData).subscribe(result => {
+          this.loaderService.display(false);
+          if (result[0]) {
+            this.toast.sToast('success', result[1]);
+            // @ts-ignore
+            // this._document.defaultView.location.reload();
+            this.thumbnail_image = '';
+            this.preview_image = '';
+            this.images = {};
+            this.upload.close();
+          } else {
+            this.toast.sToast('error', result[1]);
+          }
+        });
+      }
+    });
+  }
+
+  resetImagesUpload(): void {
+    this.thumbnail_image = '';
+    this.preview_image = '';
+    this.images = {};
+  }
   onSelectAll(event: any): void {
     console.log(event);
     if (event.checked) {
@@ -254,6 +331,11 @@ export class UsersComponent implements OnInit {
     }
   }
 
+  async getLanguageAndCountry(): Promise<any> {
+    this.languagesList = await this.baseService.doRequest(`/api/utilities/supportedLanguages`, 'post', {}).toPromise();
+    this.countryList = await this.baseService.doRequest(`/api/utilities/getCountriesList`, 'post', {}).toPromise();
+  }
+
   getCompany(): void {
     let cq;
     cq = {query: {bool: {must: [{exists: {field: 'description'}}], must_not: [{exists: {field: 'companyRef'}}]}}};
@@ -261,7 +343,7 @@ export class UsersComponent implements OnInit {
     const skip = 0;
     const limit = 10000;
     const sort = JSON.stringify([{'name.keyword': {order: 'asc'}}]);
-    const fields = JSON.stringify(['name', 'c']);
+    const fields = JSON.stringify(['name']);
     this.baseService.doRequest(`/api/company/`, 'get', null,
       {q, skip, limit, sort, fields}).subscribe((result: any) => {
       if (result) {
@@ -319,34 +401,9 @@ export class UsersComponent implements OnInit {
   }
 
   actionCall(data: any): void {
-    if (data.action.text === 'Delete') {
-      this.user = data.row;
-      this.deleteUserConfirmationDialog();
-    } else if (data.action.text === 'Edit') {
-      this.editUser('editUser', data);
-    } else if (data.action.text === 'Update Password') {
-      this.user = data.row;
-      this.updPass = true;
-      this.userData = {password: '', opassword: '', cpassword: ''};
-    } else if (data.action.text === 'API Key') {
-      this.user = data.row;
-      this.apiData = {
-        name: data.row.email, role: {
-          id: data.row.roles.realmMappings[0].id,
-          name: data.row.roles.realmMappings[0].name,
-          composite: true,
-          clientRole: true,
-          containerId: data.row.roles.realmMappings[0].containerId
-        }
-      };
-      this.getAPI();
-    }else if(data.action.text === 'MFA'){
-      this.userid = data.row;
-      this.getMFA();
-    }
-    else if(data.action.text === 'Reset MFA'){
-      this.userid = data.row;
-      this.resetMFAConfirmationDialog();
+    if (data.action.text === 'Upload Images') {
+      this.user_id = data.row._id;
+      this.upload.open();
     }
   }
 
@@ -430,21 +487,25 @@ export class UsersComponent implements OnInit {
     this.toast.sToast('success', 'Copied');
   }
 
-  updateCurrentRole($event: any): void {
-    this.selectedRole = this.roleHash[$event].name;
+  updateCountry($event: any): void {
+    console.log($event);
+    
   }
 
   addUser(): void {
-    // setTimeout(() => { this.getRoles(); }, 5000);
-    this.companyLevelAccess = 'allCompanies';
-    this.userData = {firstName: '', lastName: '', password: '', cpassword: '', role: '', roleid: ''};
+    this.userData = {name: '', phone: '', email: '', headline: '', dob: '', livechat_enabled: false, languages:[], country: '', gstin: ''};
     this.snav.open();
+  }
+
+  backFunUpload(): void {
+    this.upload.close();
+    this.images = {};
+    this.preview_image = this.thumbnail_image = '';
   }
 
   backFun(): void {
     this.snav.close();
     this.userData = {};
-    this.selectedComp = [];
     this.getUsers();
   }
 
@@ -558,37 +619,23 @@ export class UsersComponent implements OnInit {
   saveUser(): any {
     this.loaderService.display(true);
     let data: any;
+    const country = this.countryList.filter((x: any) => x.name === this.userData.country)
     data = {
-      attributes: {},
-      email: this.userData.email, firstName: this.userData.firstName,
-      lastName: this.userData.lastName, role: this.roleHash[this.userData.roleid]
+      email: this.userData.email, name: this.userData.name,
+      phone: this.userData.phone, headline: this.userData.headline,
+      dob: this.userData.dob, livechat_enabled: this.userData.livechat_enabled,
+      languages: this.userData.languages, gstin: this.userData.gstin,
+      country: {name: country[0].name, alpha_2: country[0].alpha_2}
     };
-    if (this.companyLevelAccess === 'specificCompanies') {
-      if (this.acl.companies === 'allowed') {
-        data.attributes.includes = this.selectedComp.join(',');
-        data.attributes.excludes = '';
-      } else {
-        data.attributes.includes = '';
-        data.attributes.excludes = this.selectedComp.join(',');
-      }
-    } else {
-      data.attributes.excludes = '';
-      data.attributes.includes = '';
-    }
-    this.baseService.doRequest(`/api/kusers`, 'post', data)
+    
+    this.baseService.doRequest(`/api/entity/createCelebrityUser`, 'post', data)
       .subscribe((result: any) => {
         this.loaderService.display(false);
+        console.log(result);
         if (result[0]) {
-          this.toast.sToast('success', 'User Added Successfully!');
-          this.searchString = '';
-          this.selectedComp = [];
-          this.isSelected = false;
-          /*this.companyList.forEach((obj: any) => {
-            obj.selected = false;
-          });*/
+          this.toast.sToast('success', 'Celebrity User Added Successfully!');
           this.backFun();
           this.addUsr = false;
-          console.log(result);
         } else {
           this.toast.sToast('error', result[1]);
         }
@@ -784,6 +831,12 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  changeEvent(event: any) {
+    const date = event.value;
+    this.userData.dob  = date.getFullYear() + '-' + `${date.getMonth() + 1}`.padStart(2, '0') + '-' + `${date.getDate()}`.padStart(2, '0');
+    console.log(this.userData.dob);
+    
+  }
   refreshCall(): void {
     this.getUsers();
   }
@@ -852,7 +905,7 @@ export class UsersComponent implements OnInit {
     cq = {
       query: {
         bool: {
-          must: [{match: {exists: {field: 'email'}}}, {match: {exists: {field: 'email'}}}]
+          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}]
         }
       }
     };
@@ -860,7 +913,7 @@ export class UsersComponent implements OnInit {
     let sort: any;
     sort = [{}];
     if (this.userTableOptions.sortOptions) {
-      const orderArr = ['firstName', 'lastName', 'email'];
+      const orderArr = ['name', 'email'];
       if (orderArr.indexOf(this.userTableOptions.sortOptions.active) > -1) {
         sort[0][this.userTableOptions.sortOptions.active + '.keyword'] = {order: this.userTableOptions.sortOptions.direction};
       } else {
@@ -885,22 +938,14 @@ export class UsersComponent implements OnInit {
     const skip = this.currentPage;
     const limit = this.userTableOptions.tableOptions.pageSize;
     const s = JSON.stringify(sort);
-    const url = (this.filterQuery) ? `/api/kusers?query=search=${this.filterQuery}` : '/api/kusers';
-    this.baseService.doRequest(`${url}`, 'get', null,
-      {q, skip, limit, sort}).subscribe((result: any) => {
+    const fields = JSON.stringify(['_id', 'phone', 'email', 'name', 'languages', 'country.name', 'c', 'u']);
+    // const url = (this.filterQuery) ? `/api/kusers?query=search=${this.filterQuery}` : '/api/kusers';
+    this.baseService.doRequest(`/api/entity`, 'get', null,
+      {q, skip, s, limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if (result) {
-        result.forEach((obj: any) => {
-          try {
-            obj.roles.realmMappings.forEach((role: any) => {
-              obj.role = role.name;
-            });
-          } catch (err) {
-            console.log(JSON.stringify(obj));
-          }
-        });
-        this.userTableOptions.pageData = result;
-        this.userTableOptions.tableOptions.pageTotal = result.length;
+        this.userTableOptions.pageData = result.data;
+        this.userTableOptions.tableOptions.pageTotal = result.total;
         this.showHideLoading(false);
       } else {
         this.toast.sToast('error', result);
