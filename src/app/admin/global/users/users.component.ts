@@ -100,7 +100,8 @@ export class UsersComponent implements OnInit {
           isAddingText: false,
           addingText: '',
           img: false,
-          imgPath: ''
+          imgPath: '',
+          iscolumnSearch: true
         }, {
           header: 'Email',
           col: 'email',
@@ -143,7 +144,8 @@ export class UsersComponent implements OnInit {
           isAddingText: false,
           addingText: '',
           img: false,
-          imgPath: ''
+          imgPath: '',
+          iscolumnSearch: true
         }, {
           header: 'Languages',
           col: 'languages',
@@ -185,7 +187,8 @@ export class UsersComponent implements OnInit {
           isAddingText: false,
           addingText: '',
           img: false,
-          imgPath: ''
+          imgPath: '',
+          iscolumnSearch: true
         }],
       sortOptions: {active: 'name', direction: 'asc'},
       faClass: 'CelebrityUser',
@@ -680,20 +683,13 @@ export class UsersComponent implements OnInit {
 
   filterCall(event: any): void {
     this.filterQuery = (event && event.length > 0) ?  event : undefined;
-    /*const fields = [];
-    this.userTableOptions.columns.forEach((obj: any) => {
-      if (obj.visible && obj.columnDef !== 'status') {
-        fields.push(obj.columnDef);
-      }
-    });
-
     this.filterQuery = (event && event.length > 0) ?
       {
         multi_match: {
           query: event, type: 'phrase_prefix',
-          fields: ['firstName', 'lastName', 'email', 'role']
+          fields: ['name', 'phone', 'country.name', 'role']
         }
-      } : undefined;*/
+      } : undefined;
     this.getUsers();
   }
 
@@ -920,9 +916,9 @@ export class UsersComponent implements OnInit {
         sort[0][this.userTableOptions.sortOptions.active] = {order: this.userTableOptions.sortOptions.direction};
       }
     }
-    /*if (this.filterQuery && this.filterQuery.multi_match) {
+    if (this.filterQuery && this.filterQuery.multi_match) {
       cq.query.bool.must.push(this.filterQuery);
-    }*/
+    }
     if (this.colFilterQuery && this.colFilterQuery.length) {
       // @ts-ignore
       cq.query.bool.filter = [];

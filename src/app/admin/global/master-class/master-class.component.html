@@ -5,6 +5,7 @@
       <app-s-table aria-label="MasterClass" role="table" [sTableOptions]="masterClassTableOptions"
         (sortCallback)="masterClasssortCall($event)"
         (filterCallback)="masterClassfilterCall($event)"
+        (colFilterCallback)="masterColFilterCall($event)"
         (actionCallback)="masterClassactionCall($event)"
         (pageCallback)="masterClasspageCall($event)" (refreshCallback)="getMasterClass()"
         (addCallback)="masterClassaddTableData()"
@@ -23,10 +24,23 @@
           <mat-tab-group>
             <mat-tab label="Tamil">
               <ng-template matTabContent>
-                <app-s-crud-t 
-                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
-                  [tOption]="masterClassColOptions">
-                </app-s-crud-t>
+                <!-- <table class="table info-c-table w-100 bor-1">
+                  <thead>
+                  <tr align="center">
+                    <th class="px-2 pt-1">Episode #</th>
+                    <th class="px-2 pt-1">Episode Name</th>
+                    <th class="px-2 pt-1">Duration</th>
+                    <th class="px-2 pt-1">Description</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr *ngFor="let sw of reportCard" align="center">
+                    <td class="px-2 pt-1">{{}}</td>
+                    <td class="px-2 pt-1">{{}}</td>
+                    <td class="px-2 pt-1">{{}}</td>
+                  </tr>
+                  </tbody>
+                </table> -->
                 <ul>
                   <li>Other Information: <span>Raja</span></li>
                   <li>Masterclass Description: <span>Raja</span></li>
@@ -34,22 +48,6 @@
                   <li>Preview URL: <span>Raja</span></li>
                   <li>Name: <span>Raja</span></li>
                 </ul>
-              </ng-template>
-            </mat-tab>
-            <mat-tab label="Hindi">
-              <ng-template matTabContent>
-                <app-s-crud-t 
-                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
-                  [tOption]="masterClassColOptions">
-                </app-s-crud-t>
-              </ng-template>
-            </mat-tab>
-            <mat-tab label="English">
-              <ng-template matTabContent>
-                <app-s-crud-t 
-                  *ngIf="masterClassColOptions && masterClassColOptions.columns"
-                  [tOption]="masterClassColOptions">
-                </app-s-crud-t>
               </ng-template>
             </mat-tab>
           </mat-tab-group>
@@ -66,10 +64,10 @@
           <mat-card-title>Add Category</mat-card-title>
         </mat-card-header>
         <form #adcat="ngForm" name="credentials" autocomplete="off">
-          <mat-card-content>
+          <mat-card-content>           
             <mat-form-field class="w-70p" appearance="outline">
               <mat-label>Category Name</mat-label>
-              <input type="text" [(ngModel)]="category.name" minlength="2" appNameCheck required matInput
+              <input type="text" [(ngModel)]="category.name" minlength="2" required matInput
                      placeholder="Enter Category Name"
                      class="inp-width" name="category" id="category">
               <mat-error> Category is required.</mat-error>
@@ -99,23 +97,61 @@
         </button>
       <mat-vertical-stepper #stepper linear="'true'">
         <mat-step>
-          <form #adddMasterClass="ngForm">
+          <form #addMasterClass="ngForm">
             <ng-template matStepLabel>Add Masterclass</ng-template>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Title</mat-label>
+              <input matInput type="text" [(ngModel)]="materClassData.title" placeholder="Enter title" required name="title" id="name">
+              <mat-error> Title is required</mat-error>
+            </mat-form-field>
+            <mat-form-field class="col-md-8 w-70p" appearance="outline">
+              <mat-select class="inp-width" [formControl]="userCtrl" (selectionChange)="materClassData.celebrity_id = $event.value" (openedChange)="closeCurrentUser($event)" placeholder="Search user" #userSelect>
+                <mat-option>
+                  <ngx-mat-select-search [formControl]="userFilterCtrl" [placeholderLabel]="'search user'"
+                    [noEntriesFoundLabel]="'No matching company found'" [searching]="searching"></ngx-mat-select-search>
+                </mat-option>
+                <mat-option *ngFor="let user of filteredUsers | async" [value]="user._id">
+                  {{user.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="col-md-8 w-70p" appearance="outline">
+              <mat-label>Content Type</mat-label>
+              <mat-select [multiple]="false" required placeholder="Choose content type" name="contentLists" [(ngModel)]="materClassData.content_type">
+                <mat-option *ngFor="let content of contentTypeList" [value]="content" [id]="content"> {{content}} </mat-option>
+              </mat-select>
+              <mat-error> Content type is required</mat-error>
+            </mat-form-field>
             <mat-form-field class="col-md-8 w-70p" appearance="outline">
               <mat-label>Select Category</mat-label>
               <mat-select [multiple]="true" required placeholder="Choose category" name="roleLists" [(ngModel)]="materClassData.category">
                 <mat-option *ngFor="let item of categoryList"
-                  [value]="item.name" [id]="item.id">
+                  [value]="item._id" [id]="item._id">
                   {{item.name}}
                 </mat-option>
               </mat-select>
               <mat-error> Category is required</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline" class="col-md-8">
-              <mat-label>Meta Data</mat-label>
-              <textarea matInput type="text" col="6" placeholder="Enter meta-data" required></textarea>
+            <mat-form-field class="col-md-8 w-70p" appearance="outline">
+              <mat-label>Tags</mat-label>
+              <mat-chip-list #tagList aria-label="tag selection">
+                <mat-chip class="insecureo" *ngFor="let tag of materClassData.tags" [selectable]="selectable" [removable]="removable"
+                  (removed)="removeTag(tag)">
+                  {{tag}}
+                  <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+                </mat-chip>
+                <input type="text" trim="blur" autocomplete="OFF" name="insecure"
+                       placeholder="Enter a tag and press comma or enter to add." [matChipInputFor]="tagList"
+                       [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="addOnBlur"
+                       (matChipInputTokenEnd)="addTag($event)">
+              </mat-chip-list>
+              <!-- <mat-hint>Ex. 80, 8080, 9090</mat-hint> -->
             </mat-form-field>
-            <div class="my-2">
+            <mat-form-field  appearance="outline" class="col-md-8">
+              <mat-label>Headline</mat-label>
+              <textarea matInput type="text" col="6" name="headline" id="headline" placeholder="Enter headline" [(ngModel)]="materClassData.headline" required></textarea>
+            </mat-form-field>
+            <div class="my-2" *ngIf="false">
               <mat-label class="">Mode of Upload</mat-label>
               <mat-radio-group [(ngModel)]="materClassData.modeOfUpload" name="uploadData"
                                class="d-flex flex-row align-items-center pt-3">
@@ -138,43 +174,196 @@
             <button type="button" [disabled]="false" *ngIf="materClassData.modeOfUpload === 'file'" mat-raised-button color="primary" class="mr-2"
             (click)="saveMasterData()" id="usrSavebtn">Submit
             </button>
-            <button  *ngIf="materClassData.modeOfUpload === 'manual'" [disabled]="!adddMasterClass.form.valid" mat-raised-button (click)="stepperNext('MasterClass', 0)">Next</button>
+            <button  [disabled]="!addMasterClass.form.valid" mat-raised-button (click)="stepperNext('MasterClass', 0)">Next</button>
           </div>
         </mat-step>
         <mat-step>
           <ng-template matStepLabel>Select Language</ng-template>
-          <section class="example-section">
-            <mat-label class="">Select Language</mat-label>
-            <ul class="asssetCheck">
-              <span  *ngFor="let data of languagesList; let a = index">
-                <li class="mat-cell">
-                  <mat-checkbox name="sel{{a}}" [(ngModel)]="data.selected" value="" class="pt-2 mr-3" color="primary">
-                    {{data.language}} </mat-checkbox>
-                </li>
-              </span>
-            </ul>
-          </section>
-          <div mat-dialog-actions>
+            <form #addlangu="ngForm">
+              <ng-container>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="w-100 p-4">
+                      <p class="mb-4">Upload image</p>
+                      <input type="file" accept=".png"  required name="file" (change)="uploadFile($event, 'uploadimage')"/>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-container *ngFor="let item of description; let i = index">
+                <mat-expansion-panel class="mt-2" [expanded]="step === i" (opened)="setStep(i)" hideToggle>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title class="mt-2">select language</mat-panel-title>
+                    <div class="ml-2 mt-2">
+                      <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addLanguage()" appPreventMultiClick>
+                            <span class="d-flex flex-row align-items-center">
+                              <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                              <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                            </span>
+                      </button>
+                      <button mat-button="" *ngIf="i!==0"class="mat-warn px-1 mr-2" (click)="removeLanguage(i)" appPreventMultiClick matTooltip="Delete language">
+                        <span class="d-flex flex-row align-items-center">
+                          <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                          <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                        </span>
+                      </button>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <mat-card class="mt-2 mb-2">
+                    <mat-form-field class="col-md-8 w-70p" appearance="outline">
+                      <mat-label>Language</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose language" name="langLists{{i}}" [(ngModel)]="item.language">
+                        <mat-option *ngFor="let lang of languagesList" [value]="lang" [id]="lang"> {{lang}} </mat-option>
+                      </mat-select>
+                      <mat-error> Language is required</mat-error>
+                    </mat-form-field>
+                      
+                    <mat-checkbox name="primary{{i}}" (change)="isPrimary(i, $event)" [(ngModel)]="item.is_primary" value="" class="pt-2 mr-3 col-md-12 mb-3" color="primary">
+                    Is primary? </mat-checkbox>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Title</mat-label>
+                      <input matInput type="text" [(ngModel)]="item.title" placeholder="Enter title" required name="title{{i}}" id="name">
+                      <mat-error> Title is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Mini Announcement</mat-label>
+                      <input matInput type="text" [(ngModel)]="item.mini_announcement" placeholder="Enter Mini Announcement" required name="mini{{i}}" id="mini">
+                      <mat-error> Mini Announcement is required</mat-error>
+                    </mat-form-field>
+                    <div *ngFor="let list of item.key_takeaways; let j = index" class="row">
+                      <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                        <mat-label>Key Takeaway</mat-label>
+                          <textarea matInput type="text" cols="4" [(ngModel)]="list.name" placeholder="Enter key takeaway" required name="keyt{{i}}{{j}}" id="keyt"></textarea>
+                        <mat-error> Key Takeaway is required</mat-error>
+                      </mat-form-field>
+                      <div class="ml-2 mt-2">
+                        <button mat-button="" *ngIf="j===0" class="tprime px-1 mr-2" (click)="addTakeawayKey(j)" appPreventMultiClick>
+                          <span class="d-flex flex-row align-items-center">
+                            <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                            <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                          </span>
+                        </button>
+                        <button mat-button="" *ngIf="j!==0"class="mat-warn px-1 mr-2" (click)="removeTakeawayKey(i, j)" appPreventMultiClick matTooltip="Delete key takeaway">
+                          <span class="d-flex flex-row align-items-center">
+                            <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                            <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Description</mat-label>
+                      <textarea matInput type="text" col="6" name="description{{i}}" id="description" placeholder="Enter description" [(ngModel)]="item.description" required></textarea>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Short Description</mat-label>
+                      <textarea matInput type="text" col="6" name="short{{i}}" id="short" placeholder="Enter short description" [(ngModel)]="item.short_description" required></textarea>
+                    </mat-form-field>
+                  </mat-card>
+                </mat-expansion-panel>
+              </ng-container>
+            </form>
+          <div mat-dialog-actions class="mt-4">
             <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button (click)="stepperNext('Language', 1)">Next</button>
+            <button class="mat-raised-button" mat-button [disabled]="!addlangu.form.valid" (click)="stepperNext('Language', 1)">Next</button>
           </div>
         </mat-step>
         <mat-step>
-          <ng-template matStepLabel>Select Pricing</ng-template>
-          <section class="example-section">
-            <mat-label class="mb-4">Select Pricing</mat-label>
-            <ul class="asssetCheck">
-              <span  *ngFor="let data of pricingList; let a = index">
-                <li class="mat-cell">
-                  <mat-checkbox name="sel{{a}}" [(ngModel)]="data.selected" value="" class="pt-2 mr-3" color="primary">
-                    {{data.pricing}} </mat-checkbox>
-                </li>
-              </span>
-            </ul>
-          </section>
-          <div mat-dialog-actions>
+          <ng-template matStepLabel>Select Price</ng-template>
+            <form #addPricing="ngForm">
+              <ng-container *ngFor="let item of price_model; let i = index">
+                <mat-expansion-panel class="mt-2" [expanded]="priceStep === i" (opened)="priceSetStep(i)" hideToggle>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title class="mt-2">select Price</mat-panel-title>
+                    <div class="ml-2 mt-2">
+                      <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addPrice()" appPreventMultiClick>
+                        <span class="d-flex flex-row align-items-center">
+                          <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                          <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                        </span>
+                      </button>
+                      <button mat-button="" *ngIf="i!==0"class="mat-warn px-1 mr-2" (click)="removePrice(i)" appPreventMultiClick matTooltip="Delete language">
+                        <span class="d-flex flex-row align-items-center">
+                          <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                          <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                        </span>
+                      </button>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <mat-card class="mt-2 mb-2">
+                    <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                      <mat-label>Language</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose language" name="langLists{{i}}" [(ngModel)]="item.language">
+                        <mat-option *ngFor="let lang of languagesList" [value]="lang" [id]="lang"> {{lang}} </mat-option>
+                      </mat-select>
+                      <mat-error> Language is required</mat-error>
+                    </mat-form-field>
+                    <div *ngFor="let list of item.pricing_country; let j = index" class="row ml-2 mr-2">
+                      <mat-expansion-panel class="mt-2" [expanded]="pricingIndex === j" (opened)="setPrincingIndexStep(j)" hideToggle>
+                        <mat-expansion-panel-header>
+                          <mat-panel-title class="mt-2">select currency</mat-panel-title>
+                          <div class="ml-2 mt-2">
+                            <button mat-button="" *ngIf="j===0" class="tprime px-1 mr-2" (click)="addCurrency(j)" appPreventMultiClick>
+                              <span class="d-flex flex-row align-items-center">
+                                <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                                <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                              </span>
+                            </button>
+                            <button mat-button="" *ngIf="j!==0"class="mat-warn px-1 mr-2" (click)="removeCurrency(i, j)" appPreventMultiClick matTooltip="Delete key takeaway">
+                              <span class="d-flex flex-row align-items-center">
+                                <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                                <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                              </span>
+                            </button>
+                          </div>
+                        </mat-expansion-panel-header>
+                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
+                          <mat-label>Price</mat-label>
+                          <input matInput type="number" [(ngModel)]="item.price" placeholder="Enter price" required name="price{{i}}" id="name">
+                          <mat-error> Price is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                          <mat-label>Currency Code</mat-label>
+                          <mat-select [multiple]="false" required placeholder="Choose currency code" name="currencyLists{{i}}" [(ngModel)]="item.currency_code">
+                            <mat-option *ngFor="let currency of currencyList" [value]="currency.code" [id]="currency"> {{currency.code}} </mat-option>
+                          </mat-select>
+                          <mat-error> Currency code is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                          <mat-label>Device Type</mat-label>
+                          <mat-select [multiple]="false" required placeholder="Choose device type" name="device{{i}}" [(ngModel)]="item.device_type">
+                            <mat-option *ngFor="let device of deviceList" [value]="device" [id]="device"> {{device}} </mat-option>
+                          </mat-select>
+                          <mat-error> Currency code is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                          <mat-label>Pricing Model</mat-label>
+                          <mat-select [multiple]="false" required placeholder="Choose pricing model" name="pricingModelLists{{i}}" [(ngModel)]="item.pricing_model">
+                            <mat-option *ngFor="let model of pricingModelList" [value]="model" [id]="model"> {{model}} </mat-option>
+                          </mat-select>
+                          <mat-error> Pricing model is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
+                          <mat-label>Recurring Interval</mat-label>
+                          <input matInput type="number" [(ngModel)]="item.recurring_interval" placeholder="Enter recurring interval" required name="recurring{{i}}" id="recurring">
+                          <mat-error> Recurring interval is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                          <mat-label>Recurring Type</mat-label>
+                          <mat-select [multiple]="false" required placeholder="Choose recurring type" name="recurringTypeLists{{i}}" [(ngModel)]="item.recurring_type">
+                            <mat-option *ngFor="let type of recurringTypeList" [value]="type" [id]="type"> {{type}} </mat-option>
+                          </mat-select>
+                          <mat-error> Recurring type is required</mat-error>
+                        </mat-form-field>
+                      </mat-expansion-panel>  
+                    </div>
+                  </mat-card>
+                </mat-expansion-panel>
+              </ng-container>
+            </form>
+          <div mat-dialog-actions class="mt-4">
             <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button (click)="stepperNext('Pricing', 2)">Next</button>
+            <button class="mat-raised-button" mat-button [disabled]="!addPricing.form.valid" (click)="stepperNext('Language', 1)">Next</button>
           </div>
         </mat-step>
         <mat-step>
