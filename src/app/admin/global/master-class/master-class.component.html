@@ -105,15 +105,16 @@
               <mat-error> Title is required</mat-error>
             </mat-form-field>
             <mat-form-field class="col-md-8 w-70p" appearance="outline">
-              <mat-select class="inp-width" [formControl]="userCtrl" (selectionChange)="materClassData.celebrity_id = $event.value" (openedChange)="closeCurrentUser($event)" placeholder="Search user" #userSelect>
+              <mat-select class="inp-width" [formControl]="userCtrl" required (selectionChange)="materClassData.celebrity_id = $event.value" (openedChange)="closeCurrentUser($event)" placeholder="Search master" #userSelect>
                 <mat-option>
-                  <ngx-mat-select-search [formControl]="userFilterCtrl" [placeholderLabel]="'search user'"
+                  <ngx-mat-select-search [formControl]="userFilterCtrl" [placeholderLabel]="'Search Master'"
                     [noEntriesFoundLabel]="'No matching company found'" [searching]="searching"></ngx-mat-select-search>
                 </mat-option>
                 <mat-option *ngFor="let user of filteredUsers | async" [value]="user._id">
                   {{user.name}}
                 </mat-option>
               </mat-select>
+              <mat-error> Master is required</mat-error>
             </mat-form-field>
             <mat-form-field class="col-md-8 w-70p" appearance="outline">
               <mat-label>Content Type</mat-label>
@@ -147,10 +148,6 @@
               </mat-chip-list>
               <!-- <mat-hint>Ex. 80, 8080, 9090</mat-hint> -->
             </mat-form-field>
-            <mat-form-field  appearance="outline" class="col-md-8">
-              <mat-label>Headline</mat-label>
-              <textarea matInput type="text" col="6" name="headline" id="headline" placeholder="Enter headline" [(ngModel)]="materClassData.headline" required></textarea>
-            </mat-form-field>
             <div class="my-2" *ngIf="false">
               <mat-label class="">Mode of Upload</mat-label>
               <mat-radio-group [(ngModel)]="materClassData.modeOfUpload" name="uploadData"
@@ -178,22 +175,95 @@
           </div>
         </mat-step>
         <mat-step>
+          <ng-template matStepLabel>Default Content</ng-template>
+          <form action="" method="post" #defaultForm="ngForm">
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Default Video</mat-label>
+              <input matInput type="url" name="video" [(ngModel)]="defaultContent.video" placeholder="Enter default video url" required>
+              <mat-error> Default Video is required</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Trailer Video</mat-label>
+              <input matInput type="url" name="trailer" [(ngModel)]="defaultContent.trailer" placeholder="Enter trailer video urlL" required>
+              <mat-error> Trailer Video is required</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mr-3 col-md-8">
+              <mat-label>Preview Video</mat-label>
+              <input matInput type="url" name="preview" [(ngModel)]="defaultContent.preview_video" placeholder="Enter preview video url" required>
+              <mat-error> Preview Video is required</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="col-md-8">
+              <mat-label>Audio Track</mat-label>
+              <input matInput type="url" name="audio" [(ngModel)]="defaultContent.audio_track" placeholder="Enter audio track url" required>
+              <mat-error> Audio Track is required</mat-error>
+            </mat-form-field>
+          </form>
+          <div mat-dialog-actions>
+            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
+            <button class="mat-raised-button" mat-button [disabled]="!defaultForm.form.valid" (click)="stepperNext('DefaultContent', 2)">Next</button>
+          </div>
+        </mat-step>
+        <mat-step>
           <ng-template matStepLabel>Select Language</ng-template>
             <form #addlangu="ngForm">
               <ng-container>
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="w-100 p-4">
-                      <p class="mb-4">Upload image</p>
-                      <input type="file" accept=".png"  required name="file" (change)="uploadFile($event, 'uploadimage')"/>
+                      <p class="mb-4">Upload keytakeways image</p>
+                      <input type="file" accept=".png"  required name="file" (change)="uploadFile($event, 'key_takeaways_images')"/>
                     </div>
                   </div>
                 </div>
               </ng-container>
+              <div class="my-2">
+                <mat-label>Video</mat-label>
+                <mat-radio-group name="uploadvideo" [(ngModel)]="videoDetails.video_type" required class="d-flex flex-row align-items-center pt-3">
+                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.video_type === 'New'">
+                <mat-label>Link</mat-label>
+                <input matInput type="url" [(ngModel)]="videoDetails.video" placeholder="Enter Video URL" name="link" required>
+              </mat-form-field>
+              <div class="my-2">
+                <mat-label>Trailer Video</mat-label>
+                <mat-radio-group name="uploadData" [(ngModel)]="videoDetails.trailer_type" required class="d-flex flex-row align-items-center pt-3">
+                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.trailer_type === 'New'">
+                <mat-label>Link</mat-label>
+                <input matInput type="url" [(ngModel)]="videoDetails.trailer_video" placeholder="Enter Trailer Video URL" name="link" required>
+              </mat-form-field>
+              <div class="my-2">
+                <mat-label>Preview Video</mat-label>
+                <mat-radio-group name="uploadPreview" [(ngModel)]="videoDetails.preview_type" class="d-flex flex-row align-items-center pt-3">
+                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.preview_type === 'New'">
+                <mat-label>Link</mat-label>
+                <input matInput type="url" [(ngModel)]="videoDetails.preview_video" placeholder="Enter Preview Video Link" name="prelink" required>
+              </mat-form-field>
+              <div class="my-2">
+                <mat-label>Audio Track</mat-label>
+                <mat-radio-group name="uploadAudio" [(ngModel)]="videoDetails.audio_type" class="d-flex flex-row align-items-center pt-3">
+                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.audio_type === 'New'">
+                <mat-label>Link</mat-label>
+                <input matInput type="url" [(ngModel)]="videoDetails.audio_track" placeholder="Enter Audio Link" name="audlink" required>
+              </mat-form-field>
               <ng-container *ngFor="let item of description; let i = index">
                 <mat-expansion-panel class="mt-2" [expanded]="step === i" (opened)="setStep(i)" hideToggle>
                   <mat-expansion-panel-header>
-                    <mat-panel-title class="mt-2">select language</mat-panel-title>
+                    <mat-panel-title class="mt-2">Select Language</mat-panel-title>
                     <div class="ml-2 mt-2">
                       <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addLanguage()" appPreventMultiClick>
                             <span class="d-flex flex-row align-items-center">
@@ -218,8 +288,8 @@
                       <mat-error> Language is required</mat-error>
                     </mat-form-field>
                       
-                    <mat-checkbox name="primary{{i}}" (change)="isPrimary(i, $event)" [(ngModel)]="item.is_primary" value="" class="pt-2 mr-3 col-md-12 mb-3" color="primary">
-                    Is primary? </mat-checkbox>
+                    <mat-checkbox name="primary{{i}}" (change)="isPrimary(i, $event)" [(ngModel)]="item.is_default" value="" class="pt-2 mr-3 col-md-12 mb-3" color="primary">
+                    Is default? </mat-checkbox>
                     <mat-form-field appearance="outline" class="col-md-8">
                       <mat-label>Title</mat-label>
                       <input matInput type="text" [(ngModel)]="item.title" placeholder="Enter title" required name="title{{i}}" id="name">
@@ -252,12 +322,14 @@
                       </div>
                     </div>
                     <mat-form-field appearance="outline" class="col-md-8">
-                      <mat-label>Description</mat-label>
+                      <mat-label>Long Description</mat-label>
                       <textarea matInput type="text" col="6" name="description{{i}}" id="description" placeholder="Enter description" [(ngModel)]="item.description" required></textarea>
+                      <mat-error> Long description is required</mat-error>
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="col-md-8">
-                      <mat-label>Short Description</mat-label>
-                      <textarea matInput type="text" col="6" name="short{{i}}" id="short" placeholder="Enter short description" [(ngModel)]="item.short_description" required></textarea>
+                    <mat-form-field appearance="outline" hintLabel="Min 1000 characters" class="col-md-8">
+                      <mat-label>Secondary Description</mat-label>
+                      <textarea matInput type="text" col="6" [minLength]="1000" name="short{{i}}" id="short" placeholder="Enter Secondary description" [(ngModel)]="item.secondary_description" required></textarea>
+                      <mat-error> Secondary description is required</mat-error>
                     </mat-form-field>
                   </mat-card>
                 </mat-expansion-panel>
@@ -274,7 +346,7 @@
               <ng-container *ngFor="let item of price_model; let i = index">
                 <mat-expansion-panel class="mt-2" [expanded]="priceStep === i" (opened)="priceSetStep(i)" hideToggle>
                   <mat-expansion-panel-header>
-                    <mat-panel-title class="mt-2">select Price</mat-panel-title>
+                    <mat-panel-title class="mt-2">Select Price</mat-panel-title>
                     <div class="ml-2 mt-2">
                       <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addPrice()" appPreventMultiClick>
                         <span class="d-flex flex-row align-items-center">
@@ -301,7 +373,7 @@
                     <div *ngFor="let list of item.pricing_country; let j = index" class="row ml-2 mr-2">
                       <mat-expansion-panel class="mt-2" [expanded]="pricingIndex === j" (opened)="setPrincingIndexStep(j)" hideToggle>
                         <mat-expansion-panel-header>
-                          <mat-panel-title class="mt-2">select currency</mat-panel-title>
+                          <mat-panel-title class="mt-2">Select Currency</mat-panel-title>
                           <div class="ml-2 mt-2">
                             <button mat-button="" *ngIf="j===0" class="tprime px-1 mr-2" (click)="addCurrency(j)" appPreventMultiClick>
                               <span class="d-flex flex-row align-items-center">
@@ -319,41 +391,41 @@
                         </mat-expansion-panel-header>
                         <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
                           <mat-label>Price</mat-label>
-                          <input matInput type="number" [(ngModel)]="item.price" placeholder="Enter price" required name="price{{i}}" id="name">
+                          <input matInput type="number" [(ngModel)]="list.price" placeholder="Enter price" required name="price{{i}}" id="name">
                           <mat-error> Price is required</mat-error>
                         </mat-form-field>
                         <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
                           <mat-label>Currency Code</mat-label>
-                          <mat-select [multiple]="false" required placeholder="Choose currency code" name="currencyLists{{i}}" [(ngModel)]="item.currency_code">
-                            <mat-option *ngFor="let currency of currencyList" [value]="currency.code" [id]="currency"> {{currency.code}} </mat-option>
+                          <mat-select [multiple]="false" required placeholder="Choose currency code" name="currencyLists{{i}}" [(ngModel)]="list.currency_code">
+                            <mat-option *ngFor="let currency of currencyList" [value]="currency" [id]="currency"> {{currency}} </mat-option>
                           </mat-select>
                           <mat-error> Currency code is required</mat-error>
                         </mat-form-field>
                         <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
                           <mat-label>Device Type</mat-label>
-                          <mat-select [multiple]="false" required placeholder="Choose device type" name="device{{i}}" [(ngModel)]="item.device_type">
+                          <mat-select [multiple]="false" required placeholder="Choose device type" name="device{{i}}" [(ngModel)]="list.device_type">
                             <mat-option *ngFor="let device of deviceList" [value]="device" [id]="device"> {{device}} </mat-option>
                           </mat-select>
                           <mat-error> Currency code is required</mat-error>
                         </mat-form-field>
                         <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
-                          <mat-label>Pricing Model</mat-label>
-                          <mat-select [multiple]="false" required placeholder="Choose pricing model" name="pricingModelLists{{i}}" [(ngModel)]="item.pricing_model">
+                          <mat-label>Pricing Type</mat-label>
+                          <mat-select [multiple]="false" required placeholder="Choose pricing type" name="pricingModelLists{{i}}" [(ngModel)]="list.pricing_model">
                             <mat-option *ngFor="let model of pricingModelList" [value]="model" [id]="model"> {{model}} </mat-option>
                           </mat-select>
-                          <mat-error> Pricing model is required</mat-error>
+                          <mat-error> Pricing type is required</mat-error>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
-                          <mat-label>Recurring Interval</mat-label>
-                          <input matInput type="number" [(ngModel)]="item.recurring_interval" placeholder="Enter recurring interval" required name="recurring{{i}}" id="recurring">
-                          <mat-error> Recurring interval is required</mat-error>
-                        </mat-form-field>
-                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline" *ngIf="list.pricing_model === 'OneTime'">
                           <mat-label>Recurring Type</mat-label>
-                          <mat-select [multiple]="false" required placeholder="Choose recurring type" name="recurringTypeLists{{i}}" [(ngModel)]="item.recurring_type">
+                          <mat-select [multiple]="false" required placeholder="Choose recurring type" name="recurringTypeLists{{i}}" [(ngModel)]="list.recurring_type">
                             <mat-option *ngFor="let type of recurringTypeList" [value]="type" [id]="type"> {{type}} </mat-option>
                           </mat-select>
                           <mat-error> Recurring type is required</mat-error>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p" *ngIf="list.pricing_model === 'OneTime'">
+                          <mat-label>Recurring Interval</mat-label>
+                          <input matInput type="number" [(ngModel)]="list.recurring_interval" placeholder="Enter recurring interval" required name="recurring{{i}}" id="recurring">
+                          <mat-error> Recurring interval is required</mat-error>
                         </mat-form-field>
                       </mat-expansion-panel>  
                     </div>
@@ -363,165 +435,10 @@
             </form>
           <div mat-dialog-actions class="mt-4">
             <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button [disabled]="!addPricing.form.valid" (click)="stepperNext('Language', 1)">Next</button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>Episodes Count</ng-template>
-          <form #episodeCount="ngForm">
-            <mat-form-field class="w-30p" appearance="outline">
-              <mat-label>Episodes Count</mat-label>
-              <input matInput placeholder="Episodes Count" required />
-              <mat-error> Episodes Count is required</mat-error>
-            </mat-form-field>
-          </form>
-          <div mat-dialog-actions>
-            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" [disabled]="!episodeCount.form.valid" mat-button (click)="stepperNext('EpisodeCount', 3)">Next</button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>Default Content</ng-template>
-          <form action="" method="post" #defaultForm="ngForm">
-            <mat-form-field appearance="outline" class="mr-3 col-md-8">
-              <mat-label>Video Link</mat-label>
-              <input matInput type="url" placeholder="Enter Video URL" required>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="mr-3 col-md-8">
-              <mat-label>Trailer Video</mat-label>
-              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="mr-3 col-md-8">
-              <mat-label>Preview Video</mat-label>
-              <input matInput type="url" placeholder="Enter Preview Video URL" required>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="col-md-8">
-              <mat-label>Audio Track</mat-label>
-              <input matInput type="url" placeholder="Enter Audio Track URL" required>
-            </mat-form-field>
-          </form>
-          <div mat-dialog-actions>
-            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button [disabled]="!defaultForm.form.valid" (click)="stepperNext('DefaultContent', 4)">Next</button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>English Video</ng-template>
-          <form action="" method="post" #videoData="ngForm">
-            <mat-form-field appearance="outline" class="mr-3 col-md-8">
-              <mat-label>Name</mat-label>
-              <input matInput type="url" placeholder="Enter Video URL" required>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="mr-3 col-md-8">
-              <mat-label>Short Description</mat-label>
-              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
-            </mat-form-field>
-            <div class="tprime my-2">
-              <mat-label>Trailer Video</mat-label>
-              <mat-radio-group name="uploadData" class="d-flex flex-row align-items-center pt-3">
-                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
-                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <mat-form-field appearance="outline" class="col-md-8">
-              <mat-label>Link</mat-label>
-              <input matInput type="url" placeholder="Enter Trailer Video URL" required>
-            </mat-form-field>
-            <div class="tprime my-2">
-              <mat-label>Preview Video</mat-label>
-              <mat-radio-group name="uploadPreview" class="d-flex flex-row align-items-center pt-3">
-                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
-                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <mat-form-field appearance="outline" class="col-md-8">
-              <mat-label>Link</mat-label>
-              <input matInput type="url" placeholder="Enter Preview Video Link" required>
-            </mat-form-field>
-            <div class="tprime my-2">
-              <mat-label>Audio Track</mat-label>
-              <mat-radio-group name="uploadAudio" class="d-flex flex-row align-items-center pt-3">
-                <mat-radio-button color="primary" class="mr-3" value="file">Same as default</mat-radio-button>
-                <mat-radio-button color="primary" value="manual">Upload Link</mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <mat-form-field appearance="outline" class="col-md-8">
-              <mat-label>Link</mat-label>
-              <input matInput type="url" placeholder="Enter Audio Link" required>
-            </mat-form-field>
-          </form>
-          <div mat-dialog-actions>
-            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button [disabled]="!videoData.form.valid" (click)="stepperNext('EpisodeDetails', 5)">Next</button>
-          </div>
-        </mat-step>
-        <mat-step>
-          <ng-template matStepLabel>Pricing</ng-template>
-          <form action="" method="post" #pricingForm="ngForm">
-            <mat-form-field class="col-md-8 w-70p" appearance="outline">
-              <mat-label>Mode</mat-label>
-              <mat-select required placeholder="Select mode" name="modeLists">
-                <mat-option *ngFor="let item of mode"
-                  [value]="item" [id]="item">
-                  {{item}}
-                </mat-option>
-              </mat-select>
-              <mat-error> Mode is required</mat-error>
-            </mat-form-field>
-            <div class="col-md-12 no_padd mb-4" style="display: inline-flex">
-              <div class="col-md-10 no_padd" style="display: inline-flex">
-                <div class="col-md-4">
-                  <mat-card class="mr-2 text-center">
-                    <mat-card-subtitle>Website</mat-card-subtitle>
-                    <mat-card-content>
-                      <mat-form-field appearance="outline">
-                        <mat-label>INR</mat-label>
-                        <input matInput placeholder="Enter Amount" />
-                      </mat-form-field>
-                    </mat-card-content>
-                  </mat-card>
-                </div>
-                <div class="col-md-4">
-                  <mat-card class="mr-2 text-center">
-                    <mat-card-subtitle>Andriod</mat-card-subtitle>
-                    <mat-card-content>
-                      <mat-form-field appearance="outline">
-                        <mat-label>INR</mat-label>
-                        <input matInput placeholder="Enter Amount" />
-                      </mat-form-field>
-                    </mat-card-content>
-                  </mat-card>
-                </div>
-                <div class="col-md-4">
-                  <mat-card class="text-center">
-                    <mat-card-subtitle>IOS</mat-card-subtitle>
-                    <mat-card-content>
-                      <mat-form-field appearance="outline">
-                        <mat-label>INR</mat-label>
-                        <input matInput placeholder="Enter Amount" />
-                      </mat-form-field>
-                    </mat-card-content>
-                  </mat-card>
-                </div>
-              </div>
-              <div class="col-md-1">
-                <mat-card class="col-md-12 text-center add_more">
-                  <mat-card-content>
-                    <mat-icon class="mat_icon">add</mat-icon>
-                  </mat-card-content>
-                </mat-card>
-              </div>
-            </div>
-          </form>
-          <div mat-dialog-actions>
-            <button class="mat-raised-button mr-3" color="primary" mat-button matStepperPrevious>Back</button>
-            <button class="mat-raised-button" mat-button [disabled]="!pricingForm.form.valid" (click)="stepperNext('PricingDetails', 0)">Next</button>
+            <button class="mat-raised-button" mat-button [disabled]="!addPricing.form.valid" (click)="stepperNext('Pricing', 'end')">Next</button>
           </div>
         </mat-step>
       </mat-vertical-stepper>
-    </mat-card>
-    <mat-card>
-
     </mat-card>
   </mat-sidenav-container>
 </div>

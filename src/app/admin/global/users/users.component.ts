@@ -195,7 +195,7 @@ export class UsersComponent implements OnInit {
       _pageData: [],
       tableOptions: {
         id: 'users',
-        title: 'Celebrity User',
+        title: 'Celebrities',
         isServerSide: true, 
         // add: (this.aS.hasPermission('kusers', 'create')),
         selectText: 'user(s)',
@@ -335,7 +335,8 @@ export class UsersComponent implements OnInit {
   }
 
   async getLanguageAndCountry(): Promise<any> {
-    this.languagesList = await this.baseService.doRequest(`/api/utilities/supportedLanguages`, 'post', {}).toPromise();
+    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
+    this.languagesList = defaultData.language;
     this.countryList = await this.baseService.doRequest(`/api/utilities/getCountriesList`, 'post', {}).toPromise();
   }
 
@@ -940,6 +941,9 @@ export class UsersComponent implements OnInit {
       {q, skip, s, limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if (result) {
+        result.data.map((item: any) => {
+          item.country = (item.country) ? item.country : { name: ''}
+        })
         this.userTableOptions.pageData = result.data;
         this.userTableOptions.tableOptions.pageTotal = result.total;
         this.showHideLoading(false);

@@ -155,6 +155,7 @@ kendo-pdf-export {
 
 .mat-menu-panel.col-filters {
   width: 400px;
+  min-width: 350% !important;
 }
 
 ::ng-deep.material-icons.color_icon {

@@ -28,6 +28,7 @@ import {FormControl} from '@angular/forms';
 import {MyToastrService} from '../../_services/toastr.service';
 import {MatTableDataSource} from '@angular/material/table';
 
+
 @Component({
   selector: 'app-s-table',
   templateUrl: './table.component.html',
@@ -322,7 +323,12 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
   }
   removeFilter(filter: any): void {
     this.colFilters.forEach((obj: { key: string | number; }, index: any) => {
-      if (filter.key === obj.key) { this.colfilter[obj.key] = ''; this.colFilters.splice(index, 1); }
+      if (filter.key === obj.key) { 
+        this.colfilter[obj.key] = '';
+        if(filter.key === 'c' || filter.key === 'u') this.colFilters = this.colFilters.filter((obj: any) => obj.key !== filter.key);
+          else this.colFilters.splice(index, 1);
+        this.colFilters.splice(index, 1); 
+      }
     });
     this.colFilterCallback.emit({value: '', col: filter.key});
   }
@@ -898,7 +904,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
       this.dataSource.filter = value.trim().toLocaleLowerCase();
     }
   }
-  doColumFilter = (value: string, col: string): any => {
+  
+  doColumFilter = (value: any, col: string): any => {
     if (this.tableOptions.isServerSide) {
       // @ts-ignore
       if (this.colFilters.filter(x => x.key === col).length > 0) {
@@ -913,7 +920,14 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
       } else {
         if (value === '') { return false; }
         const colName = this._sTableOptions.columns.filter((x: any) => x.columnDef === col)[0].header;
-        this.colFilters.push({key: col, name: colName, value});
+        if(typeof value === "object" ){
+          const start = new Date(value.start);
+          const end = new Date(value.end);
+          this.colFilters.push({key: col, name: colName, value: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0" + start.getDate()).slice(-2)});
+          this.colFilters.push({key: col, name: colName, value: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0" + end.getDate()).slice(-2)});
+        }else{
+          this.colFilters.push({key: col, name: colName, value});
+        }
       }
       this.colFilterCallback.emit({value, col});
     } else {

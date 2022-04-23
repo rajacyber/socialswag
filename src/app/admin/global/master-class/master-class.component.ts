@@ -18,7 +18,7 @@ import { MatSelect } from '@angular/material/select';
 import { BehaviorSubject, interval, ReplaySubject, Subject } from 'rxjs';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatChipInputEvent} from '@angular/material/chips';
-
+import {HttpClient} from '@angular/common/http';
 @Component({
   selector: 'app-master-class',
   templateUrl: './master-class.component.html',
@@ -51,14 +51,15 @@ export class MasterClassComponent implements OnInit {
   materClassData: any = {};
   language: any = [];
   pricing: any = [];
-  episodeCount: any = {};
-  defaultContent: any = {};
-  episodeData: any = [];
   allUser: any = [];
   step = 0;
   priceStep = 0;
   pricingIndex = 0;
-  uploadimage: any;
+  uploadimage: any = {
+    key_takeaways_images: ''
+  };
+  key_takeaways_images: '';
+  Objectkeys = Object.keys;
   languagesList: any = [];
   contentTypeList: any = [];
   pricingModelList: any = [];
@@ -95,6 +96,16 @@ export class MasterClassComponent implements OnInit {
   removable = true;
   selectable = true;
   currentMasterClassUser: any;
+  videoDetails: any = {
+    video_type: '',
+    video: '',
+    trailer_type: '',
+    trailer_video: '',
+    preview_type: '',
+    preview_video: '',
+    audio_type: '',
+    audio_track: ''
+  };
   description: any = [
     {
       language: '',
@@ -103,12 +114,18 @@ export class MasterClassComponent implements OnInit {
       key_takeaways: [{name: ''}],
       mini_announcement: '',
       short_description: '',
-      is_primary: false
+      is_default: false
     }
   ];
+  defaultContent: any = {
+    video: '',
+    trailer: '',
+    preview_video: '',
+    audio_track: ''
+  }
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
-  public loaderService: LoaderService, private aS: AuthenticationService,
+  public loaderService: LoaderService, private aS: AuthenticationService, public httpClient: HttpClient,
   public modalService: ModalService, public toast: MyToastrService, public contentService: ContentDataService,
   private readonly router: Router, public confirmDialog: ConfirmDialogService,
   public cs: CommonService, public masterService: MasterService) { 
@@ -138,11 +155,12 @@ export class MasterClassComponent implements OnInit {
           img: false,
           imgPath: '',
           isSort: true,
-          iscolumnSearch: true
+          iscolumnSearch: true,
+          width: '150px'
         }, {
           header: 'Created on',
           columnDef: 'c',
-          filter: 'utcToLocale',
+          filter: 'DD-MMM-YYYY',
           cell: '(element: any) => `${element.c}`',
           order: 1,
           visible: true,
@@ -160,11 +178,14 @@ export class MasterClassComponent implements OnInit {
           img: false,
           imgPath: '',
           isSort: true,
-          iscolumnSearch: false
+          iscolumnSearch: true,
+          israngeSearch: true,
+          selectRange: {start: '', end: ''},
+          width: '150px'
         }, {
           header: 'Updated on',
           columnDef: 'u',
-          filter: 'utcToLocale',
+          filter: 'DD-MMM-YYYY',
           cell: '(element: any) => `${element.u}`',
           order: 2,
           visible: true,
@@ -182,7 +203,9 @@ export class MasterClassComponent implements OnInit {
           img: false,
           imgPath: '',
           isSort: true,
-          iscolumnSearch: false
+          iscolumnSearch: true,
+          israngeSearch: true,
+          selectRange: {start: '', end: ''},
         }, {
           header: 'Episode Count',
           columnDef: 'episode_details.episodes_total',
@@ -226,7 +249,7 @@ export class MasterClassComponent implements OnInit {
           addingText: '',
           img: false,
           imgPath: '',
-          isSort: true,
+          isSort: false,
           iscolumnSearch: false,
         },  {
           header: 'Status',
@@ -251,6 +274,10 @@ export class MasterClassComponent implements OnInit {
           imgPath: '',
           isSort: true,
           iscolumnSearch: true,
+          selectFilter: true,
+          selectFilterArr: [{name: 'Published', id: 'published', value: 'Published'},
+            {name: 'Coming Soon', id: 'comingsoon', value: 'ComingSoon'}
+          ]
         }, {
           header: 'Languages',
           columnDef: 'languages',
@@ -260,7 +287,6 @@ export class MasterClassComponent implements OnInit {
           visible: true,
           listView: true,
           iscolumnSearch: false,
-          selectFilterArr: []
         }
       ],
       sortOptions: {active: 'u', direction: 'desc'},
@@ -330,6 +356,9 @@ export class MasterClassComponent implements OnInit {
   ngOnDestroy() {
     this._onDestroy.next();
     this._onDestroy.complete();
+  }
+  saveMasterData():void {
+
   }
 
   addTag(event: MatChipInputEvent): void {
@@ -412,7 +441,15 @@ export class MasterClassComponent implements OnInit {
         key_takeaways: [{name: ''}],
         mini_announcement: '',
         short_description: '',
-        is_primary: false
+        is_default: false,
+        video_type: '',
+        video: '',
+        trailer_type: '',
+        trailer_video: '',
+        preview_type: '',
+        preview_video: '',
+        audio_type: '',
+        audio_track: '',
       }
     );
     this.nextStep();
@@ -443,7 +480,7 @@ export class MasterClassComponent implements OnInit {
   }
 
   isPrimary(index: any, event:any): void {
-    (event.checked) ? this.description.map((x: any, i: any) => x.is_primary = (i === index) ? true : false) : null;
+    (event.checked) ? this.description.map((x: any, i: any) => x.is_default = (i === index) ? true : false) : null;
   }
 
   saveCategory(): void {
@@ -464,31 +501,21 @@ export class MasterClassComponent implements OnInit {
       this.loaderService.display(false);
       if(result){
         (!this.currentMasterClassUser) ? this.currentMasterClassUser = localStorage.currentMasterClassUser = result._id : null;
-        this.stepper.linear = false;
-        this.stepper.selectedIndex = index;
-        setTimeout(() => {
-          this.stepper.linear = true;
-        });
+        if(index === 'end'){
+          this.toast.sToast('success', 'Masterclass added successfully!.');
+          this.showMasterTable = true;
+          this.getMasterClass();
+        }else {
+          this.stepper.linear = false;
+          this.stepper.selectedIndex = index;
+          setTimeout(() => {
+            this.stepper.linear = true;
+          });
+        }
       }
     });
   }
 
-  checkEpisodeData(): void {
-    const lan = ['Tamil', 'English'];
-    const count = 10;
-    let index = 0;
-    const dummy: any = {Tamil:[], English: []};
-    if(index > lan.length){
-      if(dummy[lan[index]].length !== count){
-        dummy[lan[index]].append({name:1})
-      }else{
-        index = 1
-      }
-    }else{
-      console.log(true);
-      
-    }
-  }
 
   setStep(index: number): void {
     this.step = index;
@@ -521,27 +548,46 @@ export class MasterClassComponent implements OnInit {
         this.materClassData.description = []
         await this.stepperAction('/api/contentdata/createMasterClass', this.materClassData, 1, '');
         break;
+      case 'DefaultContent':
+        let defaultData: any = {};
+        defaultData.default_content = this.defaultContent;
+        defaultData.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
+        await this.stepperAction('/api/contentdata/defaultContent', defaultData, 2, '');
+        break;
       case 'Language':
-        const data: any = {};
         this.description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
-        data.description = this.description;
-        data.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
-        await this.stepperAction('/api/contentdata/updateContentDescription', data, 2, '');
+        const videoDetails = Object.assign({}, this.videoDetails);
+        videoDetails.video = (this.videoDetails.video_type === 'New') ? videoDetails.video : this.defaultContent.video;
+        videoDetails.preview_video = (this.videoDetails.preview_type === 'New') ? videoDetails.preview_video : this.defaultContent.preview_video;
+        videoDetails.trailer_video = (this.videoDetails.trailer_type === 'New') ? videoDetails.trailer_video : this.defaultContent.trailer_video;
+        videoDetails.audio_track = (this.videoDetails.audio_type === 'New') ? videoDetails.audio_track : this.defaultContent.audio_track;
+        this.uploadimage.data = JSON.stringify(this.description);
+        this.uploadimage.video_details = JSON.stringify(videoDetails);
+        this.uploadimage.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
+        const formData = new FormData();
+        this.Objectkeys(this.uploadimage).forEach(obj => {
+          formData.append(obj, this.uploadimage[obj]);
+        });
+        this.httpClient.post<any>('/api/contentdata/updateImage',
+        formData).subscribe((result: any) => {
+          if (result) {
+            this.stepper.linear = false;
+            this.stepper.selectedIndex = 3;
+            setTimeout(() => {
+              this.stepper.linear = true;
+            });
+          } else {
+            this.toast.sToast('error', result.msg);
+          }
+        });
         break;
       case 'Pricing':
-        await this.stepperAction('', this.pricing, 3, '');
-        break;
-      case 'EpisodeCount':
-        await this.stepperAction('', this.episodeCount, 4, '');
-        break;
-      case 'DefualtContent':
-        await this.stepperAction('', this.materClassData, 5, '');
-        break;
-      case 'EpisodeDetails':
-        await this.stepperAction('', this.episodeData, 5, '');
+        const data:any = {};
+        data.price_model = this.price_model;
+        data.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
+        await this.stepperAction('/api/contentdata/updateContentPricing', data, 'end', '');
         break;
       default:
-        await this.stepperAction('', this.materClassData, 0, '');
         break;
     }
   }
@@ -567,12 +613,6 @@ export class MasterClassComponent implements OnInit {
       }
     };
     
-    if (this.masterClassTableOptions.sortOptions) {
-      let sorts;
-      sorts = [{}];
-      // @ts-ignore
-      sorts[0][this.masterClassTableOptions.sortOptions.active] = {order: this.masterClassTableOptions.sortOptions.direction};
-    }
     if (this.filterQuery && this.filterQuery.multi_match) {
       params.query.bool.must.push(this.filterQuery);
     }
@@ -580,18 +620,31 @@ export class MasterClassComponent implements OnInit {
       // @ts-ignore
       params.query.bool.filter = [];
       this.colFilterQuery.forEach((obj: any) => {
-        if (obj.bool.should[0].match) {
+        if (obj.bool.should && obj.bool.should[0].match) {
           params.query.bool.must.push(obj);
         } else {
           params.query.bool.filter.push(obj);
         }
       });
     }
+    let sorts: any = [{}];
+      if (this.masterClassTableOptions.sortOptions && this.masterClassTableOptions.sortOptions.direction
+        && this.masterClassTableOptions.sortOptions.direction !== '') {
+      const orderArr = ['', 'c', 'u', '_id'];
+      if (orderArr.indexOf(this.masterClassTableOptions.sortOptions.active) === -1) {
+        // @ts-ignore
+        sorts[0][this.masterClassTableOptions.sortOptions.active + '.keyword'] = {order: this.masterClassTableOptions.sortOptions.direction};
+      } else {
+        // @ts-ignore
+        sorts[0][this.masterClassTableOptions.sortOptions.active] = {order: this.masterClassTableOptions.sortOptions.direction};
+      }
+    }
     const q = JSON.stringify(params);
     const skip = this.classcurrentPage;
+    const sort = JSON.stringify(sorts);
     const limit = this.masterClassTableOptions.tableOptions.pageSize;
     const fields = JSON.stringify(['c', 'u', '_id', 'title', 'episode_details.episodes_total', 'category_ref', 'languages',]);
-    this.contentService.getAllApiContentdataGet({q, skip, limit}).subscribe((result: any) => {
+    this.contentService.getAllApiContentdataGet({q, skip, limit, sort}).subscribe((result: any) => {
       this.masterClassTableOptions.pageData = [];
       if (result.data.length) {
         result.data.map((list: any) => {
@@ -616,6 +669,7 @@ export class MasterClassComponent implements OnInit {
   }
 
   masterColFilterCall(event: any): void {
+    console.log(event);
     this.colFilterQuery = [];
     if (!this.colFilterCols.filter((x: any) => x.col === event.col).length) {
       if (event.value !== '') {
@@ -624,17 +678,33 @@ export class MasterClassComponent implements OnInit {
     } else {
       this.colFilterCols.forEach((obj: any, index: number) => {
         if (obj.col === event.col && event.value === '') {
-          this.colFilterCols.splice(index, 1);
+          if(event.col === 'c' || event.col === 'u') this.colFilterCols.filter((x: any) => x.col !== event.col);
+          else this.colFilterCols.splice(index, 1);
         } else if (obj.col === event.col) {
           obj.value = event.value;
         }
       });
     }
+
+    
     this.colFilterCols.forEach((obj: any) => {
-    const tmpObj = {bool: {should: [{query_string: {fields: [obj.col], query: `*${obj.value}*`}}]}};
-    this.colFilterQuery.push(tmpObj);
-    this.getMasterClass();
+      let tmpObj: any = {bool:{}};
+      if(obj.col !== 'c' && obj.col !== 'u'){
+        tmpObj = {bool: {should: [{query_string: {fields: [obj.col], query: `*${obj.value}*`}}]}};
+      }
+      if(typeof event.value === "object") {
+        const filter: any = [{range: {}},{range: {}}];
+        const arun = event.col;
+        const start = new Date(event.value.start);
+        const end = new Date(event.value.end);
+        filter[0].range[arun] = { gte: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0" + start.getDate()).slice(-2)}
+        filter[1].range[arun] = { lte: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0" + end.getDate()).slice(-2)}
+        tmpObj.bool.filter = filter;
+      }
+      this.colFilterQuery.push(tmpObj);
+      console.log(this.colFilterQuery);
     });
+    this.getMasterClass();
   }
 
   masterClassfilterCall(idata: any): void {
@@ -672,7 +742,7 @@ export class MasterClassComponent implements OnInit {
   }
   uploadFile(event: any, key: string): void {
     if (event.target.files.length > 0) {
-      this.materClassData[key] = event.target.files[0];
+      this.uploadimage[key] = event.target.files[0];
       const reader = new FileReader();
       reader.readAsDataURL(event.target.files[0]);
       reader.onload = (ev) => {
@@ -689,10 +759,6 @@ export class MasterClassComponent implements OnInit {
       this.loaderService.display(false);
       if(result.data.length) this.categoryList = result.data;
     });
-  }
-
-  saveMasterData(): void {
-    console.log(this.materClassData);
   }
 
   getCelebrityUserList(search?: any): void {
@@ -728,8 +794,13 @@ export class MasterClassComponent implements OnInit {
   }
 
   async getLanguageAndCountry(): Promise<any> {
-    this.languagesList = await this.baseService.doRequest(`/api/utilities/supportedLanguages`, 'post', {}).toPromise();
-    this.contentTypeList = await this.baseService.doRequest(`/api/utilities/supportedDataTypes`, 'post', {}).toPromise();
+    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
+    this.languagesList = defaultData.language;
+    this.deviceList = defaultData.device_type;
+    this.pricingModelList = defaultData.pricing_type;
+    this.recurringTypeList = defaultData.recurring_type;
+    this.currencyList = defaultData.currency_code
+    this.contentTypeList = defaultData.content_type
   }
 
   masterClassaddTableData(): void {

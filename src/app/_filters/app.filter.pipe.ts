@@ -193,7 +193,11 @@ export class FormatCellPipe implements PipeTransform {
       return new EpochToDateFilterPipe().transform(value);
     } else if (format === 'utcToLocale') {
       return new UtcToLocale().transform(value);
-    } else if (format === 'cveToDate') {
+    } else if (format === 'DD-MMM-YYYY') {
+      return new DDMMMYYYY().transform(value);
+    }else if (format === 'dateFormat') {
+      return new DateFormat().transform(value);
+    }else if (format === 'cveToDate') {
       return new CveToDateFilterPipe().transform(value);
     } else if (format === 'dateAgo') {
       return new DateAgoPipe().transform(value);
@@ -764,5 +768,23 @@ export class DateAndTimeFormat implements PipeTransform {
     }
     return date + ' ' + time;
 
+  }
+}
+
+@Pipe({
+  name: 'DD-MMM-YYYY'
+})
+export class DDMMMYYYY implements PipeTransform {
+  transform(date: any, args?: any): any {
+    function join(t: any, a: any, s: any) {
+      function format(m: any) {
+         let f = new Intl.DateTimeFormat('en', m);
+         return f.format(t);
+      }
+      return a.map(format).join(s);
+   }
+   let a = [{day: 'numeric'}, {month: 'short'}, {year: 'numeric'}];
+   let s = join(new Date(date), a, '-');
+   return s;
   }
 }

@@ -52,7 +52,7 @@ export class SettingsComponent implements OnInit {
       {name: 'Live Learning', icon: 'TestPlan', id: 'live_learning', isVisible: true },
       {name: 'Socialswag Live', icon: 'Admin', id: 'social_live', isVisible: true },
       {name: 'Channels', icon: 'Devices3', id: 'channels', isVisible: true },
-      {name: 'Celebrity Users', icon: 'Group', id: 'users', isVisible: true },
+      {name: 'Celebrities', icon: 'Group', id: 'users', isVisible: true },
       {name: 'Metadata', icon: 'GroupedList', id: 'metadata', isVisible: true },
     ];
   }
