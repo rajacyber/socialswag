@@ -19,6 +19,7 @@ import { BehaviorSubject, interval, ReplaySubject, Subject } from 'rxjs';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatChipInputEvent} from '@angular/material/chips';
 import {HttpClient} from '@angular/common/http';
+import { CompanySharedService } from 'src/app/_services/company-shared.service';
 @Component({
   selector: 'app-master-class',
   templateUrl: './master-class.component.html',
@@ -129,7 +130,7 @@ export class MasterClassComponent implements OnInit {
   public loaderService: LoaderService, private aS: AuthenticationService, public httpClient: HttpClient,
   public modalService: ModalService, public toast: MyToastrService, public contentService: ContentDataService,
   private readonly router: Router, public confirmDialog: ConfirmDialogService,
-  public cs: CommonService, public masterService: MasterService) { 
+  public cs: CompanySharedService, public masterService: MasterService) { 
     this.subscribedKeys.addCategory = masterService.addCategory.subscribe((value: any) => {
       this.addMasterClassCategory();     
     });
@@ -159,11 +160,33 @@ export class MasterClassComponent implements OnInit {
           iscolumnSearch: true,
           width: '100px'
         }, {
+          header: 'Master Name',
+          columnDef: 'entity_ref.name',
+          filter: '',
+          cell: '(element: any) => `${entity_ref.name}`',
+          order: 1,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          isSort: true,
+          iscolumnSearch: true,
+        }, {
           header: 'Created on',
           columnDef: 'c',
           filter: 'DD-MMM-YYYY',
           cell: '(element: any) => `${element.c}`',
-          order: 1,
+          order: 2,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -188,7 +211,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'u',
           filter: 'DD-MMM-YYYY',
           cell: '(element: any) => `${element.u}`',
-          order: 2,
+          order: 3,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -213,7 +236,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'released_on',
           filter: 'DD-MMM-YYYY',
           cell: '(element: any) => `${element.released_on}`',
-          order: 3,
+          order: 4,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -238,7 +261,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'episode_details.episodes_total',
           filter: '',
           cell: '(element: any) => `${element.episode_details.episodes_total}`',
-          order: 4,
+          order: 5,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -261,7 +284,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'category',
           filter: '',
           cell: '(element: any) => `${element.category}`',
-          order: 5,
+          order: 6,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -277,14 +300,14 @@ export class MasterClassComponent implements OnInit {
           img: false,
           imgPath: '',
           isSort: true,
-          iscolumnSearch: false,
+          iscolumnSearch: true,
         },  {
           header: 'Status',
           id: 'status',
           columnDef: 'status',
           filter: '',
           cell: '(element: any) => `${element.status}`',
-          order: 6,
+          order: 7,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -309,11 +332,11 @@ export class MasterClassComponent implements OnInit {
           header: 'Languages',
           columnDef: 'languages',
           cell: '(element: any) => `${element.languages}`',
-          order: 7,
+          order: 8,
           filter: false,
           visible: true,
           listView: true,
-          iscolumnSearch: false,
+          iscolumnSearch: true,
           isSort: true,
           width: '300px'
         }
@@ -731,13 +754,12 @@ export class MasterClassComponent implements OnInit {
         tmpObj.bool.filter = filter;
       }
       this.colFilterQuery.push(tmpObj);
-      console.log(this.colFilterQuery);
     });
     this.getMasterClass();
   }
 
   masterClassfilterCall(idata: any): void {
-    const fields = ['title', 'status', 'languages', 'category_ref.name'];
+    const fields = ['title', 'status', 'languages', 'category_ref.name','entity_ref.name'];
     this.filterQuery = (idata && idata.length > 0) ? {
       multi_match: {
         query: idata,
@@ -749,11 +771,14 @@ export class MasterClassComponent implements OnInit {
   }
 
   masterClassactionCall(idata: any): void {
-    console.log(idata);
     if (idata.action.text === 'Details') {
-      this.selectedId = idata.row._id;
-      this.snav.open();
-      this.getMasterClassData(idata.row);
+      if(!idata.row.languages){
+        this.toast.sToast("error", 'Language not found!');
+      } else {
+        this.selectedId = idata.row._id;
+        this.masterService.contentId(idata.row._id);
+        this.snav.open();
+      }
     }
     if (idata.action.text === 'Delete') {
       const dataRow = idata.row;
@@ -852,8 +877,4 @@ export class MasterClassComponent implements OnInit {
     this.getMasterClass();
   }
 
-  getMasterClassData(data: any): void {
-    
-
-  }
 }

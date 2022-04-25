@@ -7,6 +7,7 @@ import { ContentDataService } from '../api/services';
 
 export class MasterService {
   addCategory = new EventEmitter();
+  contentEVE = new EventEmitter();
   constructor(
     public contentService: ContentDataService
     
@@ -15,5 +16,8 @@ export class MasterService {
 
   addCategoryData(): void {
     this.addCategory.next({});
+  }
+  contentId(value: any): void {
+    this.contentEVE.next(value);
   }
 }

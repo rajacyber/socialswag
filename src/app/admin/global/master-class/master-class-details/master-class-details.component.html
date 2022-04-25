@@ -1,4 +1,4 @@
-<mat-tab-group *ngIf="languages.length">
+<mat-tab-group (selectedTabChange)="getDescription($event)" *ngIf="languages.length">
   <ng-container *ngFor="let item of languages">
     <mat-tab label="{{item}}">
       <div class="remedia-container">
@@ -40,13 +40,33 @@
                     <i class="fa fa-check-circle text-success fa-lg mr-1"></i>  All good, no defails found.
                   </div>
                 </div>
-                <ul>
-                  <li>Other Information: <span>Raja</span></li>
-                  <li>Masterclass Description: <span>Raja</span></li>
-                  <li>Preview Thumbnail: <span>Raja</span></li>
-                  <li>Preview URL: <span>Raja</span></li>
-                  <li>Name: <span>Raja</span></li>
-                </ul>
+                <div>
+                  <hr>
+                  <h4><b>Name</b></h4>
+                  <span>{{description.title}}</span>
+                  <hr>
+                  <h4><b>Description</b></h4>
+                  <span class="showless" [class.show]="showdes">
+                    {{description.description}}
+                  </span>
+                  <hr>
+                  <h4><b>Secondary Description</b></h4>
+                  <span class="showless" [class.show]="showsec">
+                    {{description.secondary_description}}
+                  </span>
+                  <hr>
+                  <div class="row row-fix">
+                    <div class="col-lg-6">
+                      <h4><b>Preview Thumbnail</b></h4>
+                      <img *ngIf="description.preview_image_thumbnail" width="208" heigh="100" [src]="description.preview_image_thumbnail" alt="">
+                    </div>
+                    <div class="col-lg-6">
+                      <h4><b>Preview Image</b></h4>
+                      <img *ngIf="description.preview_image" width="208" heigh="100" [src]="description.preview_image" alt="">
+                    </div>
+                  </div>
+                  <hr>
+                </div>
               </mat-card-content>
             </mat-card>
           </mat-sidenav-content>

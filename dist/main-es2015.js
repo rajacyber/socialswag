@@ -13568,9 +13568,13 @@ class MasterService {
     constructor(contentService) {
         this.contentService = contentService;
         this.addCategory = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
+        this.contentEVE = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
     }
     addCategoryData() {
         this.addCategory.next({});
+    }
+    contentId(value) {
+        this.contentEVE.next(value);
     }
 }
 MasterService.ɵfac = function MasterService_Factory(t) { return new (t || MasterService)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_api_services__WEBPACK_IMPORTED_MODULE_1__["ContentDataService"])); };

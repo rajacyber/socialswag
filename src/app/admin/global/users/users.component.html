@@ -56,7 +56,7 @@
             <mat-form-field class="w-70p" appearance="outline">
                 <mat-label>Languages</mat-label>
                 <mat-select [multiple]="true" required 
-                  placeholder="Choose role" name="languageList"
+                  placeholder="Choose language" name="languageList"
                 [(ngModel)]="userData.languages">
                   <mat-option *ngFor="let language of languagesList"
                     [value]="language" [id]="language">
