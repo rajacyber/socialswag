@@ -52,6 +52,7 @@ export class MasterClassComponent implements OnInit {
   language: any = [];
   pricing: any = [];
   allUser: any = [];
+  selectedId: any = '';
   step = 0;
   priceStep = 0;
   pricingIndex = 0;
@@ -156,7 +157,7 @@ export class MasterClassComponent implements OnInit {
           imgPath: '',
           isSort: true,
           iscolumnSearch: true,
-          width: '150px'
+          width: '100px'
         }, {
           header: 'Created on',
           columnDef: 'c',
@@ -206,12 +207,38 @@ export class MasterClassComponent implements OnInit {
           iscolumnSearch: true,
           israngeSearch: true,
           selectRange: {start: '', end: ''},
+          width: '150px'
+        }, {
+          header: 'Released on',
+          columnDef: 'released_on',
+          filter: 'DD-MMM-YYYY',
+          cell: '(element: any) => `${element.released_on}`',
+          order: 3,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          isSort: true,
+          iscolumnSearch: true,
+          israngeSearch: true,
+          selectRange: {start: '', end: ''},
+          width: '150px'
         }, {
           header: 'Episode Count',
           columnDef: 'episode_details.episodes_total',
           filter: '',
           cell: '(element: any) => `${element.episode_details.episodes_total}`',
-          order: 3,
+          order: 4,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -234,7 +261,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'category',
           filter: '',
           cell: '(element: any) => `${element.category}`',
-          order: 4,
+          order: 5,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -249,7 +276,7 @@ export class MasterClassComponent implements OnInit {
           addingText: '',
           img: false,
           imgPath: '',
-          isSort: false,
+          isSort: true,
           iscolumnSearch: false,
         },  {
           header: 'Status',
@@ -257,7 +284,7 @@ export class MasterClassComponent implements OnInit {
           columnDef: 'status',
           filter: '',
           cell: '(element: any) => `${element.status}`',
-          order: 5,
+          order: 6,
           visible: true,
           isToolTip: false,
           isToolTipCol: '',
@@ -282,11 +309,13 @@ export class MasterClassComponent implements OnInit {
           header: 'Languages',
           columnDef: 'languages',
           cell: '(element: any) => `${element.languages}`',
-          order: 6,
+          order: 7,
           filter: false,
           visible: true,
           listView: true,
           iscolumnSearch: false,
+          isSort: true,
+          width: '300px'
         }
       ],
       sortOptions: {active: 'u', direction: 'desc'},
@@ -304,7 +333,7 @@ export class MasterClassComponent implements OnInit {
         showAction: true,
         actionMenuItems: [
           {text: 'Details', icon: 'info', callback: 'detailFn', isGlobal: false},
-          {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false}
+          // {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false}
         ],
         pagination: true,
         pageOptions: [5, 10, 25, 50, 100],
@@ -643,7 +672,7 @@ export class MasterClassComponent implements OnInit {
     const skip = this.classcurrentPage;
     const sort = JSON.stringify(sorts);
     const limit = this.masterClassTableOptions.tableOptions.pageSize;
-    const fields = JSON.stringify(['c', 'u', '_id', 'title', 'episode_details.episodes_total', 'category_ref', 'languages',]);
+    const fields = JSON.stringify(['c', 'u', '_id', 'title', 'episode_details.episodes_total', 'category_ref.name', 'languages']);
     this.contentService.getAllApiContentdataGet({q, skip, limit, sort}).subscribe((result: any) => {
       this.masterClassTableOptions.pageData = [];
       if (result.data.length) {
@@ -708,7 +737,7 @@ export class MasterClassComponent implements OnInit {
   }
 
   masterClassfilterCall(idata: any): void {
-    const fields = ['title', 'status'];
+    const fields = ['title', 'status', 'languages', 'category_ref.name'];
     this.filterQuery = (idata && idata.length > 0) ? {
       multi_match: {
         query: idata,
@@ -722,7 +751,7 @@ export class MasterClassComponent implements OnInit {
   masterClassactionCall(idata: any): void {
     console.log(idata);
     if (idata.action.text === 'Details') {
-      const dataRow = idata.row;
+      this.selectedId = idata.row._id;
       this.snav.open();
       this.getMasterClassData(idata.row);
     }

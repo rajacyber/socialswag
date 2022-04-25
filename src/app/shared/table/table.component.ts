@@ -324,10 +324,14 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
   removeFilter(filter: any): void {
     this.colFilters.forEach((obj: { key: string | number; }, index: any) => {
       if (filter.key === obj.key) { 
-        this.colfilter[obj.key] = '';
-        if(filter.key === 'c' || filter.key === 'u') this.colFilters = this.colFilters.filter((obj: any) => obj.key !== filter.key);
-          else this.colFilters.splice(index, 1);
-        this.colFilters.splice(index, 1); 
+        if(filter.key === 'c' || filter.key === 'u') {
+          this.colFilters = this.colFilters.filter((obj: any) => obj.key !== filter.key);
+          console.log(this._sTableOptions.columns[filter.key].selectRange);
+          this._sTableOptions.columns[filter.key].selectRange = { start: '', end: ''}
+        } else {
+          this.colfilter[obj.key] = '';
+          this.colFilters.splice(index, 1);
+        }
       }
     });
     this.colFilterCallback.emit({value: '', col: filter.key});

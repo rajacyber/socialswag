@@ -1,0 +1,93 @@
+tr:nth-child(even) {
+    background-color: #f4f9fd;
+  }
+  
+  th {
+    color: black;
+    font-weight: bold; /*font-family: Verdana, Arial, Helvetica, sans-serif*/
+  }
+  
+  .vendor-logo {
+    width: 18px;
+  }
+  
+  .providers-logo {
+    width: 30px;
+    text-align: center;
+    padding: 0 15px 0 15px;
+  }
+  
+  .state-icon {
+    width: 10px;
+  }
+  
+  .mg5 {
+    margin: 5px !important
+  }
+  
+  table {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-width: 500px;
+    border-top: 1px solid #e4e4e4 !important;
+  }
+  
+  th.mat-header-cell {
+    text-align: left;
+    max-width: 300px;
+    font-size: 12px;
+  }
+  
+  td.mat-cell {
+    font-size: 12px;
+  }
+  
+  .table-card {
+    padding: 0px;
+    margin-bottom: 0px;
+  }
+  
+  .table-tools {
+    background: #e7f3fb;
+    height: 54px;
+  }
+  
+  .tool-container {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .tool-container > * {
+    width: 100%;
+  }
+  
+  .overflow-auto {
+    overflow-x: auto;
+  }
+  
+  th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
+    height: 30px !important;
+    padding: 0;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    padding: 0 12px !important;
+  }
+  .filter-tool {
+    color: #232526;
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: small;
+    height: 46px;
+  }
+  
+
+ul.asssetCheck {
+    margin-left: 1.8em;
+    padding: 0px !important;
+    list-style: none;
+    max-height: 120px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  

@@ -20,10 +20,11 @@ import {NgxMatSelectSearchModule} from 'ngx-mat-select-search';
 import {AngularEditorModule} from '@kolkov/angular-editor';
 import { MasterClassComponent } from './master-class/master-class.component';
 import { UsersComponent } from './users/users.component';
+import { MasterClassDetailsComponent } from './master-class/master-class-details/master-class-details.component';
 
 @NgModule({
   declarations: [
-    SettingsComponent, MasterClassComponent, UsersComponent
+    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent
   ],
   imports: [
     CommonModule,

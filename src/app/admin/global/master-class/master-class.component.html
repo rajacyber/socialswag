@@ -17,40 +17,8 @@
         <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
                 (click)="snav.close();"><mat-icon>close</mat-icon>
         </button>
-        <mat-card-header>
-          <mat-card-title class="fs1 fw2 mr-4">Details View</mat-card-title>
-        </mat-card-header>
         <mat-card-content class="overflow-auto">
-          <mat-tab-group>
-            <mat-tab label="Tamil">
-              <ng-template matTabContent>
-                <!-- <table class="table info-c-table w-100 bor-1">
-                  <thead>
-                  <tr align="center">
-                    <th class="px-2 pt-1">Episode #</th>
-                    <th class="px-2 pt-1">Episode Name</th>
-                    <th class="px-2 pt-1">Duration</th>
-                    <th class="px-2 pt-1">Description</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr *ngFor="let sw of reportCard" align="center">
-                    <td class="px-2 pt-1">{{}}</td>
-                    <td class="px-2 pt-1">{{}}</td>
-                    <td class="px-2 pt-1">{{}}</td>
-                  </tr>
-                  </tbody>
-                </table> -->
-                <ul>
-                  <li>Other Information: <span>Raja</span></li>
-                  <li>Masterclass Description: <span>Raja</span></li>
-                  <li>Preview Thumbnail: <span>Raja</span></li>
-                  <li>Preview URL: <span>Raja</span></li>
-                  <li>Name: <span>Raja</span></li>
-                </ul>
-              </ng-template>
-            </mat-tab>
-          </mat-tab-group>
+          <app-master-class-details *ngIf="selectedId" [content_id]="selectedId"></app-master-class-details>
         </mat-card-content>
       </mat-card>
     </mat-sidenav>
@@ -415,14 +383,14 @@
                           </mat-select>
                           <mat-error> Pricing type is required</mat-error>
                         </mat-form-field>
-                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline" *ngIf="list.pricing_model === 'OneTime'">
+                        <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline" *ngIf="list.pricing_model !== 'OneTime'">
                           <mat-label>Recurring Type</mat-label>
                           <mat-select [multiple]="false" required placeholder="Choose recurring type" name="recurringTypeLists{{i}}" [(ngModel)]="list.recurring_type">
                             <mat-option *ngFor="let type of recurringTypeList" [value]="type" [id]="type"> {{type}} </mat-option>
                           </mat-select>
                           <mat-error> Recurring type is required</mat-error>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p" *ngIf="list.pricing_model === 'OneTime'">
+                        <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p" *ngIf="list.pricing_model !== 'OneTime'">
                           <mat-label>Recurring Interval</mat-label>
                           <input matInput type="number" [(ngModel)]="list.recurring_interval" placeholder="Enter recurring interval" required name="recurring{{i}}" id="recurring">
                           <mat-error> Recurring interval is required</mat-error>

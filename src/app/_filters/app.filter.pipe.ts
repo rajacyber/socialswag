@@ -785,6 +785,6 @@ export class DDMMMYYYY implements PipeTransform {
    }
    let a = [{day: 'numeric'}, {month: 'short'}, {year: 'numeric'}];
    let s = join(new Date(date), a, '-');
-   return s;
+   return (date) ? s : '';
   }
 }

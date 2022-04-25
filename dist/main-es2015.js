@@ -2799,7 +2799,7 @@ function TableComponent_mat_card_1_mat_toolbar_1_div_5_ng_container_16_mat_form_
     const _r77 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵreference"](8);
     const column_r58 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](2).$implicit;
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtextInterpolate1"]("Choose ", column_r58.header, "start to end date ");
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtextInterpolate1"]("Choose ", column_r58.header, " start to end date ");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵproperty"]("rangePicker", _r77);
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](1);
@@ -4721,12 +4721,15 @@ class TableComponent {
     removeFilter(filter) {
         this.colFilters.forEach((obj, index) => {
             if (filter.key === obj.key) {
-                this.colfilter[obj.key] = '';
-                if (filter.key === 'c' || filter.key === 'u')
+                if (filter.key === 'c' || filter.key === 'u') {
                     this.colFilters = this.colFilters.filter((obj) => obj.key !== filter.key);
-                else
+                    console.log(this._sTableOptions.columns[filter.key].selectRange);
+                    this._sTableOptions.columns[filter.key].selectRange = { start: '', end: '' };
+                }
+                else {
+                    this.colfilter[obj.key] = '';
                     this.colFilters.splice(index, 1);
-                this.colFilters.splice(index, 1);
+                }
             }
         });
         this.colFilterCallback.emit({ value: '', col: filter.key });
@@ -9282,7 +9285,7 @@ class DDMMMYYYY {
         }
         let a = [{ day: 'numeric' }, { month: 'short' }, { year: 'numeric' }];
         let s = join(new Date(date), a, '-');
-        return s;
+        return (date) ? s : '';
     }
 }
 DDMMMYYYY.ɵfac = function DDMMMYYYY_Factory(t) { return new (t || DDMMMYYYY)(); };

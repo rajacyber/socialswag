@@ -80,7 +80,7 @@
                         <mat-option *ngFor="let val of column.selectFilterArr" [value]="val.value" [id]="val.id">{{val.name}}</mat-option>
                       </mat-select>
                       <ng-container *ngIf="column.israngeSearch">
-                        <mat-label>Choose {{column.header}}start to end date </mat-label>
+                        <mat-label>Choose {{column.header}} start to end date </mat-label>
                         <mat-date-range-input [rangePicker]="rangePicker">
                           <input matStartDate name="start" placeholder="Start date" [(ngModel)]="column.selectRange.start"/>
                           <input matEndDate name="end" placeholder="End date" [(ngModel)]="column.selectRange.end"/>

@@ -1,0 +1,57 @@
+<mat-tab-group *ngIf="languages.length">
+  <ng-container *ngFor="let item of languages">
+    <mat-tab label="{{item}}">
+      <div class="remedia-container">
+        <mat-sidenav-container class="remedia-sidenav-container">
+          <mat-sidenav-content>
+            <mat-card class="table-card mb-2">
+              <mat-toolbar class="table-tools" role="heading">
+                <div fxFlex fxLayout fxLayoutAlign="start">
+                  <span class="fs1">Masterclass Details
+                  </span>
+                </div>
+              </mat-toolbar>
+              <mat-card-content>
+                <div class="overflow-auto">
+                  <table  class="crud-table mat-table w-100 ibtn bor-1">
+                    <thead>
+                    <tr class="mat-header-row">
+                      <th class="mat-header-cell">Episode</th>
+                      <th class="mat-header-cell">Episode Name</th>
+                      <th class="mat-header-cell">Duration</th>
+                      <th class="mat-header-cell">Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let item of masterClassData; let i = index" class="mat-row">
+                      <td class="mat-cell">
+                        <span>{{i+1}}</span>
+                      </td>
+                      <td class="mat-cell">
+                        <span></span>
+                      </td>
+                      <td class="mat-cell">
+                        <span>{{item.episode_details.episodes_duration_total}}</span>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                  <div *ngIf="masterClassData && !masterClassData.length" class="m-2">
+                    <i class="fa fa-check-circle text-success fa-lg mr-1"></i>  All good, no defails found.
+                  </div>
+                </div>
+                <ul>
+                  <li>Other Information: <span>Raja</span></li>
+                  <li>Masterclass Description: <span>Raja</span></li>
+                  <li>Preview Thumbnail: <span>Raja</span></li>
+                  <li>Preview URL: <span>Raja</span></li>
+                  <li>Name: <span>Raja</span></li>
+                </ul>
+              </mat-card-content>
+            </mat-card>
+          </mat-sidenav-content>
+        </mat-sidenav-container>
+      </div>
+    </mat-tab>
+  </ng-container>
+</mat-tab-group>
