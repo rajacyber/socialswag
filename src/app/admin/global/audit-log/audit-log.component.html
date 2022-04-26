@@ -1,0 +1,10 @@
+<div>
+    <app-s-table aria-label="AuditLogs" role="table" [sTableOptions]="auditLogsTableOptions"
+        (sortCallback)="auditLogsortCall($event)"
+        (filterCallback)="auditLogsfilterCall($event)"
+        (colFilterCallback)="auditLogsColFilterCall($event)"
+        (actionCallback)="auditLogsactionCall($event)"
+        (pageCallback)="auditLogspageCall($event)" (refreshCallback)="getauditLogs()"
+        (timerCallback)="auditLogstimerCallData()">
+    </app-s-table>
+</div>

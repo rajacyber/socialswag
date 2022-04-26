@@ -14,9 +14,8 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { ContentDataService } from 'src/app/api/services';
+import { ContentDataService, ContentEpisodesService } from 'src/app/api/services';
 import { BaseRequestService } from 'src/app/_services/base.service';
-import { CompanySharedService } from 'src/app/_services/company-shared.service';
 import { LoaderService } from 'src/app/_services/loader.service';
 import { MasterService } from 'src/app/_services/master.service';
 import { MyToastrService } from "src/app/_services/toastr.service";
@@ -29,16 +28,17 @@ import { MyToastrService } from "src/app/_services/toastr.service";
 export class MasterClassDetailsComponent implements OnInit {
 
   constructor(public baseService: BaseRequestService, public loaderService: LoaderService, 
-    public toast: MyToastrService, public contentService: ContentDataService,
+    public toast: MyToastrService, public contentService: ContentDataService, public episodeService: ContentEpisodesService,
     public httpClient: HttpClient, public masterService: MasterService) { 
       this.subscribedKeys.contentEVE = masterService.contentEVE.subscribe((value: any) => {
-        this.content_id = value;
+        this.content_id = value.id;
+        this.languages = value.languages
         this.getMasterClassDetails();
       });
      }
 
   @Input() content_id: any = '';
-  languages: any = [];
+  @Input() languages: any = [];
   masterClassData: any = [];
   description: any = {};
   showdes = false;
@@ -55,7 +55,28 @@ export class MasterClassDetailsComponent implements OnInit {
     if(description[this.content_id]) this.description = {...this.description, ...description[this.content_id]};
     else this.toast.sToast("error", 'Masterclass details not found!.');
     this.loaderService.display(false);
-    
+  }
+
+  handleClickTab(event: any): void {
+    const eventtab = (event) ? event.tab.textLabel : null;
+    (eventtab === 'Episodes') ? this.getEpisodes() : this.getDescription('', this.languages[0]);
+  }
+
+  getEpisodes(): void {
+    // this.loaderService.display(true);
+    const query = {query: {bool: {must: [
+      {match: {'contentdata_ref.id.keyword': this.content_id}}]
+    }}};
+    const q = JSON.stringify(query);
+    const limit = 100;
+    this.baseService.doRequest(`/api/contentepisodes/`, 'get', null,  {q,limit})
+    .subscribe((result: any) => {
+      if(result.data){
+        this.masterClassData = result.data;
+      }else{
+        this.toast.sToast("error", result.data);
+      }
+    });
   }
 
   getMasterClassDetails(): void {
@@ -65,12 +86,8 @@ export class MasterClassDetailsComponent implements OnInit {
     const q = JSON.stringify(cq);
     this.contentService.getAllApiContentdataGet({q}).subscribe((result: any) => {
       if(result.data.length){
-        this.languages = [];
-        this.languages = result.data[0].languages;
-        this.getDescription('',result.data[0]?.languages[0]);
-        this.description.preview_image = result.data[0]?.content_preview?.preview_image;
-        this.description.preview_image_thumbnail = result.data[0]?.content_preview?.preview_image_thumbnail;
-        this.masterClassData = result.data;
+        this.getDescription('',this.languages[0]);
+        this.description = result.data[0];
       } else {
         this.toast.sToast("error", result.data);
       }

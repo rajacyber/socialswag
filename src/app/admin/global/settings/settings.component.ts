@@ -54,6 +54,7 @@ export class SettingsComponent implements OnInit {
       {name: 'Channels', icon: 'Devices3', id: 'channels', isVisible: true },
       {name: 'Celebrities', icon: 'Group', id: 'users', isVisible: true },
       {name: 'Metadata', icon: 'GroupedList', id: 'metadata', isVisible: true },
+      {name: 'Audit Log', icon: 'EventInfo', id: 'audit_log', isVisible: true },
     ];
   }
   

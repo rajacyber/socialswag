@@ -20,10 +20,17 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatChipInputEvent} from '@angular/material/chips';
 import {HttpClient} from '@angular/common/http';
 import { CompanySharedService } from 'src/app/_services/company-shared.service';
+import {
+  zoomInOnEnterAnimation
+} from 'angular-animations';
+
 @Component({
   selector: 'app-master-class',
   templateUrl: './master-class.component.html',
   styleUrls: ['./master-class.component.scss'],
+  animations: [
+    zoomInOnEnterAnimation()
+  ],
   providers: [
     {
       provide: STEPPER_GLOBAL_OPTIONS,
@@ -33,9 +40,12 @@ import { CompanySharedService } from 'src/app/_services/company-shared.service';
 })
 export class MasterClassComponent implements OnInit {
   @ViewChild('snav', {static: false}) snav: MatSidenav;
+  @ViewChild('status', {static: false}) status: MatSidenav;
   @ViewChild('cat', {static: false}) cat: MatSidenav;
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('userSelect', {static: true}) userSelect!: MatSelect;
+ 
+
   public userCtrl: FormControl = new FormControl();
 
   public userFilterCtrl: FormControl = new FormControl();
@@ -54,6 +64,7 @@ export class MasterClassComponent implements OnInit {
   pricing: any = [];
   allUser: any = [];
   selectedId: any = '';
+  selectedLanguage: any = [];
   step = 0;
   priceStep = 0;
   pricingIndex = 0;
@@ -125,6 +136,9 @@ export class MasterClassComponent implements OnInit {
     preview_video: '',
     audio_track: ''
   }
+  showMasterClasses = true;
+  statusLists: any = [];
+  selectedStatus: any;
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
   public loaderService: LoaderService, private aS: AuthenticationService, public httpClient: HttpClient,
@@ -356,7 +370,8 @@ export class MasterClassComponent implements OnInit {
         showAction: true,
         actionMenuItems: [
           {text: 'Details', icon: 'info', callback: 'detailFn', isGlobal: false},
-          // {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false}
+          {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false},
+          {text: 'Change Status', icon: 'tags', callback: 'changeFn', isGlobal: false},
         ],
         pagination: true,
         pageOptions: [5, 10, 25, 50, 100],
@@ -388,6 +403,7 @@ export class MasterClassComponent implements OnInit {
       this.filterUsers();
     });
     this.getCelebrityUserList();
+    this.getStatus();
   }
 
   private filterUsers(): void {
@@ -721,7 +737,6 @@ export class MasterClassComponent implements OnInit {
   }
 
   masterColFilterCall(event: any): void {
-    console.log(event);
     this.colFilterQuery = [];
     if (!this.colFilterCols.filter((x: any) => x.col === event.col).length) {
       if (event.value !== '') {
@@ -740,7 +755,7 @@ export class MasterClassComponent implements OnInit {
 
     
     this.colFilterCols.forEach((obj: any) => {
-      let tmpObj: any = {bool:{}};
+      let tmpObj: any = {};
       if(obj.col !== 'c' && obj.col !== 'u'){
         tmpObj = {bool: {should: [{query_string: {fields: [obj.col], query: `*${obj.value}*`}}]}};
       }
@@ -776,13 +791,33 @@ export class MasterClassComponent implements OnInit {
         this.toast.sToast("error", 'Language not found!');
       } else {
         this.selectedId = idata.row._id;
-        this.masterService.contentId(idata.row._id);
-        this.snav.open();
+        this.selectedLanguage = idata.row.languages;
+        this.masterService.contentId({id: idata.row._id, language: idata.row.languages});
+        this.showMasterClasses = false;
       }
     }
     if (idata.action.text === 'Delete') {
       const dataRow = idata.row;
     }
+    if (idata.action.text === 'Change Status') {
+      this.selectedStatus = idata.row.status;
+      this.selectedId = idata.row._id;
+      this.status.open();
+    }
+  }
+
+  saveStatus(): void {
+    this.loaderService.display(false);
+    const data = {content_id: this.selectedId, status: this.selectedStatus}
+    this.baseService.doRequest(`/api/contentdata/updatestatus`, 'post',data).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if(result) {
+        this.toast.sToast('success', 'Status updated successfully!.');
+        this.status.close();
+      } else {
+        this.toast.sToast('error', 'Error!.');
+      }
+    });
   }
 
   masterClasspageCall(event: any): void {
@@ -808,8 +843,15 @@ export class MasterClassComponent implements OnInit {
 
   getCategory(): void {
     this.loaderService.display(true);
+    let cq: any;
+    cq = {query: {bool: {must: [{exists: {field: 'name'}}]}}};
+    let s: any;
+    s = [{ 'name.keyword': {'order' : "asc"}}];
+    const sort = JSON.stringify(s);
+    const query = JSON.stringify(cq);
+    const limit = 1000;
     this.baseService.doRequest(`/api/category`,
-      'get', null, {}).subscribe((result: any) => {
+      'get', null, {query, sort, limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if(result.data.length) this.categoryList = result.data;
     });
@@ -847,14 +889,18 @@ export class MasterClassComponent implements OnInit {
     }
   }
 
+  async getStatus(): Promise<any> {
+    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
+    this.statusLists = defaultData.content_status;
+  }
   async getLanguageAndCountry(): Promise<any> {
     const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
     this.languagesList = defaultData.language;
     this.deviceList = defaultData.device_type;
     this.pricingModelList = defaultData.pricing_type;
     this.recurringTypeList = defaultData.recurring_type;
-    this.currencyList = defaultData.currency_code
-    this.contentTypeList = defaultData.content_type
+    this.currencyList = defaultData.currency_code;
+    this.contentTypeList = defaultData.content_type;
   }
 
   masterClassaddTableData(): void {
@@ -877,4 +923,7 @@ export class MasterClassComponent implements OnInit {
     this.getMasterClass();
   }
 
+  closeInteg(): void {
+    this.showMasterClasses = true;
+  }
 }

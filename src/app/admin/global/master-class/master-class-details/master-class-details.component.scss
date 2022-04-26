@@ -89,3 +89,12 @@ tr:nth-child(even) {
     overflow-x: hidden;
     overflow-y: auto;
   }
+  .imgwh {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .tabsty{
+    padding: 5px;
+  }

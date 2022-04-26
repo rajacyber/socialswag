@@ -1,77 +1,125 @@
-<mat-tab-group (selectedTabChange)="getDescription($event)" *ngIf="languages.length">
-  <ng-container *ngFor="let item of languages">
-    <mat-tab label="{{item}}">
-      <div class="remedia-container">
-        <mat-sidenav-container class="remedia-sidenav-container">
-          <mat-sidenav-content>
-            <mat-card class="table-card mb-2">
-              <mat-toolbar class="table-tools" role="heading">
-                <div fxFlex fxLayout fxLayoutAlign="start">
-                  <span class="fs1">Masterclass Details
-                  </span>
-                </div>
-              </mat-toolbar>
-              <mat-card-content>
-                <div class="overflow-auto">
-                  <table  class="crud-table mat-table w-100 ibtn bor-1">
-                    <thead>
-                    <tr class="mat-header-row">
-                      <th class="mat-header-cell">Episode</th>
-                      <th class="mat-header-cell">Episode Name</th>
-                      <th class="mat-header-cell">Duration</th>
-                      <th class="mat-header-cell">Description</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr *ngFor="let item of masterClassData; let i = index" class="mat-row">
-                      <td class="mat-cell">
-                        <span>{{i+1}}</span>
-                      </td>
-                      <td class="mat-cell">
-                        <span></span>
-                      </td>
-                      <td class="mat-cell">
-                        <span>{{item.episode_details.episodes_duration_total}}</span>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
-                  <div *ngIf="masterClassData && !masterClassData.length" class="m-2">
-                    <i class="fa fa-check-circle text-success fa-lg mr-1"></i>  All good, no defails found.
-                  </div>
-                </div>
-                <div>
-                  <hr>
-                  <h4><b>Name</b></h4>
-                  <span>{{description.title}}</span>
-                  <hr>
-                  <h4><b>Description</b></h4>
-                  <span class="showless" [class.show]="showdes">
-                    {{description.description}}
-                  </span>
-                  <hr>
-                  <h4><b>Secondary Description</b></h4>
-                  <span class="showless" [class.show]="showsec">
-                    {{description.secondary_description}}
-                  </span>
-                  <hr>
-                  <div class="row row-fix">
-                    <div class="col-lg-6">
-                      <h4><b>Preview Thumbnail</b></h4>
-                      <img *ngIf="description.preview_image_thumbnail" width="208" heigh="100" [src]="description.preview_image_thumbnail" alt="">
-                    </div>
-                    <div class="col-lg-6">
-                      <h4><b>Preview Image</b></h4>
-                      <img *ngIf="description.preview_image" width="208" heigh="100" [src]="description.preview_image" alt="">
-                    </div>
-                  </div>
-                  <hr>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </mat-sidenav-content>
-        </mat-sidenav-container>
-      </div>
+<mat-tab-group (selectedTabChange)="handleClickTab($event)">
+  <ng-container >
+    <mat-tab label="Overview">
+      <mat-tab-group (selectedTabChange)="getDescription($event)" *ngIf="languages.length">
+        <ng-container *ngFor="let item of languages">
+          <mat-tab label="{{item}}">
+            <div class="remedia-container">
+              <mat-sidenav-container class="remedia-sidenav-container">
+                <mat-sidenav-content>
+                  <mat-card class="table-card mb-2">
+                    <mat-toolbar class="table-tools" role="heading">
+                      <div fxFlex fxLayout fxLayoutAlign="start">
+                        <span class="fs1">Masterclass Details
+                        </span>
+                      </div>
+                    </mat-toolbar>
+                    <mat-card-content>                     
+                      <div>
+                        <hr>
+                        <h4><b>Title</b></h4>
+                        <span>{{description.title}}</span>
+                        <hr>
+                        <h4><b>Status</b></h4>
+                        <span>{{description.status}}</span>
+                        <hr>
+                        <h4><b>Key Takeaways</b></h4>
+                        <ul *ngFor="let list of description.key_takeaways">
+                          <li>{{list}}</li>
+                        </ul>
+                        <hr>
+                        <h4><b>Description</b></h4>
+                        <span class="showless" [class.show]="showdes">
+                          {{description.description}}
+                        </span>
+                        <hr>
+                        <h4><b>Mini Announcement</b></h4>
+                        <span class="showless" [class.show]="showdes">
+                          {{description.mini_announcement}}
+                        </span>
+                        <hr>
+                        <h4><b>Secondary Description</b></h4>
+                        <span class="showless" [class.show]="showsec">
+                          {{description.secondary_description}}
+                        </span>
+                        <hr>
+                        <div class="row col-lg-12 row-fix">
+                          <div class="col-lg-4" *ngIf="description.content_preview?.preview_image_thumbnail">
+                            <h4><b>Preview Thumbnail</b></h4>
+                            <img width="150" heigh="150" class="imgwh" [src]="description.content_preview.preview_image_thumbnail" alt="">
+                          </div>
+                          <div class="col-lg-4" *ngIf="description.content_preview?.preview_image">
+                            <h4><b>Preview Image</b></h4>
+                            <img width="150" heigh="150" class="imgwh" [src]="description.content_preview.preview_image" alt="">
+                          </div>
+                          <hr>
+                          <div class="col-lg-4"  *ngIf="description.content_preview?.banner_image_desktop">
+                            <h4><b>Banner Image Desktop</b></h4>
+                            <img width="150" heigh="150" class="imgwh" [src]="description.content_preview.banner_image_desktop" alt="">
+                          </div>
+                          <div class="col-lg-4"  *ngIf="description.content_preview?.banner_image_mobile">
+                            <h4><b>Banner Image Mobile</b></h4>
+                            <img width="150" heigh="150" class="imgwh" [src]="description.content_preview.banner_image_mobile" alt="">
+                          </div>
+                          <div class="col-lg-4"  *ngIf="description.key_takeaways_images && description.key_takeaways_images.length">
+                            <h4><b>Key Takeaways Image</b></h4>
+                            <img width="150" heigh="150" class="imgwh" [src]="description.key_takeaways_images[0]" alt="">
+                          </div>
+                        </div>
+                        <hr>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </mat-sidenav-content>
+              </mat-sidenav-container>
+            </div>
+          </mat-tab>
+        </ng-container>
+      </mat-tab-group>
+    </mat-tab>
+    <mat-tab label="Episodes">
+      <mat-sidenav-container class="remedia-sidenav-container" style="height: 100vh;">
+        <mat-sidenav-content>
+          <ng-container>
+            <div class="overflow-auto">
+              <table  class="crud-table mat-table w-100 ibtn bor-1">
+                <thead>
+                <tr class="mat-header-row">
+                  <th class="mat-header-cell">Episode</th>
+                  <th class="mat-header-cell">Episode Name</th>
+                  <th class="mat-header-cell">Duration</th>
+                  <th class="mat-header-cell">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of masterClassData; let i = index" class="mat-row">
+                  <td class="mat-cell">
+                    <span>{{item?.episodeNumber}}</span>
+                  </td>
+                  <td class="mat-cell">
+                    <span>{{item?.contentdata_ref?.title}}</span>
+                  </td>
+                  <td class="mat-cell">
+                    <span>{{baseService.toHHMMSS(item?.duration)}}</span>
+                  </td>
+                  <td class="mat-cell">
+                    <button mat-icon-button="" [matMenuTriggerFor]="menu">
+                      <mat-icon class="mat-24">more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                      <button mat-menu-item>Details</button>
+                    </mat-menu>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+              <div *ngIf="masterClassData && !masterClassData.length" class="m-2">
+                <i class="fa fa-check-circle text-success fa-lg mr-1"></i>  All good, no defails found.
+              </div>
+            </div>
+          </ng-container>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
     </mat-tab>
   </ng-container>
 </mat-tab-group>

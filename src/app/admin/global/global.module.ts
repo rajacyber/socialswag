@@ -21,10 +21,11 @@ import {AngularEditorModule} from '@kolkov/angular-editor';
 import { MasterClassComponent } from './master-class/master-class.component';
 import { UsersComponent } from './users/users.component';
 import { MasterClassDetailsComponent } from './master-class/master-class-details/master-class-details.component';
+import { AuditLogComponent } from './audit-log/audit-log.component';
 
 @NgModule({
   declarations: [
-    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent
+    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent
   ],
   imports: [
     CommonModule,
