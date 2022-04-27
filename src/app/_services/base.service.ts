@@ -196,4 +196,12 @@ export class BaseRequestService {
     // return an observable with a user-facing error message
     return throwError('Something bad happened; please try again later.');
   }
+
+  async getDescription(content_id: any, language?:any): Promise<any> {
+    const lang = language.toLowerCase();
+    const url = `https://content-socialswag.s3.ap-south-1.amazonaws.com/content/masterclass_${lang}.json`;
+    const description = await this.httpClient.get<any>(url).toPromise();
+    if(description[content_id]) return description[content_id];
+    else return [];
+  }
 }

@@ -107,7 +107,7 @@
                       <mat-icon class="mat-24">more_vert</mat-icon>
                     </button>
                     <mat-menu #menu="matMenu">
-                      <button mat-menu-item>Details</button>
+                      <button (click)="getEpisode(item);" mat-menu-item>Details</button>
                     </mat-menu>
                   </td>
                 </tr>
@@ -120,6 +120,76 @@
           </ng-container>
         </mat-sidenav-content>
       </mat-sidenav-container>
+      <mat-sidenav #episode [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
+        <mat-card class="w-100">
+          <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+            (click)="episode.close();"><mat-icon>close</mat-icon>
+          </button>
+          <mat-card-header>
+            <mat-card-title>Episode Details</mat-card-title>
+          </mat-card-header>
+          <mat-tab-group (selectedTabChange)="getEpisodeDescription($event)">
+            <ng-container>
+              <ng-container *ngFor="let item of episodeLanguages">
+                <mat-tab label="{{item}}">
+                  <div class="remedia-container">
+                    <mat-sidenav-container class="remedia-sidenav-container">
+                      <mat-sidenav-content>
+                        <mat-card class="table-card mb-2">
+                          <mat-toolbar class="table-tools" role="heading">
+                            <div fxFlex fxLayout fxLayoutAlign="start">
+                              <span class="fs1">Episode Details
+                              </span>
+                            </div>
+                          </mat-toolbar>
+                          <mat-card-content>                     
+                            <div>
+                              <hr>
+                              <h4><b>Title</b></h4>
+                              <span>{{episodeDescription.title}}</span>
+                              <hr>
+                              <h4><b>Description</b></h4>
+                              <span class="showless" [class.show]="showdes">
+                                {{episodeDescription.description}}
+                              </span>
+                              <hr>
+                              <div class="row col-lg-12 row-fix">
+                                <div class="col-lg-4" *ngIf="episodeDescription.content_preview?.preview_image_thumbnail">
+                                  <h4><b>Preview Thumbnail</b></h4>
+                                  <img width="150" heigh="150" class="imgwh" [src]="episodeDescription.content_preview.preview_image_thumbnail" alt="">
+                                </div>
+                                <div class="col-lg-4" *ngIf="episodeDescription.content_preview?.preview_image">
+                                  <h4><b>Preview Image</b></h4>
+                                  <img width="150" heigh="150" class="imgwh" [src]="episodeDescription.content_preview.preview_image" alt="">
+                                </div>
+                                <hr>
+                                <div class="col-lg-4"  *ngIf="episodeDescription.content_preview?.banner_image_desktop">
+                                  <h4><b>Banner Image Desktop</b></h4>
+                                  <img width="150" heigh="150" class="imgwh" [src]="episodeDescription.content_preview.banner_image_desktop" alt="">
+                                </div>
+                                <div class="col-lg-4"  *ngIf="episodeDescription.content_preview?.banner_image_mobile">
+                                  <h4><b>Banner Image Mobile</b></h4>
+                                  <img width="150" heigh="150" class="imgwh" [src]="episodeDescription.content_preview.banner_image_mobile" alt="">
+                                </div>
+                              </div>
+                              <hr>
+                              <div class="row col-lg-12 row-fix">
+                                <div class="col-lg-4" *ngIf="episodeDescription.content_preview?.preview_video">
+                                  <h4><b>Preview Video</b></h4>
+                                </div>
+                              </div>
+                            </div>
+                          </mat-card-content>
+                        </mat-card>
+                      </mat-sidenav-content>
+                    </mat-sidenav-container>
+                  </div>
+                </mat-tab>
+              </ng-container>
+            </ng-container>
+          </mat-tab-group>
+        </mat-card>
+      </mat-sidenav>
     </mat-tab>
   </ng-container>
 </mat-tab-group>

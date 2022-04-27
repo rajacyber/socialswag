@@ -14,6 +14,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
+import { MatSidenav } from '@angular/material/sidenav';
 import { ContentDataService, ContentEpisodesService } from 'src/app/api/services';
 import { BaseRequestService } from 'src/app/_services/base.service';
 import { LoaderService } from 'src/app/_services/loader.service';
@@ -26,6 +27,8 @@ import { MyToastrService } from "src/app/_services/toastr.service";
   styleUrls: ['./master-class-details.component.scss']
 })
 export class MasterClassDetailsComponent implements OnInit {
+  @ViewChild('episode', {static: false}) episode: MatSidenav;
+  episodeId: any;
 
   constructor(public baseService: BaseRequestService, public loaderService: LoaderService, 
     public toast: MyToastrService, public contentService: ContentDataService, public episodeService: ContentEpisodesService,
@@ -44,16 +47,27 @@ export class MasterClassDetailsComponent implements OnInit {
   showdes = false;
   showsec = false;
   subscribedKeys: any = {};
+  episodeLanguages: any = [];
+  episodeDescription: any = {};
   Objectkeys = Object.keys;
 
   async getDescription(event: any, language?:any): Promise<any> {
     this.loaderService.display(true);
     const eventlang = (event) ? event.tab.textLabel : null;
     const lang = (event && eventlang) ?  eventlang.toLowerCase() : language.toLowerCase();
-    const url = `https://content-socialswag.s3.ap-south-1.amazonaws.com/content/masterclass_${lang}.json`;
-    const description = await this.httpClient.get<any>(url).toPromise();
-    if(description[this.content_id]) this.description = {...this.description, ...description[this.content_id]};
+    const description = await this.baseService.getDescription(this.content_id, lang);
+    if(description) this.description = {...this.description, ...description};
     else this.toast.sToast("error", 'Masterclass details not found!.');
+    this.loaderService.display(false);
+  }
+
+  async getEpisodeDescription(event: any, language?:any): Promise<any> {
+    this.loaderService.display(true);
+    const eventlang = (event) ? event.tab.textLabel : null;
+    const lang = (event && eventlang) ?  eventlang.toLowerCase() : language.toLowerCase();
+    const description = await this.baseService.getDescription(this.episodeId, lang);
+    if(description) this.episodeDescription = {...this.episodeDescription, ...description};
+    else this.toast.sToast("error", 'Episode details not found!.');
     this.loaderService.display(false);
   }
 
@@ -63,7 +77,7 @@ export class MasterClassDetailsComponent implements OnInit {
   }
 
   getEpisodes(): void {
-    // this.loaderService.display(true);
+    this.loaderService.display(true);
     const query = {query: {bool: {must: [
       {match: {'contentdata_ref.id.keyword': this.content_id}}]
     }}};
@@ -76,7 +90,16 @@ export class MasterClassDetailsComponent implements OnInit {
       }else{
         this.toast.sToast("error", result.data);
       }
+      this.loaderService.display(false);
     });
+  }
+
+  getEpisode(row: any): void {
+    this.episodeLanguages = (row.languages) ? row.language : row.videos.map((x: any) => x.language);
+    this.episodeDescription = row;
+    this.episodeId = row._id;
+    this.getEpisodeDescription('', this.episodeLanguages[0])
+    this.episode.open();
   }
 
   getMasterClassDetails(): void {

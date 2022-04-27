@@ -1194,13 +1194,15 @@ UnauthorizedComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵde
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseRequestService", function() { return BaseRequestService; });
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/common/http */ "tk/3");
-/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
-/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "qCKp");
-/* harmony import */ var ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ngx-csv/ngx-csv */ "QAmw");
-/* harmony import */ var ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/core */ "fXoL");
-/* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/platform-browser */ "jhN1");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "mrSG");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common/http */ "tk/3");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/operators */ "kU1M");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "qCKp");
+/* harmony import */ var ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ngx-csv/ngx-csv */ "QAmw");
+/* harmony import */ var ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/platform-browser */ "jhN1");
+
 
 
 
@@ -1216,7 +1218,7 @@ class BaseRequestService {
         this.showCompany = true;
         this.showAssessment = false;
         this.scoreCompanyHash = {};
-        this.authHeader = new _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpHeaders"]({ 'Content-Type': 'application/json', Authorization: btoa(window.location.host) });
+        this.authHeader = new _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpHeaders"]({ 'Content-Type': 'application/json', Authorization: btoa(window.location.host) });
         this.resources = {};
         this.vendorLogo = ['2n.svg', 'camio.png', '3com.png', '4rf.png', 'a10.png', 'accedian.png', 'adtran.png', 'adva.svg', 'aerohive.svg', 'akcp.png', 'alcatellucent.svg', 'alcoma-almp.png', 'alliedtelesis.svg', 'allworx.svg', 'alpha.png', 'alpine.png', 'alvarion.png', 'amazon.svg', 'apc.svg', 'apple.svg', 'arbor.png', 'arch.svg', 'areca.png', 'arista.svg', 'arraynetworks.png', 'arris.svg', 'aruba.svg', 'asuswrt-merlin.png', 'atal.png', 'audiocodes.png', 'avaya.svg', 'avocent.svg', 'avtech.svg', 'axis.svg', 'barracuda.svg', 'bdcom.svg', 'benuos.png', 'bintec.png', 'bluecoat.png', 'bnt.png', 'broadcom.svg', 'brocade.svg', 'brother.svg', 'buffalo.svg', 'ca.png', 'calix.svg', 'cambium.svg', 'camio.png', 'canon.svg', 'carel.png', 'ccpower.png', 'centos.svg', 'ceragon.png', 'chatsworth.png', 'checkpoint.png', 'ciena.svg', 'cisco-old.png', 'cisco.svg', 'citrix.svg', 'comet.png', 'comtrol.png', 'conexant.png', 'coreos.svg', 'corero.png', 'coriant.svg', 'cradlepoint.png', 'ctcu.svg', 'ctm.png', 'cumulus.png', 'cxr-networks.png', 'cyberoam.png', 'cyberpower.svg', 'dahua.png', 'dasan.png', 'datacom.png', 'dcn.png', 'dd-wrt.png', 'ddn.png', 'debian.svg', 'deliberant.png', 'dell.svg', 'delta.png', 'develop.png', 'devuan.svg', 'digipower.png', 'dlink.png', 'dlink.svg', 'dpstelecom.png', 'dragonfly.svg', 'dragonwave.png', 'draytek.svg', 'eaton.svg', 'edge-core.png', 'edgecore.png', 'edgeos.svg', 'eip.png', 'eltek.png', 'eltex.png', 'emc.svg', 'emerson.svg', 'endian.png', 'engenius.png', 'enlogic.png', 'enterasys.svg', 'epson.svg', 'ericsson.svg', 'etherwan.png', 'exalt.png', 'exinda.png', 'exterity.svg', 'extrahop.png', 'extreme.svg', 'extremeboss.svg', 'extremevoss.svg', 'f5.svg', 'fedora.svg', 'fiberhome.svg', 'firebrick.svg', 'force10.svg', 'fortinet.svg', 'foundry.png', 'freebsd.svg', 'fujitsu.svg', 'gamatronicups.png', 'gandi.png', 'ge.svg', 'geist.png', 'generex-ups.svg', 'generic.svg', 'gentoo.svg', 'glassway.svg', 'gude.png', 'halon.svg', 'hanwhatechwin.svg', 'hds.svg', 'hikvision.png', 'hillstone.svg', 'himoinsa.svg', 'hirschmann.svg', 'hp.svg', 'hpe.svg', 'huawei.svg', 'hwg-poseidon.png', 'hwg.svg', 'hytera.png', 'ibmos.svg', 'ict.png', 'ignitenet.png', 'infoblox.svg', 'ingrasys.png', 'junos.png', 'kemp.png', 'konica.svg', 'kti.svg', 'kyocera.svg', 'lancom.png', 'lanier.png', 'lantronix.svg', 'lenovo.svg', 'lexmark.svg', 'ligowave.png', 'linksys.png', 'linux.svg', 'logmaster.png', 'maipu.png', 'mandrake.png', 'marathonups.png', 'mcafee.png', 'meinberg.svg', 'mellanox.png', 'meraki.png', 'mge.png', 'microsemi.png', 'mikrotik.svg', 'mimosa.svg', 'minkelsrms.png', 'mirth.png', 'mitsubishi.svg', 'monowall.png', 'moxa.svg', 'mrv.png', 'msl.svg', 'nec.svg', 'netapp.svg', 'netbotz.png', 'netbsd.svg', 'netgear.svg', 'netmanplus.png', 'netmodule.png', 'netonix.svg', 'netopia.png', 'netping.svg', 'netvision.png', 'nimble.svg', 'nokia.svg', 'novell.svg', 'nrg.png', 'oki.svg', 'omnitron.png', 'open-e.svg', 'openaccess.png', 'openbsd.svg', 'opengear.svg', 'openindiana.png', 'opensolaris.png', 'opensuse.svg', 'openwrt.svg', 'opnsense.png', 'oracle.svg', 'packetflux.png', 'panos.svg', 'papouch-tme.png', 'pbi.png', 'pbn.png', 'perle.png', 'pfsense.svg', 'phybridge.svg', 'ping.svg', 'planet.png', 'powercode.png', 'powerwalker.png', 'procera.png', 'proxim.png', 'proxmox.svg', 'pulse.png', 'qnap.svg', 'quanta.svg', 'radlan.png', 'radware.svg', 'radwin.svg', 'raisecom.png', 'raritan.svg', 'raspbian.svg', 'ray.png', 'redhat.svg', 'ricoh.svg', 'rittal.svg', 'riverbed.png', 'rockstor.svg', 'ruckus.svg', 'saf.png', 'samsungprinter.svg', 'savin.svg', 'schneider.svg', 'screenos.png', 'servertech.png', 'sharp.png', 'siae.png', 'siemens.svg', 'siklu.png', 'siteboss.png', 'sixnet.png', 'slackware.png', 'smartoptics.png', 'snom.svg', 'solaris.svg', 'sonicwall.svg', 'sonus.png', 'sophos.png', 'speedtouch.png', 'stormshield.svg', 'sub10.png', 'supermicro.png', 'suse.png', 'symbol.png', 'synology.svg', 'tandberg.svg', 'technicolor.svg', 'tegile.svg', 'telco-systems.png', 'teleste.png', 'teradici.png', 'terra.svg', 'tomato.png', 'toshiba.svg', 'tplink.svg', 'trango.png', 'tranzeo.png', 'tripplite.svg', 'tsc.png', 'tyconsystems.png', 'ubiquiti.svg', 'ubuntu.svg', 'uniflair.png', 'vanguard.png', 'vertiv.png', 'viprinux.png', 'vivotek.svg', 'vmware.svg', 'voswall.png', 'vubiq.png', 'vyatta.png', 'vyos.png', 'watchguard.svg', 'waystream.svg', 'windows.svg', 'wti.svg', 'wxgoos.png', 'xerox.svg', 'xirrus.png', 'zebra.svg', 'zhone.png', 'zte.svg', 'zyxel.svg'];
         this.overlayLoadingTemplate = '<span class="">' +
@@ -1240,24 +1242,24 @@ class BaseRequestService {
     downloadCSV(data, title, options) {
         if (options) {
             // tslint:disable-next-line:no-unused-expression
-            new ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_3__["ngxCsv"](data, title, options);
+            new ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_4__["ngxCsv"](data, title, options);
         }
         else {
             // tslint:disable-next-line:no-unused-expression
-            new ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_3__["ngxCsv"](data, title, { headers: Object.keys(data[0]) });
+            new ngx_csv_ngx_csv__WEBPACK_IMPORTED_MODULE_4__["ngxCsv"](data, title, { headers: Object.keys(data[0]) });
         }
     }
     upload(url, data) {
         return this.httpClient.post(url, data, {
             reportProgress: true,
             observe: 'events'
-        }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])((event) => {
+        }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])((event) => {
             switch (event.type) {
-                case _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpEventType"].UploadProgress:
+                case _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpEventType"].UploadProgress:
                     // @ts-ignore
                     const progress = Math.round(100 * event.loaded / event.total);
                     return { status: 'progress', message: progress };
-                case _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpEventType"].Response:
+                case _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpEventType"].Response:
                     return event.body;
                 default:
                     return `Unhandled event: ${event.type}`;
@@ -1332,20 +1334,20 @@ class BaseRequestService {
         return params;
     }
     deleteRequest(endPointUrl) {
-        return this.httpClient.delete(`${endPointUrl}`).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(response => this.handleResponse(response)));
+        return this.httpClient.delete(`${endPointUrl}`).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])(response => this.handleResponse(response)));
     }
     doRequest(endPointUrl, method, data, params, headers, hashOptions) {
         const httpOptions = {
             headers: headers
                 ? headers
-                : new _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpHeaders"]({
+                : new _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpHeaders"]({
                     'Content-Type': 'application/json',
                 }),
             body: JSON.stringify(data),
             params,
         };
         if (params) {
-            httpOptions.params = new _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpParams"]({
+            httpOptions.params = new _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpParams"]({
                 fromObject: this.toHttpParams(params)
             });
         }
@@ -1353,7 +1355,7 @@ class BaseRequestService {
         httpOptions.headers.hashOptions = hashOptions ? hashOptions : { isLoading: false };
         return this.httpClient
             .request(method, `${endPointUrl}`, httpOptions)
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["map"])(response => this.handleResponse(response)));
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])(response => this.handleResponse(response)));
     }
     getSnakeCaseName(camelCase) {
         return camelCase.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_(.*)/g, '$1');
@@ -1373,11 +1375,22 @@ class BaseRequestService {
                 `body was: ${error.error}`);
         }
         // return an observable with a user-facing error message
-        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["throwError"])('Something bad happened; please try again later.');
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["throwError"])('Something bad happened; please try again later.');
+    }
+    getDescription(content_id, language) {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            const lang = language.toLowerCase();
+            const url = `https://content-socialswag.s3.ap-south-1.amazonaws.com/content/masterclass_${lang}.json`;
+            const description = yield this.httpClient.get(url).toPromise();
+            if (description[content_id])
+                return description[content_id];
+            else
+                return [];
+        });
     }
 }
-BaseRequestService.ɵfac = function BaseRequestService_Factory(t) { return new (t || BaseRequestService)(_angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpClient"]), _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵinject"](_angular_platform_browser__WEBPACK_IMPORTED_MODULE_5__["Title"])); };
-BaseRequestService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_4__["ɵɵdefineInjectable"]({ token: BaseRequestService, factory: BaseRequestService.ɵfac, providedIn: 'root' });
+BaseRequestService.ɵfac = function BaseRequestService_Factory(t) { return new (t || BaseRequestService)(_angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]), _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵinject"](_angular_platform_browser__WEBPACK_IMPORTED_MODULE_6__["Title"])); };
+BaseRequestService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_5__["ɵɵdefineInjectable"]({ token: BaseRequestService, factory: BaseRequestService.ɵfac, providedIn: 'root' });
 
 
 /***/ }),
