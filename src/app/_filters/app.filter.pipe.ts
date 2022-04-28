@@ -782,9 +782,10 @@ export class DDMMMYYYY implements PipeTransform {
          return f.format(t);
       }
       return a.map(format).join(s);
-   }
-   let a = [{day: 'numeric'}, {month: 'short'}, {year: 'numeric'}];
-   let s = join(new Date(date), a, '-');
-   return (date) ? s : '';
+    }
+    if(!date) { return ''};
+    let a = [{day: 'numeric'}, {month: 'short'}, {year: 'numeric'}];
+    let s = join(new Date(date), a, '-');
+    return (date) ? s : '';
   }
 }

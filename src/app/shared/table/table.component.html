@@ -59,7 +59,7 @@
                   *ngIf="tableOptions.showColFilter && _sTableOptions.columns && _sTableOptions.columns.length"
                   [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger">
             <mat-icon>filter_list</mat-icon></button>
-          <mat-menu #filterMenu="matMenu" class="col-filters">
+          <!-- <mat-menu #filterMenu="matMenu" class="col-filters">
             <mat-card class="filter-card" (click)="$event.stopPropagation();">
               <mat-card-header>
                 <mat-card-title>Filter</mat-card-title>
@@ -95,6 +95,62 @@
                       </ng-container>
                     </mat-form-field>
                   </ng-container>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </mat-menu> -->
+          <mat-menu #filterMenu="matMenu" class="col-filters">
+            <mat-card class="filter-card" (click)="$event.stopPropagation();">
+              <mat-card-header>
+                <mat-card-title>Filter</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form #filterForm="ngForm" role="form">
+                  <mat-form-field *ngIf="sTableOptions.columns && sTableOptions.columns.length" class="w-100" appearance="outline">
+                    <mat-label>Choose filter column</mat-label>
+                    <mat-select placeholder="Choose filter column" name="chooseFilter" required [(ngModel)]="cFilter.selectedCol">
+                      <mat-option value="">Choose filter column</mat-option>
+                      <ng-container *ngFor="let val of _sTableOptions.columns">
+                        <mat-option *ngIf="val.iscolumnSearch" [value]="val.columnDef" [id]="val.header">{{val.header}}</mat-option>
+                      </ng-container>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field *ngIf="cFilter.selectedCol" class="w-100" appearance="outline">
+                    <mat-label>Search {{colHash[cFilter.selectedCol].header}}</mat-label>
+                    <input matInput type="text" trim="blur" *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'text'"
+                           placeholder="Search {{colHash[cFilter.selectedCol].header}}" required
+                            name="{{colHash[cFilter.selectedCol].col}}s" [(ngModel)]="colHash[cFilter.selectedCol].val" >
+                    <mat-select placeholder="Search {{colHash[cFilter.selectedCol].header}}" name="{{colHash[cFilter.selectedCol].col}}s"
+                                *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'select'" required
+                                [(ngModel)]="colHash[cFilter.selectedCol].val">
+                      <mat-option *ngFor="let val of colHash[cFilter.selectedCol].colFilters.options" [value]="val.value">{{val.name}}</mat-option>
+                    </mat-select>
+                    <ng-container *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'range'">
+                     <!-- <mat-date-range-input [rangePicker]="picker">
+                        <input matStartDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].start"
+                               placeholder="Start date">
+                        <input matEndDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].end"
+                               placeholder="End date">
+                      </mat-date-range-input>
+
+                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                      <mat-date-range-picker #picker></mat-date-range-picker> -->
+                      <!-- (dateChange)="changeEvent($event)" -->
+                      <mat-form-field>
+                        <input matInput [matDatepicker]="picker1" required [(ngModel)]="colHash[cFilter.selectedCol].dateCol.start" placeholder="From Date" name="dtInpt1">
+                        <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                        <mat-datepicker #picker1></mat-datepicker>
+                      </mat-form-field>
+                      <mat-form-field>
+                        <input matInput [matDatepicker]="picker2" required [(ngModel)]="colHash[cFilter.selectedCol].dateCol.end" placeholder="To Date" name="dtInpt">
+                        <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                        <mat-datepicker #picker2></mat-datepicker>
+                      </mat-form-field>
+                    </ng-container>
+                  </mat-form-field>
+                  <button (click)="columnFilterxlsx(colHash[cFilter.selectedCol])" [disabled]="!filterForm.form.valid"
+                          color="primary" mat-raised-button="">Add Filter</button>
+                   <button class="ml-2" (click)="cFilter.selectedCol = ''"  mat-stroked-button="">Clear</button>
                 </form>
               </mat-card-content>
             </mat-card>
@@ -445,11 +501,14 @@
               
               <ng-container *ngIf="column.listView">
                 <ng-container>
-                  <span>
+                  <span *ngIf="column.listView && !column.dictView">
                     <ng-container *ngFor="let list of getProperty(row, column.columnDef)">
                       <span class="bor-1 px-2 mr-1">{{list}}</span>
                     </ng-container>
                   </span>
+                </ng-container>
+                <ng-container *ngIf="column.listView && column.dictView">
+                  {{ getListProperty(row, column.columnDef)}}
                 </ng-container>
               </ng-container>
               

@@ -212,54 +212,73 @@
                   </div>
                 </div>
               </ng-container>
-              <div class="my-2">
-                <mat-label>Video</mat-label>
-                <mat-radio-group name="uploadvideo" [(ngModel)]="videoDetails.video_type" required class="d-flex flex-row align-items-center pt-3">
-                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
-                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
-                </mat-radio-group>
-              </div>
-              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.video_type === 'New'">
-                <mat-label>Link</mat-label>
-                <input matInput type="url" [(ngModel)]="videoDetails.video" placeholder="Enter Video URL" name="link" required>
-              </mat-form-field>
-              <div class="my-2">
-                <mat-label>Trailer Video</mat-label>
-                <mat-radio-group name="uploadData" [(ngModel)]="videoDetails.trailer_type" required class="d-flex flex-row align-items-center pt-3">
-                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
-                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
-                </mat-radio-group>
-              </div>
-              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.trailer_type === 'New'">
-                <mat-label>Link</mat-label>
-                <input matInput type="url" [(ngModel)]="videoDetails.trailer_video" placeholder="Enter Trailer Video URL" name="link" required>
-              </mat-form-field>
-              <div class="my-2">
-                <mat-label>Preview Video</mat-label>
-                <mat-radio-group name="uploadPreview" [(ngModel)]="videoDetails.preview_type" class="d-flex flex-row align-items-center pt-3">
-                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
-                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
-                </mat-radio-group>
-              </div>
-              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.preview_type === 'New'">
-                <mat-label>Link</mat-label>
-                <input matInput type="url" [(ngModel)]="videoDetails.preview_video" placeholder="Enter Preview Video Link" name="prelink" required>
-              </mat-form-field>
-              <div class="my-2">
-                <mat-label>Audio Track</mat-label>
-                <mat-radio-group name="uploadAudio" [(ngModel)]="videoDetails.audio_type" class="d-flex flex-row align-items-center pt-3">
-                  <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
-                  <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
-                </mat-radio-group>
-              </div>
-              <mat-form-field appearance="outline" class="col-md-8" *ngIf="videoDetails.audio_type === 'New'">
-                <mat-label>Link</mat-label>
-                <input matInput type="url" [(ngModel)]="videoDetails.audio_track" placeholder="Enter Audio Link" name="audlink" required>
-              </mat-form-field>
-              <ng-container *ngFor="let item of description; let i = index">
+              <ng-container *ngFor="let item of videoDetails; let i = index">
+                <mat-expansion-panel class="mt-2" [expanded]="videoStep === i" (opened)="videoSetStep(i)" hideToggle>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title class="mt-2">Videos</mat-panel-title>
+                    <div class="ml-2 mt-2">
+                      <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addVideoLang()" appPreventMultiClick>
+                            <span class="d-flex flex-row align-items-center">
+                              <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                              <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                            </span>
+                      </button>
+                      <button mat-button="" *ngIf="i!==0"class="mat-warn px-1 mr-2" (click)="removeVideoLang(i)" appPreventMultiClick matTooltip="Delete language">
+                        <span class="d-flex flex-row align-items-center">
+                          <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                          <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                        </span>
+                      </button>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <mat-card class="mt-2 mb-2">
+                    <mat-form-field class="col-md-8 w-70p" appearance="outline">
+                      <mat-label>Language</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose language" name="langLists{{i}}" [(ngModel)]="item.language">
+                        <mat-option *ngFor="let lang of languagesList" [value]="lang" [id]="lang"> {{lang}} </mat-option>
+                      </mat-select>
+                      <mat-error> Language is required</mat-error>
+                    </mat-form-field>
+                    <div class="my-2">
+                      <mat-label>Trailer Video</mat-label>
+                      <mat-radio-group name="uploadData" [(ngModel)]="item.trailer_type" required class="d-flex flex-row align-items-center pt-3">
+                        <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                        <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                    <mat-form-field appearance="outline" class="col-md-8" *ngIf="item.trailer_type === 'New'">
+                      <mat-label>Link</mat-label>
+                      <input matInput type="url" [(ngModel)]="item.trailer_video" placeholder="Enter Trailer Video URL" name="link" required>
+                    </mat-form-field>
+                    <div class="my-2">
+                      <mat-label>Preview Video</mat-label>
+                      <mat-radio-group name="uploadPreview" [(ngModel)]="item.preview_type" class="d-flex flex-row align-items-center pt-3">
+                        <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                        <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                    <mat-form-field appearance="outline" class="col-md-8" *ngIf="item.preview_type === 'New'">
+                      <mat-label>Link</mat-label>
+                      <input matInput type="url" [(ngModel)]="item.preview_video" placeholder="Enter Preview Video Link" name="prelink" required>
+                    </mat-form-field>
+                    <div class="my-2">
+                      <mat-label>Audio Track</mat-label>
+                      <mat-radio-group name="uploadAudio" [(ngModel)]="item.audio_type" class="d-flex flex-row align-items-center pt-3">
+                        <mat-radio-button color="primary" class="mr-3" value="Default">Same as default</mat-radio-button>
+                        <mat-radio-button color="primary" value="New">Upload Link</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                    <mat-form-field appearance="outline" class="col-md-8" *ngIf="item.audio_type === 'New'">
+                      <mat-label>Link</mat-label>
+                      <input matInput type="url" [(ngModel)]="item.audio_track" placeholder="Enter Audio Link" name="audlink" required>
+                    </mat-form-field>
+                  </mat-card>
+                </mat-expansion-panel>
+              </ng-container>
+              <ng-container class="mt-2" *ngFor="let item of description; let i = index">
                 <mat-expansion-panel class="mt-2" [expanded]="step === i" (opened)="setStep(i)" hideToggle>
                   <mat-expansion-panel-header>
-                    <mat-panel-title class="mt-2">Select Language</mat-panel-title>
+                    <mat-panel-title class="mt-2">Select language</mat-panel-title>
                     <div class="ml-2 mt-2">
                       <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addLanguage()" appPreventMultiClick>
                             <span class="d-flex flex-row align-items-center">

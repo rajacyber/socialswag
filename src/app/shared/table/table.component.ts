@@ -27,6 +27,7 @@ import {LoaderService} from '../../_services/loader.service';
 import {FormControl} from '@angular/forms';
 import {MyToastrService} from '../../_services/toastr.service';
 import {MatTableDataSource} from '@angular/material/table';
+import { MasterService } from 'src/app/_services/master.service';
 
 
 @Component({
@@ -39,7 +40,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
   set sort(value: MatSort) {
     this.dataSource.sort = value;
   }
-  constructor(private activeRoute: Router, private loaderService: LoaderService,
+  constructor(private activeRoute: Router, private loaderService: LoaderService, public masterService: MasterService,
               private authenticationService: AuthenticationService, public baseService: BaseRequestService,
               private eRef: ElementRef, public toast: MyToastrService) {
     this.loaderService.selectedSiteChanged.subscribe(() => {
@@ -114,6 +115,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
   called = false;
   cFilter: any = {};
   colHash: any = {};
+  cFields: any = [];
   colFilterQuery: any;
   filterQuery: any;
   private tmpOption: any;
@@ -229,8 +231,15 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
     }
   }
   columnFilterxlsx(col: any): void{
-    this.searchedColName = col.col;
-    this.colFilters.push({key: col.col, name: col.header, value: col.val, hKey: col.colFilters.hKey});
+    this.searchedColName = col.columnDef;
+    this.colFilters = [];
+    if(col.columnDef === 'c' || col.columnDef === 'u' || col.released_on){
+      const start = col.dateCol.start.getFullYear() + "-" + (col.dateCol.start.getMonth() + 1) + "-" + col.dateCol.start.getDate();
+      const end = col.dateCol.end.getFullYear() + "-" + (col.dateCol.end.getMonth() + 1) + "-" + col.dateCol.end.getDate();
+      this.colFilters.push({key: col.columnDef, name: col.header, value: `form ${start} - to ${end} `, hKey: col.colFilters.hKey, list: col?.list});
+    } else {
+      this.colFilters.push({key: col.columnDef, name: col.header, value: col.val, hKey: col.colFilters.hKey, list: col?.list});
+    }
     this.processColFilterQuery();
   }
   removeFilterxlsx(rFilter: any): void {
@@ -256,7 +265,19 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
       const tmpObj1: any = {bool: {should: [{match: {}}]}};
       let tmpObj: any = {};
       if (cl.hKey) {
-        tmpObj = {bool: {should: [{query_string: {fields: [cl.key], query: `*${cl.value}*`}}]}};
+        if(cl.key === 'c' || cl.key === 'u' || cl.key === 'released_on'){
+          var column: any = cl.key;
+          let from = this.colHash[cl.key].dateCol.start;
+          const fromDate = from.getFullYear() + "-" + ('0'+ (from.getMonth() + 1)).slice(-2) + "-" + ('0'+ from.getDate()).slice(-2);
+          let end = this.colHash[cl.key].dateCol.end;
+          const endDate = end.getFullYear() + "-" + ('0'+ (end.getMonth() + 1)).slice(-2) + "-" + ('0'+ end.getDate()).slice(-2);
+          tmpObj = {range: {}};
+          tmpObj.range[column]= {gte: fromDate, lte: endDate};
+        } else {
+          cl.key = (cl.key === 'category') ? 'category_ref.name' : cl.key;
+          if (cl.list) tmpObj = {must: [{multi_match: {query: `*${cl.value}*`,type: 'phrase_prefix', 'fields':[cl.key]}}]};
+          else tmpObj = {bool: {should: [{query_string: {fields: [cl.key], query: `*${cl.value}*`}}]}};
+        }
       } else {
         tmpObj1.bool.should[0].match[cl.key] = cl.value;
         tmpObj = tmpObj1;
@@ -324,17 +345,25 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
   removeFilter(filter: any): void {
     this.colFilters.forEach((obj: { key: string | number; }, index: any) => {
       if (filter.key === obj.key) { 
-        if(filter.key === 'c' || filter.key === 'u') {
-          this.colFilters = this.colFilters.filter((obj: any) => obj.key !== filter.key);
-          console.log(this._sTableOptions.columns[filter.key].selectRange);
-          this._sTableOptions.columns[filter.key].selectRange = { start: '', end: ''}
-        } else {
+        // if(filter.key === 'c' || filter.key === 'u') {
+        //   this.colFilters = this.colFilters.filter((obj: any) => obj.key !== filter.key);
+        //   console.log(this._sTableOptions.columns[filter.key].selectRange);
+        //   this._sTableOptions.columns[filter.key].selectRange = { start: '', end: ''}
+        // } else {
           this.colfilter[obj.key] = '';
           this.colFilters.splice(index, 1);
-        }
+        // }
       }
     });
     this.colFilterCallback.emit({value: '', col: filter.key});
+  }
+
+  getListProperty(object: any, propertyName: any ): any {
+    let parts: any[]; let property: any;
+    parts = propertyName.split('.'); const length = parts.length;
+    let i: number;
+    property = object[parts[0]];
+    return (property) ? property.map((x: any) => x[parts[1]]) : '';
   }
   getProperty(object: any, propertyName: any ): any {
     let parts: any[]; let property: string;
@@ -343,7 +372,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
     property = object;
     for ( i = 0; i < length; i++ ) {
       // @ts-ignore
-      property = property[parts[i]];
+      property = (property[parts[i]]) ? property[parts[i]] : '';
     }
     return property;
   }
@@ -451,6 +480,14 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
 
   ngOnInit(): void {
     this.tmpOption = {...this.sTableOptions};
+    this.colHash = {};
+    for (const c of this.tmpOption.columns) {
+      this.columnsList.push(c.columnDef);
+      this.colHash[c.columnDef] = c;
+      if (c.colFilters && c.colFilters.hKey) {
+        this.cFields.push(c.columnDef);
+      }
+    }
   }
   ngOnDestroy(): void {
     this.isPageLoad = false;
@@ -671,15 +708,18 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
       }
     });
     query = {...this.tmpOption.serverSide.q};
+    
     if (this.filterQuery && this.filterQuery.multi_match) { // Global filter
       query.query.bool.must.push(this.filterQuery);
     }
     if (this.colFilterQuery && this.colFilterQuery.length) { // Multi Column filter
-      query.query.bool.filter = [];
       this.colFilterQuery.forEach((obj: any) => {
-        if (obj.bool.should[0].match) {
+        if (obj.bool && obj.bool.should[0].match) {
           query.query.bool.must.push(obj);
-        } else {
+        } else if(obj.must){
+          query.query.bool.must.push(obj.must[0])
+        } else if(!(obj.bool && obj.bool.should[0].match) && !obj.must) {
+          query.query.bool.filter = [];
           query.query.bool.filter.push(obj);
         }
       });
@@ -689,7 +729,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
     const limit = this.sTableOptions.pSize;
     const sort = JSON.stringify(this.sTableOptions.serverSide.sort);
     this.sTableOptions.loading = true; // @ts-ignore
-    this.masterService[this.tOption.serverSide.service][this.tOption.serverSide.fn]({q, skip, limit, sort})
+    this.masterService[this.tmpOption.serverSide.service][this.tmpOption.serverSide.fn]({q, skip, limit, sort})
       .subscribe((result: any) => {
         this.sTableOptions.loading = false;
         this.loaderService.display(false);
@@ -898,7 +938,6 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
       }
     });*/
   }
-
   doFilter = (value: string) => {
     // this.isActionChanged = true;
     localStorage.setItem(this.tableOptions.id, value);
@@ -927,8 +966,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges, OnDestr
         if(typeof value === "object" ){
           const start = new Date(value.start);
           const end = new Date(value.end);
-          this.colFilters.push({key: col, name: colName, value: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0" + start.getDate()).slice(-2)});
-          this.colFilters.push({key: col, name: colName, value: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0" + end.getDate()).slice(-2)});
+          this.colFilters.push({key: col, name: colName, value: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0"+start.getDate()).slice(-2)});
+          this.colFilters.push({key: col, name: colName, value: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0"+end.getDate()).slice(-2)});
         }else{
           this.colFilters.push({key: col, name: colName, value});
         }

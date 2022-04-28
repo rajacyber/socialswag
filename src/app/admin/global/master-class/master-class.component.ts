@@ -109,16 +109,16 @@ export class MasterClassComponent implements OnInit {
   removable = true;
   selectable = true;
   currentMasterClassUser: any;
-  videoDetails: any = {
-    video_type: '',
-    video: '',
-    trailer_type: '',
-    trailer_video: '',
-    preview_type: '',
-    preview_video: '',
-    audio_type: '',
-    audio_track: ''
-  };
+  videoDetails: any = [
+    {
+      trailer_type: '',
+      trailer_video: '',
+      preview_type: '',
+      preview_video: '',
+      audio_type: '',
+      audio_track: ''
+    }
+  ];
   description: any = [
     {
       language: '',
@@ -139,6 +139,7 @@ export class MasterClassComponent implements OnInit {
   showMasterClasses = true;
   statusLists: any = [];
   selectedStatus: any;
+  videoStep = 0;
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
   public loaderService: LoaderService, private aS: AuthenticationService, public httpClient: HttpClient,
@@ -172,7 +173,8 @@ export class MasterClassComponent implements OnInit {
           imgPath: '',
           isSort: true,
           iscolumnSearch: true,
-          width: '100px'
+          width: '100px',
+          colFilters: {type: 'text', hKey: true},
         }, {
           header: 'Master Name',
           columnDef: 'entity_ref.name',
@@ -195,6 +197,7 @@ export class MasterClassComponent implements OnInit {
           imgPath: '',
           isSort: true,
           iscolumnSearch: true,
+          colFilters: {type: 'text', hKey: true},
         }, {
           header: 'Created on',
           columnDef: 'c',
@@ -218,8 +221,9 @@ export class MasterClassComponent implements OnInit {
           isSort: true,
           iscolumnSearch: true,
           israngeSearch: true,
-          selectRange: {start: '', end: ''},
-          width: '150px'
+          colFilters: {type: 'range', hKey: true},
+          width: '150px',
+          dateCol: {start: '', end: ''}
         }, {
           header: 'Updated on',
           columnDef: 'u',
@@ -243,7 +247,8 @@ export class MasterClassComponent implements OnInit {
           isSort: true,
           iscolumnSearch: true,
           israngeSearch: true,
-          selectRange: {start: '', end: ''},
+          colFilters: {type: 'range', hKey: true},
+          dateCol: {start: '', end: ''},
           width: '150px'
         }, {
           header: 'Released on',
@@ -268,8 +273,9 @@ export class MasterClassComponent implements OnInit {
           isSort: true,
           iscolumnSearch: true,
           israngeSearch: true,
-          selectRange: {start: '', end: ''},
-          width: '150px'
+          colFilters: {type: 'range', hKey: true},
+          width: '150px',
+          dateCol: {start: '', end: ''}
         }, {
           header: 'Episode Count',
           columnDef: 'episode_details.episodes_total',
@@ -295,26 +301,19 @@ export class MasterClassComponent implements OnInit {
         }, {
           header: 'Category',
           id: 'Category',
-          columnDef: 'category',
+          columnDef: 'category_ref.name',
           filter: '',
-          cell: '(element: any) => `${element.category}`',
+          cell: '(element: any) => `${element.category_ref.name}`',
           order: 6,
           visible: true,
-          isToolTip: false,
-          isToolTipCol: '',
-          hasMultiData: false,
-          class: '',
-          color: '',
-          isProgressCntrl: false,
-          isColoredCntrl: false,
-          colList: [],
-          isfaicon: false,
-          isAddingText: false,
-          addingText: '',
-          img: false,
-          imgPath: '',
-          isSort: true,
+          listView: true,
+          dictView: true,
           iscolumnSearch: true,
+          isSort: true,
+          width: '300px',
+          selectFilter: true,
+          list: true,
+          colFilters: {type: 'text', hKey: true},
         },  {
           header: 'Status',
           id: 'status',
@@ -339,9 +338,11 @@ export class MasterClassComponent implements OnInit {
           isSort: true,
           iscolumnSearch: true,
           selectFilter: true,
-          selectFilterArr: [{name: 'Published', id: 'published', value: 'Published'},
-            {name: 'Coming Soon', id: 'comingsoon', value: 'ComingSoon'}
-          ]
+          colFilters: {
+            type: 'select',
+            hKey: false, isKeyword: true,
+            options: [{value: 'Published', name: 'Published'}, {value: 'ComingSoon', name: 'ComingSoon'}]
+          }
         }, {
           header: 'Languages',
           columnDef: 'languages',
@@ -352,7 +353,10 @@ export class MasterClassComponent implements OnInit {
           listView: true,
           iscolumnSearch: true,
           isSort: true,
-          width: '300px'
+          width: '300px',
+          selectFilter: true,
+          list: true,
+          colFilters: {type: 'text', hKey: true},
         }
       ],
       sortOptions: {active: 'u', direction: 'desc'},
@@ -499,7 +503,24 @@ export class MasterClassComponent implements OnInit {
     this.prevPriceingIndexStep();
   }
 
+  addVideoLang(): void {
+    this.videoDetails.push(
+      {
+        trailer_type: '',
+        trailer_video: '',
+        preview_type: '',
+        preview_video: '',
+        audio_type: '',
+        audio_track: ''
+      }
+    );
+    this.videoNextStep();
+  }
 
+  removeVideoLang(index: any): void {
+    this.videoDetails.splice(index, 1);
+    this.videoPrevStep();
+  }
   addLanguage(): void {
     this.description.push(
       {
@@ -608,6 +629,19 @@ export class MasterClassComponent implements OnInit {
   pricePrevStep(): void {
     this.priceStep--;
   }
+
+  videoSetStep(index: number): void {
+    this.videoStep = index;
+  }
+
+  videoNextStep(): void {
+    this.videoStep++;
+  }
+
+  videoPrevStep(): void {
+    this.videoStep--;
+  }
+
   async stepperNext(title: any, index: any): Promise<void> {
     switch (title) {
       case 'MasterClass':
@@ -624,11 +658,12 @@ export class MasterClassComponent implements OnInit {
         break;
       case 'Language':
         this.description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
-        const videoDetails = Object.assign({}, this.videoDetails);
-        videoDetails.video = (this.videoDetails.video_type === 'New') ? videoDetails.video : this.defaultContent.video;
-        videoDetails.preview_video = (this.videoDetails.preview_type === 'New') ? videoDetails.preview_video : this.defaultContent.preview_video;
-        videoDetails.trailer_video = (this.videoDetails.trailer_type === 'New') ? videoDetails.trailer_video : this.defaultContent.trailer_video;
-        videoDetails.audio_track = (this.videoDetails.audio_type === 'New') ? videoDetails.audio_track : this.defaultContent.audio_track;
+        const videoDetails: any = this.videoDetails;
+        videoDetails.map((item: any, idx: any) => {
+          item[idx].preview_video = (this.videoDetails[idx].preview_type === 'New') ? item[idx].preview_video : this.defaultContent.preview_video;
+          item[idx].trailer_video = (this.videoDetails[idx].trailer_type === 'New') ? item[idx].trailer_video : this.defaultContent.trailer_video;
+          item[idx].audio_track = (this.videoDetails[idx].audio_type === 'New') ? item[idx].audio_track : this.defaultContent.audio_track;
+        });
         this.uploadimage.data = JSON.stringify(this.description);
         this.uploadimage.video_details = JSON.stringify(videoDetails);
         this.uploadimage.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
@@ -715,10 +750,6 @@ export class MasterClassComponent implements OnInit {
     this.contentService.getAllApiContentdataGet({q, skip, limit, sort}).subscribe((result: any) => {
       this.masterClassTableOptions.pageData = [];
       if (result.data.length) {
-        result.data.map((list: any) => {
-          list.category = (list.category_ref) ? list.category_ref.map((x: any) => x.name): [];
-          list.episode_details = (list.episode_details) ? list.episode_details: {episodes_total: ''};
-        })
         this.masterClassTableOptions.pageData = result.data;
         this.masterClassTableOptions.tableOptions.pageTotal = result.total;
       } else {
@@ -764,8 +795,8 @@ export class MasterClassComponent implements OnInit {
         const arun = event.col;
         const start = new Date(event.value.start);
         const end = new Date(event.value.end);
-        filter[0].range[arun] = { gte: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0" + start.getDate()).slice(-2)}
-        filter[1].range[arun] = { lte: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0" + end.getDate()).slice(-2)}
+        filter[0].range[arun] = { gte: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0"+start.getDate()).slice(-2)}
+        filter[1].range[arun] = { lte: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0"+end.getDate()).slice(-2)}
         tmpObj.bool.filter = filter;
       }
       this.colFilterQuery.push(tmpObj);
