@@ -1,0 +1,556 @@
+<!--suppress TypeScriptUnresolvedVariable -->
+<mat-card *ngIf="isLoading">
+  <mat-card-content>
+    <p> <i class="fa fa-spin fa-spinner fa-lg"></i> Loading...</p>
+  </mat-card-content>
+</mat-card>
+<mat-card class="table-card ibtn" *ngIf="!isLoading">
+  <mat-toolbar class="table-tools" role="heading" *ngIf="selection.selected.length === 0">
+    <span class="mat-title mb0f"> {{tableOptions.title}} <span class="fw300" *ngIf="tableOptions.pageTotal !== 0 && tableOptions.title !== '' ">
+      ({{tableOptions.pageTotal}}) </span></span>
+    <button class="px-1 lh-25" mat-stroked-button *ngIf="tableOptions.add" type="button"  matTooltip="Add New Record"  color="primary"
+          (click)="AddTableRecord()" id ="addbtn{{tableOptions.title}}">
+      <mat-icon class="mat-18 mb-1">add</mat-icon> Add
+    </button>
+    <div fxFlex fxLayout fxLayoutAlign="end" *ngIf="tableOptions.floatingFilter">
+      <div fxLayout fxLayoutGap="15px" class="navigation-items">
+        <form fxLayout="row" fxLayoutAlign="center center">
+            <mat-form-field class="pl20" style="padding: 10px;font-size: 15px;" *ngIf= "tableOptions.dropdwn">
+                <mat-select [multiple]="false"
+                  placeholder="Asset"
+                  (selectionChange)="filterDrpLstChange($event.value)" [formControl]="assetDrpCtrl">
+                  <mat-option *ngFor="let item of tableOptions.filterDrpLstFilteredList"
+                    [value]="item._id">
+                    {{item.ip}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+          <!--<div fxFlex fxLayout fxLayoutAlign="end" *ngIf="tableOptions.add"></div>-->
+          <mat-form-field floatLabel="never" class="search-tool" *ngIf="tableOptions.search">
+            <input matInput class="form-control mat-small" [(ngModel)]="filterText" type="text" trim="blur" name="filterText"
+              [id]="tableOptions.id" (ngModelChange)="filterUpdate.next($event)" placeholder="Search">
+            <button class="gray" matSuffix mat-icon-button *ngIf="filterText === ''" color="primary" >
+              <mat-icon>search</mat-icon>
+            </button>
+            <button class="gray" matSuffix mat-icon-button *ngIf="filterText && filterText !== ''"
+              (click)="filterText = ''; doFilter(filterText);" color="primary" >
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+          <div fxFlex fxLayout fxLayoutAlign="end" *ngIf="tableOptions.refreshData">
+            <button class="gray" matSuffix mat-icon-button matTooltip="Reload Table Data" (click)="RefreshTableData();"
+                    color="primary" >
+              <mat-icon id="rfrbtn{{tableOptions.title}}">refresh</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="tableOptions.refreshData">
+            <mat-form-field style="font-size: 14px;width: 61px">
+              <mat-label>Every</mat-label>
+              <mat-select [(value)]="selectedTimer" (selectionChange)="timerCallData()"
+                matTooltip="Refresh Interval">
+                <mat-option value="0" selected></mat-option>
+                <mat-option value="60" id="RefreshOnemin">1 Min</mat-option>
+                <mat-option value="300" id="RefreshFivemin">5 Min</mat-option>
+                <mat-option value="1800" id="RefreshThirtymin">30 Min</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <button mat-icon-button menuOpen="false" matTooltip="Filter List"
+                  *ngIf="tableOptions.showColFilter && _sTableOptions.columns && _sTableOptions.columns.length"
+                  [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger">
+            <mat-icon>filter_list</mat-icon></button>
+          <mat-menu #filterMenu="matMenu" class="col-filters">
+            <mat-card class="filter-card" (click)="$event.stopPropagation();">
+              <mat-card-header>
+                <mat-card-title>Filter</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <form>
+                  <ng-container *ngFor="let column of _sTableOptions.columns">
+                    <mat-form-field *ngIf="column.iscolumnSearch" class="w-100">
+                      <input matInput type="text" trim="blur" [id]="column.id" placeholder="Search {{column.header}}"
+                             *ngIf="!column.selectFilter" name="{{column.columnDef}}" [(ngModel)]="colfilter[column.columnDef]"
+                        (input)='columnFilter($any($event.target).value,column.columnDef)'
+                        [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch ">
+                      <mat-select placeholder="Choose filter value" name="{{column.columnDef}}"
+                                  *ngIf="column.selectFilter" [(ngModel)]="colfilter[column.columnDef]"
+                                  [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch "
+                      (selectionChange)= "columnFilter($event.value, column.columnDef)">
+                        <mat-option value="">All</mat-option>
+                        <mat-option *ngFor="let val of column.selectFilterArr" [value]="val.value" [id]="val.id">{{val.name}}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </ng-container>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </mat-menu>
+          <button mat-icon-button menuOpen="false" (click)="openListColumns()" #listMenuTrigger="matMenuTrigger"
+            [matMenuTriggerFor]="belowMenu" color="primary" id="view{{tableOptions.id}}" matTooltip="View Column, Reorder Columns"  *ngIf="tableOptions.showhideList">
+            <mat-icon>view_column</mat-icon>
+          </button>
+          <mat-menu #belowMenu="matMenu" [hasBackdrop]="false" yPosition="below">
+            <!-- <div *ngFor="let item of showhideList; let i = index"
+                  style="padding: 5px;overflow: hidden;font-family: Arial, Helvetica, sans-serif">
+                  <mat-checkbox color="primary" [checked]="item.visible==true?item:''" (click)="$event.stopPropagation()"
+                    (change)="showHideColumn(i, item)">
+                  </mat-checkbox>
+                  {{item.header}}
+                </div> -->
+            <div cdkDropList (cdkDropListDropped)="drop($event)">
+              <div class="dhandle"
+                *ngFor="let item of showhideList; let i = index" cdkDrag>
+                <i class="material-icons color_icon"> drag_handle </i>
+                <mat-checkbox color="primary" [checked]="item.visible==true?item:''" (click)="$event.stopPropagation()"
+                  (change)="showHideColumn(i, item)" class="left-align" [id]="item.header"> {{item.header}} </mat-checkbox>
+              </div>
+            </div>
+          </mat-menu>
+          <button mat-icon-button menuOpen="false" matTooltip="Filter List"
+                  *ngIf="sTableOptions.cFilter" color="primary"
+                  [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger">
+            <mat-icon class="">filter_list</mat-icon></button>
+            <mat-menu #filterMenu="matMenu" class="col-filters">
+              <mat-card class="filter-card" (click)="$event.stopPropagation();">
+                <mat-card-header>
+                  <mat-card-title>Filter</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <form #filterForm="ngForm" role="form">
+                    <mat-form-field *ngIf="sTableOptions.columns && sTableOptions.columns.length" class="w-100" appearance="outline">
+                      <mat-label>Choose filter column</mat-label>
+                      <mat-select placeholder="Choose filter column" name="chooseFilter" required [(ngModel)]="cFilter.selectedCol">
+                        <mat-option value="">Choose filter column</mat-option>
+                        <mat-option *ngFor="let val of sTableOptions.columns" [value]="val.col" [id]="val.id">{{val.header}}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field *ngIf="cFilter.selectedCol" class="w-100" appearance="outline">
+                      <mat-label>Search {{colHash[cFilter.selectedCol].header}}</mat-label>
+                      <input matInput type="text" trim="blur" *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'text'"
+                             placeholder="Search {{colHash[cFilter.selectedCol].header}}" required
+                              name="{{colHash[cFilter.selectedCol].col}}s" [(ngModel)]="colHash[cFilter.selectedCol].val" >
+                      <mat-select placeholder="Search {{colHash[cFilter.selectedCol].header}}" name="{{colHash[cFilter.selectedCol].col}}s"
+                                  *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'select'" required
+                                  [(ngModel)]="colHash[cFilter.selectedCol].val">
+                        <mat-option *ngFor="let val of colHash[cFilter.selectedCol].colFilters.options" [value]="val.value">{{val.name}}</mat-option>
+                      </mat-select>
+                      <ng-container *ngIf="colHash[cFilter.selectedCol].colFilters.type === 'range'">
+                        <mat-date-range-input [rangePicker]="picker">
+                          <input matStartDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].start"
+                                 placeholder="Start date">
+                          <input matEndDate name="startDate" [(ngModel)]="colHash[cFilter.selectedCol].end"
+                                 placeholder="End date">
+                        </mat-date-range-input>
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-date-range-picker #picker></mat-date-range-picker>
+                      </ng-container>
+                    </mat-form-field>
+                    <button (click)="columnFilterxlsx(colHash[cFilter.selectedCol])" [disabled]="!filterForm.form.valid"
+                            color="primary" mat-raised-button="">Add Filter</button>
+                     <button class="ml-2" (click)="cFilter.selectedCol = ''"  mat-stroked-button="">Clear</button>
+                  </form>
+                </mat-card-content>
+              </mat-card>
+            </mat-menu>
+            <button id="gbtn{{sTableOptions.title}}" color="primary" matSuffix mat-icon-button *ngIf="!tableOptions.hideDownload"
+            matTooltip="Download as XLSx" [matMenuTriggerFor]="xlsMenu"
+        aria-label="download xlsx menu">
+      <mat-icon class="mat-24">file_download</mat-icon>
+      </button>
+      <mat-menu #xlsMenu="matMenu">
+        <button mat-menu-item id="currentSelection" *ngIf="tableOptions.filterDownload" (click)="downloadAsXls('filtered')">
+          <mat-icon class="mat-24">filter_list</mat-icon>
+          <span>Filtered Data</span>
+        </button>
+        <button mat-menu-item id="fullData" (click)="downloadAsXls('full')">
+          <mat-icon class="mat-24">file_download</mat-icon>
+          <span>Full Data</span>
+        </button>
+      </mat-menu>
+          <button mat-icon-button *ngIf="tableOptions.compareData" matTooltip="Compare Data" color="primary"
+            (click)="CompareData(compSelection.selected)">
+            <mat-icon>compare</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Save Settings" id="save{{tableOptions.id}}" (click)="SaveSettings()" color="primary"  *ngIf="tableOptions.saveData">
+            <mat-icon>save</mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="publish()" *ngIf="tableOptions.publish">
+            Publish
+          </button>
+          <a mat-icon-button matTooltip="Help Link" [href]="baseService.helpLinks[tableOptions.id]" target="_blank" color="primary"
+             *ngIf="baseService.helpLinks && baseService.helpLinks[tableOptions.id] && baseService.helpLinks[tableOptions.id] !== ''">
+            <mat-icon>help</mat-icon>
+          </a>
+          <!--<button mat-icon-button menuOpen="false" (click)="openListExport()" matTooltip="Download"
+            #exportMenuTrigger="matMenuTrigger" [matMenuTriggerFor]="exportMenu" *ngIf="tableOptions.exportExcel">
+            <mat-icon>cloud_download</mat-icon>
+          </button>-->
+          <button *ngFor="let pbtn of tableOptions.parentCalls" mat-icon-button [matTooltip]="pbtn.tooltip" [color]="pbtn.color"
+                  (click)="ParentCalls(pbtn.id)">
+            <mat-icon>{{pbtn.icon}}</mat-icon>
+          </button>
+
+          <mat-menu #exportMenu="matMenu" [hasBackdrop]="false" yPosition="below">
+            <!--<div>
+              <button mat-button (click)="ExportToExcel()">
+                Export to Excel
+              </button></div>
+            <div>
+              <button mat-button (click)="exportAs('pdf', 'l','current')">
+                Export Current Page to PDF
+              </button>
+            </div>
+            <div>
+              <button mat-button (click)="exportAs('pdf', 'l','whole')">
+                Export Whole Data to PDF
+              </button>
+            </div>-->
+            <div>
+              <button mat-button (click)="exportAllData()">
+                Export All Data
+              </button>
+            </div>
+          </mat-menu>
+        </form>
+      </div>
+    </div>
+  </mat-toolbar>
+  <mat-toolbar class="select-tools" *ngIf="selection.selected.length > 0">
+    <span>{{selection.selected.length}} {{tableOptions.selectText}} selected.</span>
+    <div fxFlex fxLayout fxLayoutAlign="end">
+      <ng-container *ngIf="!tableOptions.isHideGlobal">
+        <button mat-flat-button color="primary" id="gbtnSelction{{tableOptions.title}}" mat-raised-button
+                [matMenuTriggerFor]="gactionSMenu" [disabled]="selection.selected.length === 0"
+                aria-label="global action with a menu"> Global Actions
+        </button>
+        <mat-menu #gactionSMenu="matMenu">
+          <ng-container *ngFor="let item of tableOptions.actionMenuItems">
+            <a id="ganchsel{{item.text}}" class="mat-primary"
+               *ngIf="item.isGlobal" mat-menu-item (click)="globalActionCall(selection.selected, item)">
+              <mat-icon *ngIf=item.icon>{{item.icon}}</mat-icon>
+              <mat-icon *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+              <span>{{ item.text }}</span>
+            </a>
+          </ng-container>
+        </mat-menu>
+      </ng-container>
+      <button class="gray" matSuffix mat-icon-button (click)="clearSelection();">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+  <!--<mat-chip-list aria-label="Column Filters" class="mb-2">
+    <mat-chip class="ml-2 my-2" *ngFor="let filter of colFilters" (removed)="removeFilterxlsx(filter)">
+      {{filter.name}} = *{{filter.value}}* <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-list>-->
+  <mat-chip-list aria-label="Column Filters" class="mb10">
+    <mat-chip *ngFor="let filter of colFilters" (removed)="removeFilter(filter)">
+      {{filter.name}} = *{{filter.value}}* <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-list>
+  <mat-card-content [ngClass]="{'mt-2': colFilters.length}">
+    <mat-progress-bar mode="indeterminate" *ngIf="tableOptions.loading"></mat-progress-bar>
+    <div #MAINTABLEDIV class="overflow-auto">
+      <table id="mytable" class="ibtn crud-table" [ngClass]="{'tablePadding': isTablePadding===true}" mat-table [dataSource]="dataSource"
+        *ngIf="dataSource" matSort #MainTable [matSortActive]="_sTableOptions['sortOptions']['active']"
+        [matSortDirection]="_sTableOptions['sortOptions']['direction']" (matSortChange)="customSort($event)">
+        <ng-container matColumnDef="select" *ngIf="tableOptions.rowSelection" sticky>
+          <th mat-header-cell *matHeaderCellDef class="ww-break">
+            <mat-checkbox color="primary" (change)="$event ? masterToggle() : null" id="_selectDeselectAll"
+              [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()"></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" class="ww-break">
+            <mat-checkbox color="primary" (click)="$event.stopPropagation()" [id]="row._id"
+              (change)="$event ? rowToggle(row) : null" [checked]="selection.isSelected(row)"></mat-checkbox>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="compare" *ngIf="tableOptions.compareData">
+          <th mat-header-cell *matHeaderCellDef class="ww-break">Compare
+            <!-- <mat-checkbox color="primary" (change)="$event ? masterToggle() : null"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()"></mat-checkbox> -->
+          </th>
+          <td mat-cell *matCellDef="let row" class="ww-break">
+            <mat-checkbox color="primary" (click)="$event.stopPropagation()"
+              (change)="$event ? compSelection.toggle(row) : null" [checked]="compSelection.isSelected(row)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+        <ng-container *ngFor="let column of _sTableOptions.columns" [matColumnDef]="column.columnDef">
+          <th mat-header-cell *matHeaderCellDef [width]="column.width">
+            <mat-label mat-sort-header
+              [disabled]="(column.isSort === undefined || column.isSort === null) ? 'false' : !column.isSort ">
+              <span>{{ column.header }}</span> </mat-label>
+            <!--Column Search Code in the Table header section-->
+            <!--<div *ngIf="tableOptions.columnSearch && dontShow">
+              <mat-form-field>
+                <input matInput type="text" trim="blur" placeholder="Search {{column.header}}"
+                       *ngIf="!column.selectFilter"
+                  (input)='columnFilter($any($event.target).value,column.columnDef)'
+                  [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch ">
+                <mat-select placeholder="Choose filter value" name="{{column.columnDef}}"
+                            *ngIf="column.selectFilter" [(ngModel)]="colfilter[column.columnDef]"
+                            [disabled]="(column.iscolumnSearch === undefined || column.iscolumnSearch===null) ? 'false' : !column.iscolumnSearch "
+                (selectionChange)= "columnFilter($event.value, column.columnDef)">
+                  <mat-option value="">All</mat-option>
+                  <mat-option *ngFor="let val of column.selectFilterArr" [value]="val.value">{{val.name}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>-->
+          </th>
+          <td mat-cell *matCellDef="let row"
+            [ngClass]="{'text-center': column.align === 'center',
+              'text-left': !column.align || column.align === 'left', 'text-right': column.align === 'right'}" class="wwbreak">
+            <span *ngIf="column.filter">
+              <span *ngIf="column.isHyperlink && !column.isToolTip">
+                <ng-container *ngIf="column.isTarget; then thenTemplate; else elseTemplate"></ng-container>
+                <ng-template #thenTemplate>
+                  <div innerHTML="{{getProperty(row, column.columnDef) | formatCell:column.filter}}"></div>
+                </ng-template>
+                <ng-template #elseTemplate>
+                  <a class="pointer" (click)="hyperLinkCall(row, column.columnDef)" [id]="getProperty(row, column.columnDef)">
+                    <span>{{ getProperty(row, column.columnDef) | formatCell:column.filter}}</span>
+                  </a>
+                </ng-template>
+              </span>
+              <ng-container *ngIf="!column.isHyperlink && !column.isHtml">
+                <span *ngIf="column.isToolTip" matTooltipClass="example-tooltip-red"
+                  matTooltip="{{ getProperty(row, column.isToolTipCol) }}">
+                  {{getProperty(row, column.columnDef) | formatCell:column.filter}}</span>
+                <span *ngIf="!column.isToolTip">{{getProperty(row, column.columnDef) | formatCell:column.filter}}</span>
+              </ng-container>
+              <span *ngIf="!column.isHyperlink && column.isHtml">
+                <div [innerHTML]="getProperty(row, column.columnDef) | safeHTML"></div>
+                <!--{{getProperty(row, column.columnDef) | formatCell:column.filter}}-->
+              </span>
+            </span>
+
+            <ng-container *ngIf="column.hasMultiData">
+              <div *ngFor="let col of column.colList">
+                <span *ngIf="col.isHyperlink && !col.isToolTip">
+                  <a class="pointer" (click)="hyperLinkCall(row, col.col)" [id]="getProperty(row, column.columnDef)">
+                    <span>{{ getProperty(row, col.col)}}</span>
+                  </a>
+                </span>
+                <span *ngIf="col.isToolTip && !col.isHyperlink" matTooltipClass="example-tooltip-red"
+                  matTooltip="{{ getProperty(row, col.isToolTipCol) }}">{{ getProperty(row, col.col) }}</span>
+                <span *ngIf="col.isHyperlink && col.isToolTip" matTooltipClass="example-tooltip-red"
+                  matTooltip="{{ getProperty(row, col.isToolTipCol) }}">
+                  <a class="pointer" [id]="getProperty(row, column.columnDef)" (click)="hyperLinkCall(row, col.col)">
+                    <span>{{ getProperty(row, col.col)}}</span>
+                  </a>
+                </span>
+                <span *ngIf="col.isProgressCntrl">
+                  <div class="mat-elevation-z2" [ngClass]="{'progress-s': getProperty(row, 'warn') > getProperty(row, col.col),
+                            'progress-d':getProperty(row, 'warn') <= getProperty(row, col.col) }">
+                    <span class="percent-b">{{getProperty(row, col.col)}}%</span>
+                    <div class="p-bar" [style.width]="getProperty(row, col.col)+'%'"></div>
+                  </div>
+                </span>
+                <span *ngIf="col.isColoredCntrl">
+                  <span *ngIf="getProperty(row, col.col) == '-'">{{getProperty(row, col.col)}}</span>
+                  <span class="label" *ngIf="getProperty(row, col.col) != '-'"
+                    [ngStyle]="{'background-color':col.color}">{{getProperty(row, col.col)}}</span>
+                </span>
+
+                <span *ngIf="col.isfaicon">
+                  <i class="{{col.class }}" [ngStyle]="{color: col.color}"></i>
+                </span>
+
+                <span *ngIf="col.filter">
+                  {{getProperty(row, col.col) | formatCell:col.filter}}
+                </span>
+
+                <span *ngIf="col.isAddingText">
+                  {{col.addingText }}{{ getProperty(row, col.col)}}
+                </span>
+
+                <span *ngIf="col.img && col.imgPath">
+                  <img [src]="col.imgPath+'generic.svg'" *ngIf="getProperty(row, col.col) === null" alt="generic"
+                    class="{{col.class}}">
+                  <img [src]="col.imgPath+getProperty(row, col.col)" *ngIf="getProperty(row, col.col) !== null" alt="logo"
+                    class="{{col.class}}">
+                </span>
+
+                <span *ngIf="!col.isHyperlink && !col.isProgressCntrl && !col.isColoredCntrl && !col.isToolTip
+                    && !col.filter && !col.isfaicon && !col.isAddingText && !col.img">
+                  {{ getProperty(row, col.col) }}
+                </span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="column.isProgressCntrl">
+              <div class="mat-elevation-z2" [ngClass]="{'progress-s': getProperty(row, 'warn') > getProperty(row, column.columnDef),
+                      'progress-d':getProperty(row, 'warn') <= getProperty(row, column.columnDef) }">
+                <span class="percent-b">{{getProperty(row, column.columnDef)}}%</span>
+                <div class="p-bar" [style.width]="getProperty(row, column.columnDef)+'%'"></div>
+              </div>
+            </ng-container>
+
+            <!-- <ng-container *ngIf="column.isDynamicCntrl">
+                  <div [innerHTML]="getProperty(row, column.columnDef)"></div>
+                </ng-container> -->
+
+            <ng-container *ngIf="column.isColoredCntrl">
+              <ng-container *ngIf="column.isCustomText; then thenTemplate; else elseTemplate"></ng-container>
+              <ng-template #thenTemplate>
+                <!-- <span *ngIf="getProperty(row, column.columnDef) == '-'">{{getCustomText(getProperty(row, column.columnDef))}}</span> -->
+                <span class="label" *ngIf="getProperty(row, column.columnDef) != '-'"
+                  [ngStyle]="getCustomColor(getProperty(row, column.columnDef))">{{getCustomText(getProperty(row, column.columnDef)) }}</span>
+              </ng-template>
+              <ng-template #elseTemplate>
+                <span *ngIf="getProperty(row, column.columnDef) == '-'">{{getProperty(row, column.columnDef)}}</span>
+                <span class="label" *ngIf="getProperty(row, column.columnDef) != '-'"
+                  [ngStyle]="{'background-color':column.color}">{{getProperty(row, column.columnDef)}}</span>
+              </ng-template>
+            </ng-container>
+
+            <ng-container *ngIf="column.statusicon">
+              <img class="vendor-logo" [src]='getIconPath(row, column)' [matTooltip]='getIconTooltip(row, column)'
+                [alt]='getIconTooltip(row, column)'>
+              <div>
+                <span hidden [innerHTML]="getIconTooltip(row, column) | safeHTML"></span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="!column.filter">
+              <ng-container *ngIf="column.icon">
+                <ng-container>
+                  <span>
+                    <ng-container *ngFor="let icon of column.iconList">
+                      <mat-icon [ngClass]="[icon.class]" *ngIf="getProperty(row, column.columnDef) === icon.value">
+                        {{icon._icon}}
+                      </mat-icon>
+                    </ng-container>
+                  </span>
+                </ng-container>
+              </ng-container>
+
+              <ng-container *ngFor="let img of column.conditionList">
+                <img class="{{img.class}}" [src]="img._img" [alt]="img.value" *ngIf="getProperty(row, column.columnDef) === img.value"
+                [matTooltip]="img.displaytext">
+                <div>
+                  <span hidden *ngIf="getProperty(row, column.columnDef) === img.value"
+                    [innerHTML]="getProperty(row, column.columnDef)"></span>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="column.img && column.imgPath">
+                <img [src]="column.imgPath+'generic.svg'" alt="generic"
+                  *ngIf="getProperty(row, column.columnDef) === null || getProperty(row, column.columnDef) === undefined"
+                  class="{{column.class}}">
+
+
+                <img [src]="column.imgPath+getProperty(row, column.columnDef)" [alt]="getProperty(row, column.columnDef)"
+                  title="{{column.isToolTipCol === undefined? '': getProperty(row, column.isToolTipCol)}}" *ngIf="getProperty(row, column.columnDef) !== null &&
+                     getProperty(row, column.columnDef) !== undefined " class="{{column.class}}">
+                <div>
+                  <span hidden [innerHTML]="getProperty(row, column.columnDef)"></span>
+                </div>
+
+              </ng-container>
+
+              <!-- <ng-container *ngIf="column.isAddingText">
+                    {{ tableOptions.addingText}}
+                  </ng-container> -->
+
+              <ng-container *ngIf="column.isAddingText">
+                {{ column.addingText }} {{ getProperty(row, column.columnDef) }}
+              </ng-container>
+
+              <span *ngIf="column.isHyperlink && !column.isToolTip">
+
+                <ng-container *ngIf="column.isTarget; then thenTemplate; else elseTemplate"></ng-container>
+                <ng-template #thenTemplate>
+                  <div [innerHTML]="getProperty(row, column.columnDef)"></div>
+                </ng-template>
+                <ng-template #elseTemplate>
+                  <a class="pointer" (click)="hyperLinkCall(row, column.columnDef)" [id]="getProperty(row, column.columnDef)">
+                    <span>{{ getProperty(row, column.columnDef)}}</span>
+                  </a>
+                </ng-template>
+              </span>
+              <span *ngIf="column.isToolTip && !column.isHyperlink" matTooltipClass="example-tooltip-red"
+                matTooltip="{{ getProperty(row, column.isToolTipCol) }}">
+                {{ getProperty(row, column.columnDef) }}
+              </span>
+              <span *ngIf="column.isHyperlink && column.isToolTip" matTooltipClass="example-tooltip-red"
+                matTooltip="{{ getProperty(row, column.isToolTipCol) }}">
+                <a class="pointer" (click)="hyperLinkCall(row, column.columnDef)" [id]="getProperty(row, column.columnDef)">
+                  <span>{{ getProperty(row, column.columnDef)}}</span>
+                </a>
+              </span>
+              <span *ngIf="column.isfaicon">
+                <i class="{{column.class }}"
+                  [ngStyle]="{color: column.color}"></i>{{ getProperty(row, column.columnDef) }}
+              </span>
+              <ng-container *ngIf="!column.icon && !column.img && !column.isHyperlink &&
+                   !column.isProgressCntrl && !column.isColoredCntrl && !column.hasMultiData && !column.statusicon && !column.isfaicon
+                   && !column.isAddingText  && !column.isToolTip">
+                {{ getProperty(row, column.columnDef) }}
+              </ng-container>
+            </ng-container>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="action" *ngIf="tableOptions.showAction" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef class="wwbreak"
+            [ngClass]="tableOptions.showAction === true? 'color1' : 'color2' ">
+            <!--<button id="gbtn{{tableOptions.title}}" mat-icon-button [matMenuTriggerFor]="gactionMenu" [disabled]="selection.selected.length === 0"
+              aria-label="global action with a menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>-->Action
+            <mat-menu #gactionMenu="matMenu">
+              <ng-container *ngFor="let item of tableOptions.actionMenuItems">
+                <a id="ganch{{item.text}}" *ngIf=item.isGlobal mat-menu-item (click)="globalActionCall(selection.selected, item)">
+                  <mat-icon *ngIf=item.icon>{{item.icon}}</mat-icon>
+                  <mat-icon *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+                  <span [id]="item.text">{{ item.text }}</span>
+                </a>
+              </ng-container>
+            </mat-menu>
+          </th>
+          <td mat-cell *matCellDef="let element" class="wwbreak"
+            [ngClass]="tableOptions.showAction == true? 'color1' : 'color2' ">
+            <button id="btn{{tableOptions.id}}" mat-icon-button  color="primary" [matMenuTriggerFor]="actionMenu" aria-label="row action with a menu"
+              [disabled]="selection.selected.length > 0">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionMenu="matMenu">
+              <ng-container *ngFor="let item of tableOptions.actionMenuItems">
+                <a id="anch{{item.text}}" *ngIf="item.callback && !item.hideLocal" mat-menu-item (click)="actionCall(element, item)">
+                  <mat-icon *ngIf=item.icon>{{item.icon}}</mat-icon>
+                  <mat-icon *ngIf=!item.icon>arrow_forward_ios</mat-icon>
+                  <span [id]="item.text">{{ item.text }}</span>
+                </a>
+              </ng-container>
+            </mat-menu>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns; let i = index;" [ngClass]="{hovered: row.hovered, highlighted: row.highlighted}"
+            (click)="rowClick(row, i)" (mouseover)="row.hovered = true" (mouseout)="row.hovered = false"></tr>
+      </table>
+      <p class="ml-2" *ngIf="!dataSource.data || dataSource.data.length === 0">
+        <span *ngIf="tableOptions.loading">Please wait!</span>
+        <span *ngIf="!tableOptions.loading && tableOptions.pageTotal === 0 && !tableOptions.nomsg">
+          No data available!
+        </span>
+        <span *ngIf="!tableOptions.loading && tableOptions.pageTotal === 0 && tableOptions.nomsg">
+         {{tableOptions.nomsg}}
+        </span>
+      </p>
+    </div>
+    <mat-progress-bar mode="indeterminate" *ngIf="tableOptions.loading && dataSource &&  dataSource.data && dataSource.data.length > 25">
+    </mat-progress-bar>
+    <mat-paginator class="mr20 t-paginator" *ngIf="tableOptions.pagination && tableOptions.pageTotal < 10000"
+    [pageSize]="tableOptions.pageSize" showFirstLastButtons
+      [length]="tableOptions.pageTotal" #paginator [pageSizeOptions]="tableOptions.pageOptions"
+      (page)="pageChanged($event)"></mat-paginator>
+    <mat-paginator class="mr20 t-paginator" *ngIf="tableOptions.pagination && tableOptions.pageTotal > 9999"
+                   [pageSize]="tableOptions.pageSize"
+      [length]="tableOptions.pageTotal" #paginator [pageSizeOptions]="tableOptions.pageOptions"
+      (page)="pageChanged($event)"></mat-paginator>
+  </mat-card-content>
+</mat-card>

@@ -22,10 +22,14 @@ import { MasterClassComponent } from './master-class/master-class.component';
 import { UsersComponent } from './users/users.component';
 import { MasterClassDetailsComponent } from './master-class/master-class-details/master-class-details.component';
 import { AuditLogComponent } from './audit-log/audit-log.component';
+import { LiveLearningComponent } from './live-learning/live-learning.component';
+import { ChannelsComponent } from './channels/channels.component';
+import { GlobalSettingsComponent } from './global-settings/global-settings.component';
 
 @NgModule({
   declarations: [
-    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent
+    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent, LiveLearningComponent, ChannelsComponent,
+    GlobalSettingsComponent
   ],
   imports: [
     CommonModule,

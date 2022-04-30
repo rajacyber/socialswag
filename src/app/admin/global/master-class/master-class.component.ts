@@ -1,6 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {BaseRequestService} from '../../../_services/base.service';
-import {CommonService} from '../../../_services/common.services';
 import {ModalService} from '../../../_services/modal.service';
 import {Router} from '@angular/router';
 import {LoaderService} from '../../../_services/loader.service';
@@ -140,6 +139,7 @@ export class MasterClassComponent implements OnInit {
   statusLists: any = [];
   selectedStatus: any;
   videoStep = 0;
+  reason: any = '';
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
   public loaderService: LoaderService, private aS: AuthenticationService, public httpClient: HttpClient,
@@ -149,6 +149,10 @@ export class MasterClassComponent implements OnInit {
     this.subscribedKeys.addCategory = masterService.addCategory.subscribe((value: any) => {
       this.addMasterClassCategory();     
     });
+    this.subscribedKeys.addCategory = masterService.reasonEVE.subscribe((value: any) => {
+      this.reason = value;
+    });
+
     this.masterClassTableOptions = {
       columns: [
         {
@@ -657,14 +661,15 @@ export class MasterClassComponent implements OnInit {
         await this.stepperAction('/api/contentdata/defaultContent', defaultData, 2, '');
         break;
       case 'Language':
-        this.description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
+        const description: any =  this.description;
+        description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
         const videoDetails: any = this.videoDetails;
         videoDetails.map((item: any, idx: any) => {
-          item[idx].preview_video = (this.videoDetails[idx].preview_type === 'New') ? item[idx].preview_video : this.defaultContent.preview_video;
-          item[idx].trailer_video = (this.videoDetails[idx].trailer_type === 'New') ? item[idx].trailer_video : this.defaultContent.trailer_video;
-          item[idx].audio_track = (this.videoDetails[idx].audio_type === 'New') ? item[idx].audio_track : this.defaultContent.audio_track;
+          item.preview_video = (this.videoDetails[idx].preview_type === 'New') ? item.preview_video : this.defaultContent.preview_video;
+          item.trailer_video = (this.videoDetails[idx].trailer_type === 'New') ? item.trailer_video : this.defaultContent.trailer_video;
+          item.audio_track = (this.videoDetails[idx].audio_type === 'New') ? item.audio_track : this.defaultContent.audio_track;
         });
-        this.uploadimage.data = JSON.stringify(this.description);
+        this.uploadimage.data = JSON.stringify(description);
         this.uploadimage.video_details = JSON.stringify(videoDetails);
         this.uploadimage.content_id = (this.currentMasterClassUser) ? this.currentMasterClassUser : localStorage.currentMasterClassUser;
         const formData = new FormData();
@@ -733,7 +738,7 @@ export class MasterClassComponent implements OnInit {
     let sorts: any = [{}];
       if (this.masterClassTableOptions.sortOptions && this.masterClassTableOptions.sortOptions.direction
         && this.masterClassTableOptions.sortOptions.direction !== '') {
-      const orderArr = ['', 'c', 'u', '_id'];
+      const orderArr = ['', 'c', 'u', '_id','episode_details.episodes_total'];
       if (orderArr.indexOf(this.masterClassTableOptions.sortOptions.active) === -1) {
         // @ts-ignore
         sorts[0][this.masterClassTableOptions.sortOptions.active + '.keyword'] = {order: this.masterClassTableOptions.sortOptions.direction};
@@ -829,6 +834,7 @@ export class MasterClassComponent implements OnInit {
     }
     if (idata.action.text === 'Delete') {
       const dataRow = idata.row;
+      this.deleteMasterClass(dataRow);
     }
     if (idata.action.text === 'Change Status') {
       this.selectedStatus = idata.row.status;
@@ -934,6 +940,29 @@ export class MasterClassComponent implements OnInit {
     this.contentTypeList = defaultData.content_type;
   }
 
+  deleteMasterClass(currentClass: any): void {
+    const titleName = 'Confirmation';
+    const message = 'Are you sure you want to delete ' + currentClass.title + ' masterclass ?';
+    const cancelText = 'No';
+    const acceptText = 'Yes';
+    const showReason = true;
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, showReason);
+    this.confirmDialog.dialogResult.subscribe((res: any) => {
+      const data = {content_id: currentClass._id, reason: this.reason};
+      if (res) {
+        this.baseService.doRequest(`/api/contentdata/deleteContent`,
+          'post',data).subscribe((result: any) => {
+          if (result[0]) {
+            this.toast.sToast('success', 'Removed successfully');
+            this.getMasterClass();
+            this.close();
+          } else {
+            this.toast.sToast('error', result[1]);
+          }
+        });
+      }
+    });
+  }
   masterClassaddTableData(): void {
     this.showMasterTable = false
     this.getLanguageAndCountry();

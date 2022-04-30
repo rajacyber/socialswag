@@ -459,7 +459,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     const message = 'Are you sure you want to logout?';
     const cancelText = 'Cancel';
     const acceptText = 'OK';
-    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, '', '', true);
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, false, '', '', true);
     this.confirmDialog.dialogResult.subscribe(res => {
       if (res) {
         localStorage.removeItem('isLoggedin');

@@ -24,6 +24,7 @@ import {NgMultiSelectDropDownModule} from 'ng-multiselect-dropdown';
 import {VulnerabilityStatsComponent} from './vulnerability-stats/vulnerability-stats.component';
 import {VulnerabilityOverviewComponent} from './vulnerability-overview/vulnerability-overview.component';
 import { SuppressVulsDaysComponent } from './suppress-vuls-days/suppress-vuls-days.component';
+import { TableNewComponent } from './table-new/table-new.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { SuppressVulsDaysComponent } from './suppress-vuls-days/suppress-vuls-da
     STableComponent,
     ModalComponent,
     TableComponent,
+    TableNewComponent,
     SShimmerComponent,
     SExpTableComponent,
     DynamicFormComponent,
@@ -42,7 +44,7 @@ import { SuppressVulsDaysComponent } from './suppress-vuls-days/suppress-vuls-da
     STShimmerComponent,
     VulnerabilityStatsComponent,
     VulnerabilityOverviewComponent,
-     SuppressVulsDaysComponent,
+    SuppressVulsDaysComponent,
   ],
   imports: [
     CommonModule,
@@ -65,6 +67,7 @@ import { SuppressVulsDaysComponent } from './suppress-vuls-days/suppress-vuls-da
         PnfComponent, UnauthorizedComponent,
         STableComponent,
         TableComponent,
+        TableNewComponent,
         ModalComponent,
         SShimmerComponent,
         SExpTableComponent,

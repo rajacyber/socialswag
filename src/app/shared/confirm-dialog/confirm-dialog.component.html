@@ -9,6 +9,12 @@
   <p *ngIf="!HtmlMsg">{{message}}</p>
   <div *ngIf="HtmlMsg" [innerHTML]="message"></div>
 </div>
+<form #adsta="ngForm" name="credentials" autocomplete="off">
+        <mat-form-field appearance="outline" *ngIf="showReason" class="col-md-12">  
+                <mat-label>Reason</mat-label>
+                <textarea matInput cols="4" type="text" [(ngModel)]="reason" placeholder="Enter reason" required name="reason" id="reason"></textarea>
+                <mat-error> Reason is required</mat-error>
+        </mat-form-field>
 <div mat-dialog-actions *ngIf="Reverse" class="float-right pb-3">
   <button mat-raised-button class="mat-primary" (click)="onDismiss()" *ngIf="!CancelColor"
           id="cnclaBtn">{{CancelText}}</button>
@@ -30,3 +36,4 @@
   <button mat-stroked-button class="mat-warn" (click)="onDismiss()" [ngStyle]="{color: CancelColor}" *ngIf="CancelColor"
           id="cncl2Btn">{{CancelText}}</button>
 </div>
+</form>

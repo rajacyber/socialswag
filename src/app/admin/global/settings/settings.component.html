@@ -79,8 +79,14 @@
         <app-users></app-users>
       </div>
     </div>
-    <div class="row mt-3 mx-0" *ngIf="cView === 'Dashboards'">
+    <div class="row mt-1 mx-1" *ngIf="cView === 'Settings'">
+      <div class="px-1 col-12">
+        <app-global-settings></app-global-settings>
+      </div>
+    </div>
+    <div class="row mt-3 mx-0" *ngIf="cView === 'Live Learning'">
       <div class="col-12">
+        <app-live-learning></app-live-learning>
       </div>
     </div>
     <div class="row mt-3 mx-0" *ngIf="cView === 'Audit Log'">

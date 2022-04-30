@@ -25,10 +25,10 @@ class ConfirmDialogService {
         this.reverse = false;
         this.dialogResult = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
     }
-    confirmDialog(title, msg, cancelText, acceptText, cancelColor, acceptColor, htmlMsg, reverse) {
+    confirmDialog(title, msg, cancelText, acceptText, showReason, cancelColor, acceptColor, htmlMsg, reverse) {
         this.htmlMsg = htmlMsg;
         this.dialogResult.observers = [];
-        const dialogData = new _shared_confirm_dialog_confirm_dialog_component__WEBPACK_IMPORTED_MODULE_1__["ConfirmDialogModel"](title, msg, cancelText, acceptText, cancelColor, acceptColor, htmlMsg, reverse);
+        const dialogData = new _shared_confirm_dialog_confirm_dialog_component__WEBPACK_IMPORTED_MODULE_1__["ConfirmDialogModel"](title, msg, cancelText, acceptText, showReason, cancelColor, acceptColor, htmlMsg, reverse);
         const dialogRef = this.dialog.open(_shared_confirm_dialog_confirm_dialog_component__WEBPACK_IMPORTED_MODULE_1__["ConfirmDialogComponent"], { minWidth: '400px', maxWidth: '600px', data: dialogData, panelClass: 'custom-modalbox' });
         dialogRef.afterClosed().subscribe(dialogResult => {
             this.dialogResult.next(dialogResult);
@@ -1239,7 +1239,7 @@ class LayoutComponent {
         const message = 'Are you sure you want to logout?';
         const cancelText = 'Cancel';
         const acceptText = 'OK';
-        this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, '', '', true);
+        this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, false, '', '', true);
         this.confirmDialog.dialogResult.subscribe(res => {
             if (res) {
                 localStorage.removeItem('isLoggedin');

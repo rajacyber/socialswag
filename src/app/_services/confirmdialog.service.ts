@@ -16,12 +16,12 @@ export class ConfirmDialogService {
 
   @Output() dialogResult = new EventEmitter();
 
-  confirmDialog(title: string, msg: string, cancelText: string, acceptText: string,
+  confirmDialog(title: string, msg: string, cancelText: string, acceptText: string, showReason?: boolean,
                 cancelColor?: string, acceptColor?: string, htmlMsg?: boolean, reverse?: boolean): void {
     this.htmlMsg = htmlMsg;
     this.dialogResult.observers = [];
     const dialogData = new ConfirmDialogModel(title, msg, cancelText,
-      acceptText, cancelColor, acceptColor, htmlMsg, reverse);
+      acceptText, showReason, cancelColor, acceptColor, htmlMsg, reverse);
     const dialogRef = this.dialog.open(ConfirmDialogComponent,
       {minWidth:'400px', maxWidth: '600px', data: dialogData, panelClass: 'custom-modalbox'});
     dialogRef.afterClosed().subscribe(dialogResult => {

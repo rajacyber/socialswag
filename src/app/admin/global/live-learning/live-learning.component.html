@@ -1,0 +1,15 @@
+<div class="remedia-container" *ngIf="showLiveLearning">
+    <mat-sidenav-container *ngIf="showLiveLearningTable" class="remedia-sidenav-container"  style="height: 100vh;">
+      <mat-sidenav-content>
+        <app-s-table-new aria-label="LiveLearning" role="table" [sTableOptions]="liveLearningTableOptions"
+          (sortCallback)="liveLearningsortCall($event)"
+          (filterCallback)="liveLearningfilterCall($event)"
+          (colFilterCallback)="liveLearningColFilterCall($event)"
+          (actionCallback)="liveLearningactionCall($event)"
+          (pageCallback)="liveLearningpageCall($event)" (refreshCallback)="getLiveLearning()"
+          (addCallback)="liveLearningaddTableData()"
+          (timerCallback)="liveLearningtimerCallData()">
+        </app-s-table-new>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+</div>

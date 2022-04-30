@@ -8,10 +8,14 @@ import { ContentDataService } from '../api/services';
 export class MasterService {
   addCategory = new EventEmitter();
   contentEVE = new EventEmitter();
+  reasonEVE = new EventEmitter();
   constructor(
     public contentService: ContentDataService
     
   ) { 
+  }
+  reasonData(value: any): void {
+    this.reasonEVE.next(value);
   }
 
   addCategoryData(): void {
