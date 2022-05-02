@@ -437,6 +437,35 @@ export class MasterClassComponent implements OnInit {
 
   }
 
+  queryFilterCallBack(event: any):void {
+    this.colFilterQuery = [];
+    for (const cl of event.colFilters) {
+      const tmpObj1: any = {bool: {should: [{match: {}}]}};
+      let tmpObj: any = {};
+      if (cl.hKey) {
+        if(cl.key === 'c' || cl.key === 'u' || cl.key === 'released_on'){
+          var column: any = cl.key;
+          let from = event.columns[cl.key].dateCol.start;
+          const fromDate = from.getFullYear() + "-" + ('0'+ (from.getMonth() + 1)).slice(-2) + "-" + ('0'+ from.getDate()).slice(-2);
+          let end = event.columns[cl.key].dateCol.end;
+          const endDate = end.getFullYear() + "-" + ('0'+ (end.getMonth() + 1)).slice(-2) + "-" + ('0'+ end.getDate()).slice(-2);
+          tmpObj = {range: {}};
+          tmpObj.range[column]= {gte: fromDate, lte: endDate};
+        } else {
+          cl.key = (cl.key === 'category') ? 'category_ref.name' : cl.key;
+          if (cl.list) tmpObj = {must: [{multi_match: {query: `*${cl.value}*`,type: 'phrase_prefix', 'fields':[cl.key]}}]};
+          else tmpObj = {bool: {should: [{query_string: {fields: [cl.key], query: `*${cl.value}*`}}]}};
+        }
+      } else {
+        tmpObj1.bool.should[0].match[cl.key] = cl.value;
+        tmpObj = tmpObj1;
+      }
+      console.log(tmpObj);
+      this.colFilterQuery.push(tmpObj);
+    }
+    this.getMasterClass();
+  }
+
   addTag(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
@@ -455,7 +484,6 @@ export class MasterClassComponent implements OnInit {
     }
   }
 
-  
   addPrice(): void {
     this.price_model.push({
       language: '',
@@ -721,16 +749,17 @@ export class MasterClassComponent implements OnInit {
       }
     };
     
-    if (this.filterQuery && this.filterQuery.multi_match) {
+    if (this.filterQuery && this.filterQuery.multi_match) { // Global filter
       params.query.bool.must.push(this.filterQuery);
     }
-    if (this.colFilterQuery && this.colFilterQuery.length) {
-      // @ts-ignore
-      params.query.bool.filter = [];
+    if (this.colFilterQuery && this.colFilterQuery.length) { // Multi Column filter
       this.colFilterQuery.forEach((obj: any) => {
-        if (obj.bool.should && obj.bool.should[0].match) {
+        if (obj.bool && obj.bool.should[0].match) {
           params.query.bool.must.push(obj);
-        } else {
+        } else if(obj.must){
+          params.query.bool.must.push(obj.must[0])
+        } else if(!(obj.bool && obj.bool.should[0].match) && !obj.must) {
+          params.query.bool.filter = [];
           params.query.bool.filter.push(obj);
         }
       });

@@ -2,15 +2,16 @@
 <div class="remedia-container" *ngIf="showMasterClasses">
   <mat-sidenav-container *ngIf="showMasterTable" class="remedia-sidenav-container" (backdropClick)="close()"  style="height: 100vh;">
     <mat-sidenav-content>
-      <app-s-table aria-label="MasterClass" role="table" [sTableOptions]="masterClassTableOptions"
+      <app-s-table-new aria-label="MasterClass" role="table" [sTableOptions]="masterClassTableOptions"
         (sortCallback)="masterClasssortCall($event)"
         (filterCallback)="masterClassfilterCall($event)"
         (colFilterCallback)="masterColFilterCall($event)"
         (actionCallback)="masterClassactionCall($event)"
         (pageCallback)="masterClasspageCall($event)" (refreshCallback)="getMasterClass()"
         (addCallback)="masterClassaddTableData()"
-        (timerCallback)="masterClasstimerCallData()">
-      </app-s-table>
+        (timerCallback)="masterClasstimerCallData()"
+        (finalQueryCallback)="queryFilterCallBack($event)">
+      </app-s-table-new>
     </mat-sidenav-content>
     <!-- <mat-sidenav #snavs [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150" style="height: 100vh;">
       <mat-card class="w-100">

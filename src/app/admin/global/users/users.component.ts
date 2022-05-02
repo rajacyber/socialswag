@@ -902,7 +902,9 @@ export class UsersComponent implements OnInit {
     cq = {
       query: {
         bool: {
-          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}]
+          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}, {match: {
+            'kind.keyword': "CELEBRITY"
+          }}]
         }
       }
     };
@@ -936,7 +938,6 @@ export class UsersComponent implements OnInit {
     const limit = this.userTableOptions.tableOptions.pageSize;
     const s = JSON.stringify(sort);
     const fields = JSON.stringify(['_id', 'phone', 'email', 'name', 'languages', 'country.name', 'c', 'u']);
-    // const url = (this.filterQuery) ? `/api/kusers?query=search=${this.filterQuery}` : '/api/kusers';
     this.baseService.doRequest(`/api/entity`, 'get', null,
       {q, skip, s, limit}).subscribe((result: any) => {
       this.loaderService.display(false);

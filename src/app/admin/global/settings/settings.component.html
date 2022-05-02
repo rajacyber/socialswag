@@ -79,6 +79,11 @@
         <app-users></app-users>
       </div>
     </div>
+    <div class="row mt-1 mx-1" *ngIf="cView === 'Channels'">
+      <div class="px-1 col-12">
+        <app-channels></app-channels>
+      </div>
+    </div>
     <div class="row mt-1 mx-1" *ngIf="cView === 'Settings'">
       <div class="px-1 col-12">
         <app-global-settings></app-global-settings>

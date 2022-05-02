@@ -15,18 +15,45 @@ import {MyToastrService} from '../../../_services/toastr.service';
 export class GlobalSettingsComponent implements OnInit {
   panelOpenState = false;
 
+  justLaunchDays = 90;
+  miniAnnouncement = false;
+
   constructor(public commonService: CommonService, public baseService: BaseRequestService,
-              private httpClient: HttpClient, private confirmDialog: ConfirmDialogService,
-              @Inject(DOCUMENT) private document: Document, private toast: MyToastrService,
-              public loaderService: LoaderService) {
+    private httpClient: HttpClient, private confirmDialog: ConfirmDialogService,
+    @Inject(DOCUMENT) private document: Document, private toast: MyToastrService,
+    public loaderService: LoaderService) {
   }
 
   
 
   ngOnInit(): void {
+    this.getPreference();
   }
 
-
+  updatePreference(): void {
+    this.loaderService.display(true);
+    const data: any = {data: [{name: 'justLaunchDays', value: this.justLaunchDays}, {name: 'miniAnnouncement', value: this.miniAnnouncement}]};
+    this.baseService.doRequest(`/api/utilities/updateGlobalSettings`, 'post',data).subscribe((result: any) => {
+      if(result) {
+        this.toast.sToast('success', 'Setting updated successfully!.');
+      } else {
+        this.toast.sToast('error', 'Error!.');
+      }
+      this.loaderService.display(false);
+    });
+  }
   
+  getPreference(): void {
+    this.loaderService.display(true,'Getting global settings data');
+    this.baseService.doRequest(`/api/utilities/getGlobalSettings`, 'post',{}).subscribe((result: any) => {
+      console.log(result);
+      if(result) {
+        this.toast.sToast('success', 'Setting updated successfully!.');
+      } else {
+        this.toast.sToast('error', 'Error!.');
+      }
+      this.loaderService.display(false);
+    });
+  }
 
 }

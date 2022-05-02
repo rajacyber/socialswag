@@ -1,1 +1,37 @@
-<p>channels works!</p>
+<div class="remedia-container" *ngIf="showChannels">
+    <mat-sidenav-container *ngIf="showChannelsTable" class="remedia-sidenav-container"  style="height: 100vh;">
+      <mat-sidenav-content>
+        <app-s-table-new aria-label="channels" role="table" [sTableOptions]="channelsTableOptions"
+          (sortCallback)="channelssortCall($event)"
+          (filterCallback)="channelsfilterCall($event)"
+          (colFilterCallback)="channelsColFilterCall($event)"
+          (actionCallback)="channelsactionCall($event)"
+          (pageCallback)="channelspageCall($event)" (refreshCallback)="getChannels()"
+          (addCallback)="channelsaddTableData()"
+          (timerCallback)="channelstimerCallData()"
+          (finalQueryCallback)="queryFilterCallBack($event)">
+        </app-s-table-new>
+      </mat-sidenav-content>
+      <mat-sidenav #channel [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
+        <mat-card class="w-100">
+          <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+            (click)="channel.close();"><mat-icon>close</mat-icon>
+          </button>
+          <mat-card-header>
+            <mat-card-title></mat-card-title>
+          </mat-card-header>
+          <form #adch="ngForm" name="credentials" autocomplete="off">
+            <mat-card-content>           
+              
+            </mat-card-content>
+            <div mat-dialog-actions class="mt-2">
+              <button type="button" [disabled]="!adch.form.valid" mat-raised-button color="primary" class="mr-2"
+                id="adchsavebtn">Save
+              </button>
+              <button mat-raised-button (click)="channel.close();">Cancel</button>
+            </div>
+          </form>
+        </mat-card>
+      </mat-sidenav>
+    </mat-sidenav-container>
+</div>
