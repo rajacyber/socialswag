@@ -18,11 +18,71 @@
             (click)="channel.close();"><mat-icon>close</mat-icon>
           </button>
           <mat-card-header>
-            <mat-card-title></mat-card-title>
+            <mat-card-title>Add Channel</mat-card-title>
           </mat-card-header>
           <form #adch="ngForm" name="credentials" autocomplete="off">
-            <mat-card-content>           
-              
+            <mat-card-content>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Title</mat-label>
+                <input matInput type="text" [(ngModel)]="channelData.title" placeholder="Enter title" required name="title" id="name">
+                <mat-error> Title is required</mat-error>
+              </mat-form-field>
+              <mat-form-field class="col-md-8 w-70p" appearance="outline">
+                <mat-select class="inp-width" [formControl]="userCtrl" required (selectionChange)="channelData.celebrity_id = $event.value" (openedChange)="closeCurrentUser($event)" placeholder="Search celebrity" #userSelect>
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="userFilterCtrl" [placeholderLabel]="'Search celebrity'"
+                      [noEntriesFoundLabel]="'No matching celebrity found'" [searching]="searching"></ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let user of filteredUsers | async" [value]="user._id">
+                    {{user.name}}
+                  </mat-option>
+                </mat-select>
+                <mat-error> Celebrity is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mr-3 col-md-8">
+                <mat-label>Video</mat-label>
+                <input matInput type="url" name="video" [(ngModel)]="channelData.video" placeholder="Enter video url" required>
+                <mat-error>Video is required</mat-error>
+              </mat-form-field>         
+              <ng-container *ngFor="let item of channelData.description; let i = index">
+                <mat-expansion-panel class="mt-2" [expanded]="step === i" (opened)="setStep(i)" hideToggle>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title class="mt-2">Description</mat-panel-title>
+                    <div class="ml-2 mt-2">
+                      <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addDes()" appPreventMultiClick>
+                            <span class="d-flex flex-row align-items-center">
+                              <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                              <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                            </span>
+                      </button>
+                      <button mat-button="" *ngIf="i!==0"class="mat-warn px-1 mr-2" (click)="removeDes(i)" appPreventMultiClick matTooltip="Delete language">
+                        <span class="d-flex flex-row align-items-center">
+                          <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                          <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                        </span>
+                      </button>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <mat-card class="mt-2 mb-2">
+                    <mat-form-field class="col-md-8 w-70p" appearance="outline">
+                      <mat-label>Language</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose language" name="langLists{{i}}" [(ngModel)]="item.language">
+                        <mat-option *ngFor="let lang of languagesList" [value]="lang" [id]="lang"> {{lang}} </mat-option>
+                      </mat-select>
+                      <mat-error> Language is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Title</mat-label>
+                      <input matInput type="text" [(ngModel)]="item.title" placeholder="Enter title" name="title{{i}}" id="name">
+                      <mat-error> Title is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="col-md-8">
+                      <mat-label>Description</mat-label>
+                        <textarea matInput type="text" cols="4" [(ngModel)]="item.description" placeholder="Enter description" name="keyt{{i}}" id="keyt"></textarea>
+                    </mat-form-field>
+                  </mat-card>
+                </mat-expansion-panel>
+              </ng-container>
             </mat-card-content>
             <div mat-dialog-actions class="mt-2">
               <button type="button" [disabled]="!adch.form.valid" mat-raised-button color="primary" class="mr-2"

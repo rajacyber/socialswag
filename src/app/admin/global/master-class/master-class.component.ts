@@ -925,7 +925,15 @@ export class MasterClassComponent implements OnInit {
 
   getCelebrityUserList(search?: any): void {
     let cq: any;
-    cq = {query: {bool: {must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}]}}};
+    cq = {
+      query: {
+        bool: {
+          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}, {match: {
+            'kind.keyword': "CELEBRITY"
+          }}]
+        }
+      }
+    };
     if (search && search !== '') {
       cq.query.bool.must.push({ match_bool_prefix: { name: search.toLowerCase() } });
     }

@@ -105,7 +105,7 @@
               <mat-select class="inp-width" [formControl]="userCtrl" required (selectionChange)="materClassData.celebrity_id = $event.value" (openedChange)="closeCurrentUser($event)" placeholder="Search master" #userSelect>
                 <mat-option>
                   <ngx-mat-select-search [formControl]="userFilterCtrl" [placeholderLabel]="'Search Master'"
-                    [noEntriesFoundLabel]="'No matching company found'" [searching]="searching"></ngx-mat-select-search>
+                    [noEntriesFoundLabel]="'No matching master found'" [searching]="searching"></ngx-mat-select-search>
                 </mat-option>
                 <mat-option *ngFor="let user of filteredUsers | async" [value]="user._id">
                   {{user.name}}
