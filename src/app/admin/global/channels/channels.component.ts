@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
+import { list } from 'postcss';
 import { ReplaySubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ContentDataService } from 'src/app/api/services';
@@ -20,6 +21,7 @@ import { MyToastrService } from 'src/app/_services/toastr.service';
 
 export class ChannelsComponent implements OnInit {
   @ViewChild('channel', {static: false}) channel: MatSidenav;
+  @ViewChild('channelupload', {static: false}) channelupload: MatSidenav;
 
   public userCtrl: FormControl = new FormControl();
   public userFilterCtrl: FormControl = new FormControl();
@@ -32,16 +34,33 @@ export class ChannelsComponent implements OnInit {
   showChannelsTable = true;
   filterQuery: any;
   colFilterQuery: any;
+  preview_images: any = '';
   classcurrentPage = 0;
   colFilters: any = [];
   colFilterCols: any = [];
+  Objectkeys = Object.keys;
   allUser: any;
   channelData: any = {
     celebrity_id: '',
-    description:[{languages: '', description: '', title: ''}]
+    title: '',
+    video_link: '',
+    category: [],
+    description:[{
+      language: '',
+      description: '',
+      title: '',
+      key_takeaways: [{name: ''}],
+      mini_announcement: '',
+      short_description: '',
+      is_default: false,
+    }],
+
   };
   step = 0;
   languagesList: any;
+  categoryList: any;
+  channel_id: any;
+  images: any = {};
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
     public loaderService: LoaderService, public httpClient: HttpClient,  public contentService: ContentDataService,
@@ -130,6 +149,13 @@ export class ChannelsComponent implements OnInit {
           showColFilter: true,
           showAction: true,
           actionMenuItems: [
+            {
+              text: 'Upload Images',
+              icon: 'cloud_upload',
+              callback: 'uploadFn',
+              isGlobal: true
+            },
+            {text: 'Edit', icon: 'edit', callback: 'editFn', isGlobal: true},
             {text: 'Details', icon: 'info', callback: 'detailFn', isGlobal: false},
             {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false},
           ],
@@ -157,6 +183,7 @@ export class ChannelsComponent implements OnInit {
     });
     this.getCelebrityUserList();
     this.getLanguageAndCountry();
+    this.getCategory();
   }
 
   private filterUsers(): void {
@@ -174,13 +201,33 @@ export class ChannelsComponent implements OnInit {
     this.getCelebrityUserList(search);
   }
 
+  addTakeawayKey(index: any): void {
+    this.channelData.description[index].key_takeaways.push({name: ''} );
+  }
+
+  removeTakeawayKey(index: any, idx: any): void {
+    this.channelData.description[index].key_takeaways.splice(idx, 1);
+  }
+
+  isPrimary(index: any, event:any): void {
+    (event.checked) ? this.channelData.description.map((x: any, i: any) => x.is_default = (i === index) ? true : false) : null;
+  }
+
   ngOnDestroy() {
     this._onDestroy.next();
     this._onDestroy.complete();
   }
 
   addDes(){
-    this.channelData.description.push({languages: '', description: '', title: ''})
+    this.channelData.description.push({
+      language: '',
+      description: '',
+      title: '',
+      key_takeaways: [{name: ''}],
+      mini_announcement: '',
+      short_description: '',
+      is_default: false,
+    })
   }
 
   removeDes(index: any){
@@ -189,12 +236,16 @@ export class ChannelsComponent implements OnInit {
 
   getCelebrityUserList(search?: any): void {
     let cq: any;
-    cq = {
+    cq =  {
       query: {
         bool: {
-          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}, {match: {
-            'kind.keyword': "CELEBRITY"
-          }}]
+          must: [
+            {
+              match: {
+                'kind.keyword': 'CELEBRITY'
+              }
+            }
+          ]
         }
       }
     };
@@ -261,10 +312,88 @@ export class ChannelsComponent implements OnInit {
     this.getChannels();
   }
 
-  channelsactionCall(event: any): void {
-      
+  getCategory(): void {
+    this.loaderService.display(true);
+    let cq: any;
+    cq = {query: {bool: {must: [{exists: {field: 'name'}}]}}};
+    let s: any;
+    s = [{ 'name.keyword': {'order' : "asc"}}];
+    const sort = JSON.stringify(s);
+    const query = JSON.stringify(cq);
+    const limit = 1000;
+    this.baseService.doRequest(`/api/category`,
+      'get', null, {query, sort, limit}).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if(result.data.length) this.categoryList = result.data;
+    });
+  }
+  
+  saveChannel(): void {
+    this.loaderService.display(true);
+    const description: any =  this.channelData;
+    description.description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
+    this.baseService.doRequest(`api/contentdata/createChannel`,
+      'post', description).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if(result) {
+        this.toast.sToast('success', 'Channel added successfully!.');
+        this.channel.close();
+        this.getChannels();
+      }
+      else {
+        this.toast.sToast('error', 'Error!.');
+      }
+    });
+  }
+  channelsactionCall(data: any): void {
+    if (data.action.text === 'Upload Images') {
+      this.channel_id = data.row._id;
+      this.channelupload.open();
+    } else if (data.action.text === 'Edit'){
+      data.row.description?.map((x: any) =>{ 
+        x?.key_takeaways?.map((y: any) =>{ 
+          y = {name: y}
+        })
+      });
+      this.channelData = data.row;
+      this.channel.open();
+    }
   }
 
+  imagesUpload(): void {
+    const formData = new FormData();
+    this.Objectkeys(this.images).forEach(obj => {
+      formData.append(obj, this.images[obj]);
+    });
+    formData.append('content_id',this.channel_id);
+    this.loaderService.display(true, 'Uploading images...');
+    this.httpClient.post<any>('/api/contentdata/updateChannelPreviewImages',
+      formData).subscribe(result => {
+      this.loaderService.display(false);
+      if (result[0]) {
+        this.toast.sToast('success', result[1]);
+        // @ts-ignore
+        // this._document.defaultView.location.reload();
+        this.preview_images = '';
+        this.images = {};
+        this.channelupload.close();
+      } else {
+        this.toast.sToast('error', result[1]);
+      }
+    });
+  }
+  uploadFile(event: any, key: string): void {
+    if (event.target.files.length > 0) {
+      this.images[key] = event.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(event.target.files[0]);
+      reader.onload = (ev) => {
+        // @ts-ignore
+        this[key] = reader.result;
+      };
+    }
+  }
+  
   channelspageCall(event: any): void {
       
   }
@@ -300,7 +429,6 @@ export class ChannelsComponent implements OnInit {
         tmpObj1.bool.should[0].match[cl.key] = cl.value;
         tmpObj = tmpObj1;
       }
-      console.log(tmpObj);
       this.colFilterQuery.push(tmpObj);
     }
     this.getChannels();
@@ -322,8 +450,6 @@ export class ChannelsComponent implements OnInit {
         }
       });
     }
-
-    
     this.colFilterCols.forEach((obj: any) => {
       let tmpObj: any = {};
       if(obj.col !== 'c' && obj.col !== 'u'){
@@ -352,7 +478,7 @@ export class ChannelsComponent implements OnInit {
 
   getChannels(): void {
     this.channelsShowHideLoading(true);
-    this.loaderService.display(true, 'Getting channelses...');
+    this.loaderService.display(true, 'Getting channels...');
     this.channelsTableOptions.serverSide = {
       service: 'contentService', fn: 'getAllApiContentdataGet', q: {
         query: {

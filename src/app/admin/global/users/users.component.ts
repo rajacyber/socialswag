@@ -902,9 +902,13 @@ export class UsersComponent implements OnInit {
     cq = {
       query: {
         bool: {
-          must: [{exists: {field: 'name'}}, {exists: {field: 'email'}}, {match: {
-            'kind.keyword': "CELEBRITY"
-          }}]
+          must: [
+            {
+              match: {
+                'kind.keyword': 'CELEBRITY'
+              }
+            }
+          ]
         }
       }
     };
