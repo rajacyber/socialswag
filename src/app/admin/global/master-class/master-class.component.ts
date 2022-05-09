@@ -84,7 +84,7 @@ export class MasterClassComponent implements OnInit {
         price: '',
         currency_code: '',
         pricing_model: '',
-        recurring_interval: '',
+        recurring_interval: null,
         device_type: '',
         recurring_type: ''
       }
@@ -492,7 +492,7 @@ export class MasterClassComponent implements OnInit {
           price: '',
           currency_code: '',
           pricing_model: '',
-          recurring_interval: '',
+          recurring_interval: null,
           device_type: '',
           recurring_type: ''
         }
@@ -523,7 +523,7 @@ export class MasterClassComponent implements OnInit {
       price: '',
       currency_code: '',
       pricing_model: '',
-      recurring_interval: '',
+      recurring_interval: null,
       device_type: '',
       recurring_type: ''
     });

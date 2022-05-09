@@ -166,3 +166,83 @@
     </mat-sidenav>
   </mat-sidenav-container>
 </div>
+
+<div *ngIf="!showChannels" [@zoomInOnEnter]>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title class="d-flex align-items-center">
+        <span class="fw2"></span>
+        <span class="spacer"></span>
+        <button class="position-absolute r-1p" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                (click)="showChannels=!showChannels"><mat-icon>close</mat-icon>
+        </button>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="pt-2">
+      <ng-container >
+        <mat-tab-group *ngIf="channelDetails.description.length">
+          <ng-container *ngFor="let item of channelDetails.description">
+            <mat-tab label="{{item.language}}">
+              <div class="remedia-container">
+                <mat-sidenav-container class="remedia-sidenav-container">
+                  <mat-sidenav-content>
+                    <mat-card class="table-card mb-2">
+                      <mat-toolbar class="table-tools" role="heading">
+                        <div fxFlex fxLayout fxLayoutAlign="start">
+                          <span class="fs1">Channel Details
+                          </span>
+                        </div>
+                      </mat-toolbar>
+                      <mat-card-content>                     
+                        <div>
+                          <hr>
+                          <h4><b>Title</b></h4>
+                          <span>{{channelDetails.title}}</span>
+                          <hr>
+                          <h4><b>Celebrity Name</b></h4>
+                          <span>{{channelDetails.entity_ref.name}}</span>
+                          <hr>
+                          <h4><b>Key Takeaways</b></h4>
+                          <ul *ngFor="let list of item.key_takeaways">
+                            <li>{{list}}</li>
+                          </ul>
+                          <hr>
+                          <h4><b>Description</b></h4>
+                          <span class="showless">
+                            {{item.description}}
+                          </span>
+                          <hr>
+                          <h4><b>Mini Announcement</b></h4>
+                          <span class="showless">
+                            {{item.mini_announcement}}
+                          </span>
+                          <hr>
+                          <h4><b>Secondary Description</b></h4>
+                          <span class="showless">
+                            {{item.short_description}}
+                          </span>
+                          <hr>
+                          <div class="row col-lg-12 row-fix">
+                            <div class="col-lg-4" *ngIf="channelDetails?.preview_image_thumbnail">
+                              <h4><b>Preview Thumbnail</b></h4>
+                              <img width="150" heigh="150" class="imgwh" [src]="channelDetails.preview_image_thumbnail" alt="">
+                            </div>
+                            <div class="col-lg-4" *ngIf="channelDetails?.preview_image">
+                              <h4><b>Preview Image</b></h4>
+                              <img width="150" heigh="150" class="imgwh" [src]="channelDetails.preview_image" alt="">
+                            </div>
+                          </div>
+                          <hr>
+                        </div>
+                      </mat-card-content>
+                    </mat-card>
+                  </mat-sidenav-content>
+                </mat-sidenav-container>
+              </div>
+            </mat-tab>
+          </ng-container>
+        </mat-tab-group>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</div>

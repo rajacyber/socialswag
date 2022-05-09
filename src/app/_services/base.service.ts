@@ -85,7 +85,7 @@ export class BaseRequestService {
   }
   public getWhiteLabelSettings(): void {
     this.cyberLabel = {};
-    this.cyberLabel.productName = 'CyberCNS'; this.cyberLabel.eulaLink = 'https://www.cybercns.com/terms';
+    this.cyberLabel.productName = 'Socialswag'; this.cyberLabel.eulaLink = '';
     this.cyberLabel.agentLink = 'https://netalyticsvulnerabilitydownload.s3-ap-southeast-1.amazonaws.com/CyberCNSScanner.exe';
     this.doRequest('/assets/json/wlb.json', 'get').subscribe((data: {}) => {
       this.cyberLabel = data;

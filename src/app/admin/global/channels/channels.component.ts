@@ -11,11 +11,18 @@ import { ConfirmDialogService } from 'src/app/_services/confirmdialog.service';
 import { LoaderService } from 'src/app/_services/loader.service';
 import { ModalService } from 'src/app/_services/modal.service';
 import { MyToastrService } from 'src/app/_services/toastr.service';
+import {
+  zoomInOnEnterAnimation
+} from 'angular-animations';
+import { MasterService } from 'src/app/_services/master.service';
 
 @Component({
   selector: 'app-channels',
   templateUrl: './channels.component.html',
-  styleUrls: ['./channels.component.scss']
+  styleUrls: ['./channels.component.scss'],
+  animations: [
+    zoomInOnEnterAnimation()
+  ],
 })
 
 
@@ -54,18 +61,24 @@ export class ChannelsComponent implements OnInit {
       short_description: '',
       is_default: false,
     }],
-
+  };
+  channelDetails: any = {
+    description: []
   };
   step = 0;
   languagesList: any;
   categoryList: any;
   channel_id: any;
   images: any = {};
+  reason: any;
 
   constructor(private _formBuilder: FormBuilder, public baseService: BaseRequestService,
     public loaderService: LoaderService, public httpClient: HttpClient,  public contentService: ContentDataService,
-    public modalService: ModalService, public toast: MyToastrService,
-    public confirmDialog: ConfirmDialogService) { 
+    public modalService: ModalService, public toast: MyToastrService, public masterService: MasterService,
+    public confirmDialog: ConfirmDialogService) {
+      masterService.reasonEVE.subscribe((value: any) => {
+        this.reason = value;
+      }); 
       this.channelsTableOptions = {
         columns: [
           {
@@ -80,7 +93,7 @@ export class ChannelsComponent implements OnInit {
             colFilters: {type: 'text', hKey: true},
           }, {
             header: 'Title',
-            columnDef: 'entity_ref.title',
+            columnDef: 'title',
             filter: '',
             cell: '(element: any) => `${element.title}`',
             order: 1,
@@ -155,7 +168,7 @@ export class ChannelsComponent implements OnInit {
               callback: 'uploadFn',
               isGlobal: true
             },
-            {text: 'Edit', icon: 'edit', callback: 'editFn', isGlobal: true},
+            {text: 'Edit', icon: 'edit', callback: 'editFn', isGlobal: false},
             {text: 'Details', icon: 'info', callback: 'detailFn', isGlobal: false},
             {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: false},
           ],
@@ -331,6 +344,7 @@ export class ChannelsComponent implements OnInit {
   saveChannel(): void {
     this.loaderService.display(true);
     const description: any =  this.channelData;
+    (this.channelData._id) ? this.channelData.content_id = this.channelData._id : null;
     description.description.map((item: any) => item.key_takeaways = item.key_takeaways.map((x: any) => x.name));
     this.baseService.doRequest(`api/contentdata/createChannel`,
       'post', description).subscribe((result: any) => {
@@ -349,15 +363,52 @@ export class ChannelsComponent implements OnInit {
     if (data.action.text === 'Upload Images') {
       this.channel_id = data.row._id;
       this.channelupload.open();
-    } else if (data.action.text === 'Edit'){
-      data.row.description?.map((x: any) =>{ 
+    }
+    if (data.action.text === 'Edit'){
+      data.row.category = data.row.category_ref.map((s: any) => s.id);
+      data.row.description?.map((x: any) =>{
+        let dummy: any = [];
         x?.key_takeaways?.map((y: any) =>{ 
-          y = {name: y}
+          dummy.push({name: y})
         })
+        x.key_takeaways = dummy;
       });
       this.channelData = data.row;
+      this.channelData.celebrity_id = data.row.entity_ref.id;
+      this.userCtrl.setValue(data.row.entity_ref.id);
       this.channel.open();
     }
+    if (data.action.text === 'Details'){
+      this.channelDetails = data.row;
+      this.showChannels = false;
+    }
+    if (data.action.text === 'Delete') {
+      const dataRow = data.row;
+      this.deleteChannel(dataRow);
+    }
+  }
+
+  deleteChannel(currentChannel: any): void {
+    const titleName = 'Confirmation';
+    const message = 'Are you sure you want to delete ' + currentChannel.title + ' channel ?';
+    const cancelText = 'No';
+    const acceptText = 'Yes';
+    const showReason = true;
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, showReason);
+    this.confirmDialog.dialogResult.subscribe((res: any) => {
+      const data = {content_id: currentChannel._id, reason: this.reason};
+      if (res) {
+        this.baseService.doRequest(`/api/contentdata/deleteContent`,
+          'post',data).subscribe((result: any) => {
+          if (result[0]) {
+            this.toast.sToast('success', 'Removed successfully');
+            this.getChannels();
+          } else {
+            this.toast.sToast('error', result[1]);
+          }
+        });
+      }
+    });
   }
 
   imagesUpload(): void {
