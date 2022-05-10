@@ -1,0 +1,119 @@
+<div class="remedia-container">
+    <mat-sidenav-container class="remedia-sidenav-container"  style="height: 100vh;">
+      <mat-sidenav-content>
+        <app-s-table-new aria-label="coupons" role="table" [sTableOptions]="couponsTableOptions"
+          (sortCallback)="couponssortCall($event)"
+          (filterCallback)="couponsfilterCall($event)"
+          (colFilterCallback)="couponsColFilterCall($event)"
+          (actionCallback)="couponsactionCall($event)"
+          (pageCallback)="couponspageCall($event)" (refreshCallback)="getCoupons()"
+          (addCallback)="couponsaddTableData()"
+          (timerCallback)="couponstimerCallData()"
+          (finalQueryCallback)="queryFilterCallBack($event)">
+        </app-s-table-new>
+      </mat-sidenav-content>
+      <mat-sidenav #coupon [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
+        <mat-card class="w-100">
+          <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+            (click)="coupon.close();"><mat-icon>close</mat-icon>
+          </button>
+          <mat-card-header>
+            <mat-card-title>Add coupon</mat-card-title>
+          </mat-card-header>
+          <form #adch="ngForm" name="credentials" autocomplete="off">
+            <mat-card-content>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Name</mat-label>
+                <input matInput type="text" [(ngModel)]="couponData.name" placeholder="Enter name" required name="title" id="name">
+                <mat-error> Name is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Identifier</mat-label>
+                <input matInput type="text" [(ngModel)]="couponData.identifier" placeholder="Enter identifier" required name="title" id="identifier">
+                <mat-error> Identifier is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>coupon Code</mat-label>
+                <input matInput type="text" [(ngModel)]="couponData.couponCode" placeholder="Enter coupon code" required name="title" id="couponCode">
+                <mat-error> Coupon code is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-select [formControl]="classCtrl" placeholder="Masterclass" (selectionChange)="couponData.contentdata_ref = $event.value" (openedChange)="closeCurrentClass($event)" [multiple]="true" #multiSelect>
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="classFilterCtrl" [noEntriesFoundLabel]="'No matching masterclass found'" [searching]="searching"></ngx-mat-select-search>
+                  </mat-option>
+                  <mat-option *ngFor="let item of filteredClass | async" [value]="item._id">
+                    {{item.title}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="col-md-8" appearance="outline">
+                <mat-label>Amount Type</mat-label>
+                <mat-select [multiple]="false" required placeholder="Choose amount type" name="roleLists" [(ngModel)]="couponData.amountType">
+                  <mat-option *ngFor="let item of paymentList; let i = index;"
+                    [value]="item" [id]="item">
+                    {{item}}
+                  </mat-option>
+                </mat-select>
+                <mat-error> Amount type is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="couponData.amountType === 'Percentage'">
+                <mat-label>Percentage Discount</mat-label>
+                <input matInput type="number" [(ngModel)]="couponData.percentageDiscount" placeholder="Enter percentage discount" required name="title" id="percentageDiscount">
+                <mat-error> Percentage discount is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8" *ngIf="couponData.amountType === 'Fixed'">
+                <mat-label>Fixed Discount</mat-label>
+                <input matInput type="number" [(ngModel)]="couponData.fixedDiscount" placeholder="Enter fixed discount" required name="title" id="fixedDiscount">
+                <mat-error> Fixed discount is required</mat-error>
+              </mat-form-field>
+              <mat-form-field class="col-md-8" appearance="outline">
+                <mat-label>Currency Code</mat-label>
+                <mat-select [multiple]="false" required placeholder="Currency code" name="roleLists" [(ngModel)]="couponData.currency_code">
+                  <mat-option *ngFor="let item of currencyList; let i = index;"
+                    [value]="item" [id]="item">
+                    {{item}}
+                  </mat-option>
+                </mat-select>
+                <mat-error> Currency code is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Amount</mat-label>
+                <input matInput type="number" [(ngModel)]="couponData.amount" placeholder="Enter amount" required name="title" id="amount">
+                <mat-error> Amount is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Per Customer Count</mat-label>
+                <input matInput type="number" [(ngModel)]="couponData.perCustCount" placeholder="Enter per customer count" required name="title" id="perCustCount">
+                <mat-error> Per customer count is required</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <input matInput [matDatepicker]="startson" placeholder="Starts On"
+                  [(ngModel)]="couponData.startsOn" name="starts">
+                <mat-datepicker-toggle matSuffix [for]="startson"></mat-datepicker-toggle>
+                <mat-datepicker #startson></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <input matInput [matDatepicker]="endson" placeholder="Ends On"
+                  [(ngModel)]="couponData.endsOn" name="ends">
+                <mat-datepicker-toggle matSuffix [for]="endson"></mat-datepicker-toggle>
+                <mat-datepicker #endson></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="col-md-8">
+                <mat-label>Redemption Limit</mat-label>
+                <input matInput type="number" [(ngModel)]="couponData.redemptionLimit" placeholder="Enter redemption limit" required name="title" id="redemptionLimit">
+                <mat-error> Redemption limit is required</mat-error>
+              </mat-form-field>
+              
+            </mat-card-content>
+            <div mat-dialog-actions class="mt-2">
+              <button type="button" [disabled]="!adch.form.valid" mat-raised-button color="primary" class="mr-2"
+                id="adchsavebtn" (click)="savecoupon()">Save
+              </button>
+              <button mat-raised-button (click)="coupon.close();">Cancel</button>
+            </div>
+          </form>
+        </mat-card>
+      </mat-sidenav>
+    </mat-sidenav-container>
+</div>

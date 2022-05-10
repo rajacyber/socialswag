@@ -25,11 +25,13 @@ import { AuditLogComponent } from './audit-log/audit-log.component';
 import { LiveLearningComponent } from './live-learning/live-learning.component';
 import { ChannelsComponent } from './channels/channels.component';
 import { GlobalSettingsComponent } from './global-settings/global-settings.component';
+import { CouponsComponent } from './coupons/coupons.component';
 
 @NgModule({
   declarations: [
     SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent, LiveLearningComponent, ChannelsComponent,
-    GlobalSettingsComponent
+    GlobalSettingsComponent,
+    CouponsComponent
   ],
   imports: [
     CommonModule,
