@@ -12,12 +12,12 @@ import {AuthenticationService} from '../../../_services/authentication.service';
 import {HttpClient} from '@angular/common/http';
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.component.html',
-  styleUrls: ['./users.component.scss']
+  selector: 'app-celebrity',
+  templateUrl: './celebrities.component.html',
+  styleUrls: ['./celebrities.component.scss']
 })
 
-export class UsersComponent implements OnInit {
+export class CelebritiesComponent implements OnInit {
   @ViewChild('snav', {static: true}) snav: MatSidenav;
   @ViewChild('upload', {static: true}) upload: MatSidenav;
   userTableOptions: any;
@@ -34,6 +34,7 @@ export class UsersComponent implements OnInit {
   editUsr = false;
   updPass = false;
   isSelected = false;
+  searchString: string;
   companyList: any;
   pageSize = 10;
   currentPage = 0;
@@ -146,11 +147,32 @@ export class UsersComponent implements OnInit {
           imgPath: '',
           iscolumnSearch: true
         }, {
-          header: 'Role',
-          col: 'role',
-          columnDef: 'role',
+          header: 'Languages',
+          col: 'languages',
+          columnDef: 'languages',
           filter: '',
-          cell: '(element: any) => `${element.role}`',
+          cell: '(element: any) => `${element.languages}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: ''
+        }, {
+          header: 'Country',
+          col: 'country.name',
+          columnDef: 'country.name',
+          filter: '',
+          cell: '(element: any) => `${element.country.name}`',
           order: 2,
           visible: true,
           isToolTip: false,
@@ -167,65 +189,13 @@ export class UsersComponent implements OnInit {
           img: false,
           imgPath: '',
           iscolumnSearch: true
-        }, {
-          header: 'Created on',
-          columnDef: 'c',
-          filter: 'DD-MMM-YYYY',
-          cell: '(element: any) => `${element.c}`',
-          order: 2,
-          visible: true,
-          isToolTip: false,
-          isToolTipCol: '',
-          hasMultiData: false,
-          class: '',
-          color: '',
-          isProgressCntrl: false,
-          isColoredCntrl: false,
-          colList: [],
-          isfaicon: false,
-          isAddingText: false,
-          addingText: '',
-          img: false,
-          imgPath: '',
-          isSort: true,
-          iscolumnSearch: true,
-          israngeSearch: true,
-          colFilters: {type: 'range', hKey: true},
-          width: '150px',
-          dateCol: {start: '', end: ''}
-        }, {
-          header: 'Updated on',
-          columnDef: 'u',
-          filter: 'DD-MMM-YYYY',
-          cell: '(element: any) => `${element.u}`',
-          order: 3,
-          visible: true,
-          isToolTip: false,
-          isToolTipCol: '',
-          hasMultiData: false,
-          class: '',
-          color: '',
-          isProgressCntrl: false,
-          isColoredCntrl: false,
-          colList: [],
-          isfaicon: false,
-          isAddingText: false,
-          addingText: '',
-          img: false,
-          imgPath: '',
-          isSort: true,
-          iscolumnSearch: true,
-          israngeSearch: true,
-          colFilters: {type: 'range', hKey: true},
-          dateCol: {start: '', end: ''},
-          width: '150px'
         }],
       sortOptions: {active: 'name', direction: 'asc'},
-      faClass: 'Users',
+      faClass: 'CelebrityUser',
       _pageData: [],
       tableOptions: {
         id: 'users',
-        title: 'Users',
+        title: 'Celebrities',
         isServerSide: true, 
         // add: (this.aS.hasPermission('kusers', 'create')),
         selectText: 'user(s)',
@@ -300,6 +270,7 @@ export class UsersComponent implements OnInit {
     setTimeout(() => {
       this.getUsers();
     }, 1000);
+    this.getLanguageAndCountry();
   }
 
   uploadFile(event: any, key: string): void {
@@ -363,6 +334,53 @@ export class UsersComponent implements OnInit {
     }
   }
 
+  async getLanguageAndCountry(): Promise<any> {
+    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
+    this.languagesList = defaultData.language;
+    this.countryList = await this.baseService.doRequest(`/api/utilities/getCountriesList`, 'post', {}).toPromise();
+  }
+
+  getCompany(): void {
+    let cq;
+    cq = {query: {bool: {must: [{exists: {field: 'description'}}], must_not: [{exists: {field: 'companyRef'}}]}}};
+    const q = JSON.stringify(cq);
+    const skip = 0;
+    const limit = 10000;
+    const sort = JSON.stringify([{'name.keyword': {order: 'asc'}}]);
+    const fields = JSON.stringify(['name']);
+    this.baseService.doRequest(`/api/company/`, 'get', null,
+      {q, skip, limit, sort, fields}).subscribe((result: any) => {
+      if (result) {
+        this.companyList = result.data;
+        this.companyList.forEach(
+          (obj: any) => {
+            obj.selected = false;
+          }
+        );
+        if (this.userData.id) {
+          this.updateAcl(this.userData);
+        }
+      }
+    });
+  }
+
+  getAcl(): void {
+    this.selectedComp = [];
+    this.getCompany();
+    this.modalService.open('Aclmodal');
+  }
+
+  onCompanySelection(event: any, val: any): void {
+    console.log(event);
+    if (event.checked) {
+      this.selectedComp.push(val._id);
+      console.log(this.selectedComp);
+    } else {
+      const index = this.selectedComp.indexOf(val._id, 0);
+      this.selectedComp.splice(index, 1);
+      console.log(this.selectedComp);
+    }
+  }
 
   showHideLoading(status: any): void {
     const data = Object.assign({}, this.userTableOptions);
@@ -416,9 +434,70 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  deleteMFA(mfa: any): void {
+    const titleName = 'Confirmation';
+    const message = 'Are you sure you want to delete ' + mfa.userLabel + ' MFA ?';
+    const cancelText = 'No';
+    const acceptText = 'Yes';
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText);
+    this.confirmDialog.dialogResult.subscribe((res: any) => {
+      if (res) {
+        this.loaderService.Modeldisplay(true, 'Deleting MFA...');
+        this.baseService.doRequest(
+          `/api/kusers/${this.userid.id}/authentications/${mfa.id}`, 'delete').subscribe((result: any) => {
+          this.loaderService.Modeldisplay(false);
+          if (result[0]) {
+            this.toast.sToast('success', result[1]);
+            setTimeout(() => this.getMFA(), 2000) ;
+          } else {
+            this.toast.sToast('error', result[1]);
+          }
+        });
+      }
+    });
+  }
+
+  getMFA(): void {
+    this.loaderService.display(true, 'Getting client MFA');
+    this.baseService.doRequest(
+      `/api/kusers/${this.userid.id}/authentications`, 'get').subscribe((result: any) => {
+      this.loaderService.display(false);
+      if (result && result.length > 0) {
+        this.apiMFA = result;
+        this.modalService.open('mfa');
+      } else {
+        this.toast.sToast('error', 'No MFA found');
+      }
+    }
+    );
+  }
+
+  getAPI(): void {
+    this.loaderService.display(true, 'Getting client api key');
+    this.baseService.doRequest(
+      `/api/kapiclients/dummy/getApiKey`, 'post', this.apiData).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if (result[0]) {
+        this.apiClient = result[1];
+        this.modalService.open('apiKey');
+      } else {
+        this.toast.sToast('error', result.msg);
+      }
+    });
+  }
+
+  copyAPI(): void {
+    navigator.clipboard.writeText(this.user.apiKey);
+    this.toast.sToast('success', 'Copied');
+  }
+
+  updateCountry($event: any): void {
+    console.log($event);
+    
+  }
 
   addUser(): void {
-    this.userData = {name: '', phone: '', email: '', dob: '', role: ''};
+    this.userData = {name: '', phone: '', email: '', headline: '', dob: '', livechat_enabled: false, languages:[], country: '', gstin: ''};
     this.snav.open();
   }
 
@@ -448,6 +527,42 @@ export class UsersComponent implements OnInit {
     this.getUsers();
   }
 
+  editUser(id: string, element: any): any {
+    // setTimeout(() => { this.getRoles(); }, 5000);
+    this.userTitle = 'Edit';
+    this.user = element.row;
+    this.userData = element.row;
+    this.userData.roleid = (element.row.roles.realmMappings[0]) ? element.row.roles.realmMappings[0].id : '';
+    this.snav.open();
+    this.selectedRole = this.userData.role;
+    if (this.userData.attributes && ((this.userData.attributes.includes && this.userData.attributes.includes[0]
+      && this.userData.attributes.includes[0].length) || (this.userData.attributes.excludes
+      && this.userData.attributes.excludes[0] && this.userData.attributes.excludes[0].length))) {
+      this.companyLevelAccess = 'specificCompanies';
+    } else {
+      this.companyLevelAccess = (this.selectedRole !== 'admin') ?  'specificCompanies' : 'allCompanies';
+    }
+  }
+
+  updateAcl(user: any): void {
+    if (user.attributes.includes && user.attributes.includes.length && user.attributes.includes[0] !== '') {
+      this.acl.companies = 'allowed';
+    } else if (user.attributes.excludes && user.attributes.excludes && user.attributes.excludes[0] !== '') {
+      this.acl.companies = 'denied';
+    } else {
+      this.acl.companies = 'allowed';
+      this.selectedComp = [];
+    }
+    if (this.acl.companies === 'allowed') {
+      this.selectedComp = (this.userData.attributes.includes[0] === '') ? [] : this.userData.attributes.includes[0].split(',');
+    } else if (this.acl.companies === 'denied') {
+      this.selectedComp = (this.userData.attributes.excludes[0] === '') ? [] : this.userData.attributes.excludes[0].split(',');
+    }
+    this.companyList.forEach((obj: any) => {
+      obj.selected = this.selectedComp.includes(obj._id);
+    });
+  }
+
   closeSnav(status?: any): void {
     if (status) {
       return;
@@ -470,10 +585,53 @@ export class UsersComponent implements OnInit {
     //  this.modalService.close('updatePass');
   }
 
+  closeAcl(): void {
+    let msg: any = '';
+    if (this.selectedComp.length) {
+      msg = `Total ${this.selectedComp.length} companies in ${this.acl.companies} list.
+       Please click 'Save' button to complete.`;
+    } else {
+      msg = `All companies are allowed. Please click 'Save' button to complete.`;
+    }
+    this.toast.sToast('info', msg);
+    this.modalService.close('Aclmodal');
+  }
+
+  closeUpdateUser(form2: NgForm): void {
+    setTimeout(() => {
+
+    }, 0);
+
+    form2.resetForm();
+    this.modalService.close('editUser');
+  }
+
+  getCurrentLoginType(): void {
+    this.loaderService.display(true);
+    this.baseService.doRequest(`/api/oauth_configs/dummy/getOAuthConfig`,
+      'post').subscribe((retObj: any) => {
+      this.loaderService.display(false);
+      if (retObj) {
+        this.loginAuth = retObj.msg.login_type;
+        this.isLocalConfig = (retObj.msg && retObj.msg.login_type === 'LocalAuth') ? true : false;
+      } else {
+        this.toast.sToast('error', retObj.msg);
+      }
+    });
+  }
+
   saveUser(): any {
     this.loaderService.display(true);
     let data: any;
-    data = this.userData;
+    const country = this.countryList.filter((x: any) => x.name === this.userData.country)
+    data = {
+      email: this.userData.email, name: this.userData.name,
+      phone: this.userData.phone, headline: this.userData.headline,
+      dob: this.userData.dob, livechat_enabled: this.userData.livechat_enabled,
+      languages: this.userData.languages, gstin: this.userData.gstin,
+      country: {name: country[0].name, alpha_2: country[0].alpha_2}
+    };
+    
     this.baseService.doRequest(`/api/entity/createCelebrityUser`, 'post', data)
       .subscribe((result: any) => {
         this.loaderService.display(false);
@@ -488,6 +646,41 @@ export class UsersComponent implements OnInit {
       });
   }
 
+  updateUser(data: any, form: NgForm): any {
+    this.loaderService.display(true);
+    let params: any;
+    params = {
+      attributes: {},
+      email: this.userData.email, id: this.user.id,
+      firstName: data.firstName, lastName: data.lastName, role: this.roleHash[data.roleid]
+    };
+    if (this.companyLevelAccess === 'specificCompanies') {
+      if (this.acl.companies === 'allowed') {
+        params.attributes.includes = this.selectedComp.join(',');
+        params.attributes.excludes = '';
+      } else {
+        params.attributes.includes = '';
+        params.attributes.excludes = this.selectedComp.join(',');
+      }
+    } else {
+      params.attributes.excludes = '';
+      params.attributes.includes = '';
+    }
+    this.baseService.doRequest(`/api/kusers`, 'put', params)
+      .subscribe((result: any) => {
+        this.loaderService.display(false);
+        if (result[0]) {
+          this.toast.sToast('success', 'User Updated Successfully!');
+          this.editUsr = false;
+          setTimeout(() => {
+            this.getUsers();
+          }, 5000);
+          this.backFun();
+        } else {
+          this.toast.sToast('error', result[1]);
+        }
+      });
+  }
 
   filterCall(event: any): void {
     this.filterQuery = (event && event.length > 0) ?  event : undefined;

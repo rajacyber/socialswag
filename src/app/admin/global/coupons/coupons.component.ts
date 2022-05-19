@@ -30,22 +30,32 @@ export class CouponsComponent implements OnInit {
 
   couponsTableOptions: any = [];
   couponData: any = {
-    contentdata_ref: []
+    contentdata_ref: [],
+    amountType: 'Fixed Amount Discount',
+    identifier: ''
   };
   currencyList: any;
+  reason: any;
   paymentList: any;
   allMasterClass: any;
+  filterQuery: { multi_match: { query: any; type: string; fields: string[]; }; } | undefined;
+  colFilterQuery: any = [];
+  colFilterCols: any;
+  couponcurrentPage = 0;
   constructor(public baseService: BaseRequestService,
     public loaderService: LoaderService, public httpClient: HttpClient,  public contentService: ContentDataService,
     public modalService: ModalService, public toast: MyToastrService, public masterService: MasterService,
     public confirmDialog: ConfirmDialogService) { 
+      masterService.reasonEVE.subscribe((value: any) => {
+        this.reason = value;
+      });
     this.couponsTableOptions = {
       columns: [
         {
-          header: 'Name',
-          columnDef: 'name',
+          header: 'Coupon Name',
+          columnDef: 'couponName',
           filter: '',
-          cell: '(element: any) => `${element.name}`',
+          cell: '(element: any) => `${element.couponName}`',
           order: 0,
           visible: true,
           isToolTip: false,
@@ -63,7 +73,7 @@ export class CouponsComponent implements OnInit {
           imgPath: '',
           isSort: true,
         }, {
-          header: 'coupon Code',
+          header: 'Coupon Code',
           columnDef: 'couponCode',
           filter: '',
           cell: '(element: any) => `${element.couponCode}`',
@@ -136,7 +146,7 @@ export class CouponsComponent implements OnInit {
       _pageData: [],
       tableOptions: {
         id: 'coupons',
-        title: 'coupons',
+        title: 'Coupons',
         isServerSide: true,
         selectText: '',
         loading: true,
@@ -144,7 +154,10 @@ export class CouponsComponent implements OnInit {
         rowSelection: false,
         showColFilter: true,
         showAction: true,
-        actionMenuItems: [],
+        actionMenuItems: [
+          {text: 'Edit', icon: 'edit', callback: 'editFn', isGlobal: true},
+          {text: 'Delete', icon: 'delete_forever', callback: 'deleteFn', isGlobal: true},
+        ],
         pagination: true,
         pageOptions: [5, 10, 25, 50, 100],
         pageSize: 15,
@@ -166,7 +179,8 @@ export class CouponsComponent implements OnInit {
     this.paymentList = defaultData.amount_type;
   }
 
-  async couponsaddTableData(): Promise<any> {
+  async couponsaddTableData(show?:any): Promise<any> {
+    (show) ? this.couponData = { contentdata_ref: [], amountType: 'Fixed Amount Discount', identifier: '' } : null;
     await this.getCurrencyAndPayment();
     await this.getMasterClassList();
     await this.coupon.open();
@@ -177,14 +191,21 @@ export class CouponsComponent implements OnInit {
     const couponDate: any =  this.couponData;
     let dummy: any = [];
     couponDate.contentdata_ref.map((item: any) => {
-      dummy.push({ id: item});
+      if(couponDate.contentdata_ref.length===1){
+        if(item.id!==undefined){
+          dummy.push({ id: item['id']});
+        }else{
+          dummy.push({ id: item});
+        }
+      }
     });
     couponDate.contentdata_ref = dummy;
-    this.baseService.doRequest(`api/coupons`,
+    const URL:any = (couponDate._id) ?  `api/coupons/updateCoupon` : `api/coupons/createCoupon`;
+    this.baseService.doRequest(URL,
       'post', couponDate).subscribe((result: any) => {
       this.loaderService.display(false);
       if(result) {
-        this.toast.sToast('success', 'coupon added successfully!.');
+        this.toast.sToast('success', 'Coupon saved successfully!.');
         this.coupon.close();
         this.couponData = {};
         this.getCoupons();
@@ -196,29 +217,124 @@ export class CouponsComponent implements OnInit {
   }
 
   queryFilterCallBack(event: any): void {
-
+    this.colFilterQuery = [];
+    for (const cl of event.colFilters) {
+      const tmpObj1: any = {bool: {should: [{match: {}}]}};
+      let tmpObj: any = {};
+      if (cl.hKey) {
+        if(cl.key === 'c' || cl.key === 'u' || cl.key === 'released_on'){
+          var column: any = cl.key;
+          let from = event.columns[cl.key].dateCol.start;
+          const fromDate = from.getFullYear() + "-" + ('0'+ (from.getMonth() + 1)).slice(-2) + "-" + ('0'+ from.getDate()).slice(-2);
+          let end = event.columns[cl.key].dateCol.end;
+          const endDate = end.getFullYear() + "-" + ('0'+ (end.getMonth() + 1)).slice(-2) + "-" + ('0'+ end.getDate()).slice(-2);
+          tmpObj = {range: {}};
+          tmpObj.range[column]= {gte: fromDate, lte: endDate};
+        } else {
+          if (cl.list) tmpObj = {must: [{multi_match: {query: `*${cl.value}*`,type: 'phrase_prefix', 'fields':[cl.key]}}]};
+          else tmpObj = {bool: {should: [{query_string: {fields: [cl.key], query: `*${cl.value}*`}}]}};
+        }
+      } else {
+        tmpObj1.bool.should[0].match[cl.key] = cl.value;
+        tmpObj = tmpObj1;
+      }
+      this.colFilterQuery.push(tmpObj);
+    }
+    this.getCoupons();
   }
 
   couponssortCall(event: any): void {
 
   }
 
-  couponsfilterCall(event: any): void {
-      
+  couponsfilterCall(idata: any): void {
+    const fields = ['name', 'codeCoupan', 'currency_code'];
+    this.filterQuery = (idata && idata.length > 0) ? {
+      multi_match: {
+        query: idata,
+        type: 'phrase_prefix',
+        fields
+      }
+    } : undefined;
+    this.getCoupons();
   }
 
   couponsColFilterCall(event: any): void {
-      
+    this.colFilterQuery = [];
+    if (!this.colFilterCols.filter((x: any) => x.col === event.col).length) {
+      if (event.value !== '') {
+        this.colFilterCols.push(event);
+      }
+    } else {
+      this.colFilterCols.forEach((obj: any, index: number) => {
+        if (obj.col === event.col && event.value === '') {
+          if(event.col === 'c' || event.col === 'u') this.colFilterCols.filter((x: any) => x.col !== event.col);
+          else this.colFilterCols.splice(index, 1);
+        } else if (obj.col === event.col) {
+          obj.value = event.value;
+        }
+      });
+    }
+    this.colFilterCols.forEach((obj: any) => {
+      let tmpObj: any = {};
+      if(obj.col !== 'c' && obj.col !== 'u'){
+        tmpObj = {bool: {should: [{query_string: {fields: [obj.col], query: `*${obj.value}*`}}]}};
+      }
+      if(typeof event.value === "object") {
+        const filter: any = [{range: {}},{range: {}}];
+        const arun = event.col;
+        const start = new Date(event.value.start);
+        const end = new Date(event.value.end);
+        filter[0].range[arun] = { gte: start.getFullYear() + "-" + ("0"+(start.getMonth()+1)).slice(-2) + "-" + ("0"+start.getDate()).slice(-2)}
+        filter[1].range[arun] = { lte: end.getFullYear() + "-" + ("0"+(end.getMonth()+1)).slice(-2) + "-" + ("0"+end.getDate()).slice(-2)}
+        tmpObj.bool.filter = filter;
+      }
+      this.colFilterQuery.push(tmpObj);
+    });
+    this.getCoupons();
   }
 
-  couponsactionCall(event: any): void {
-      
+  couponsactionCall(data: any): void {
+    if (data.action.text === 'Edit'){
+      this.couponData = data.row;
+      const contentRef = data.row.contentdata_ref.map((x:any) => x.id);
+      this.classCtrl.setValue(contentRef);
+      this.couponsaddTableData(true);
+    }
+    if (data.action.text === 'Delete') {
+      const dataRow = data.row;
+      this.deleteCoupon(dataRow);
+    }
+  }
+
+  deleteCoupon(currentcoupon: any): void {
+    const titleName = 'Confirmation';
+    const message = 'Are you sure you want to delete ' + currentcoupon.name + ' coupon ?';
+    const cancelText = 'No';
+    const acceptText = 'Yes';
+    const showReason = true;
+    this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText, showReason);
+    this.confirmDialog.dialogResult.subscribe((res: any) => {
+      const data = {coupon_id: currentcoupon._id, reason: this.reason};
+      if (res) { 
+        this.baseService.doRequest(`/api/coupons/deleteCoupon`,
+          'post',data).subscribe((result: any) => {
+          if (result[0]) {
+            this.toast.sToast('success', 'Removed successfully');
+            this.getCoupons();
+          } else {
+            this.toast.sToast('error', result[1]);
+          }
+        });
+      }
+    });
   }
 
   couponspageCall(event: any): void {
-      
+    this.couponsTableOptions.tableOptions.pageSize = event.pageSize;
+    this.couponcurrentPage = event.pageIndex;
+    this.getCoupons();
   }
-
 
   couponsShowHideLoading(status: any): void {
     const data = Object.assign({}, this.couponsTableOptions);
@@ -228,11 +344,48 @@ export class CouponsComponent implements OnInit {
   }
   
   getCoupons(): void {
+    let params: any;
+    params = {
+      query: {
+        bool: {
+          must: [{exists: {field: 'couponCode'}}]
+        }
+      }
+    };
+    if (this.filterQuery && this.filterQuery.multi_match) {
+      params.query.bool.must.push(this.filterQuery);
+    }
+    if (this.colFilterQuery && this.colFilterQuery.length) { // Multi Column filter
+      this.colFilterQuery.forEach((obj: any) => {
+        if (obj.bool && obj.bool.should[0].match) {
+          params.query.bool.must.push(obj);
+        } else if(obj.must){
+          params.query.bool.must.push(obj.must[0])
+        } else if(!(obj.bool && obj.bool.should[0].match) && !obj.must) {
+          params.query.bool.filter = [];
+          params.query.bool.filter.push(obj);
+        }
+      });
+    }
+
+    let sorts: any = [{}];
+      if (this.couponsTableOptions.sortOptions && this.couponsTableOptions.sortOptions.direction
+        && this.couponsTableOptions.sortOptions.direction !== '') {
+      const orderArr = ['', 'c', 'u', '_id'];
+      if (orderArr.indexOf(this.couponsTableOptions.sortOptions.active) === -1) {
+        // @ts-ignore
+        sorts[0][this.couponsTableOptions.sortOptions.active + '.keyword'] = {order: this.couponsTableOptions.sortOptions.direction};
+      } else {
+        // @ts-ignore
+        sorts[0][this.couponsTableOptions.sortOptions.active] = {order: this.couponsTableOptions.sortOptions.direction};
+      }
+    }
     this.loaderService.display(true);
-    const q = JSON.stringify({});
-    const skip = 0;
-    const limit = 100;
-    this.baseService.doRequest(`/api/coupons`, 'get', null, {})
+    const q = JSON.stringify(params);
+    const skip = this.couponcurrentPage;
+    const sort = JSON.stringify(sorts);
+    const limit = this.couponsTableOptions.tableOptions.pageSize;
+    this.baseService.doRequest(`/api/coupons`, 'get', null, {q, skip, limit, sort})
     .subscribe((result: any) => {
       this.couponsTableOptions.pageData = [];
       if (result.data.length) {

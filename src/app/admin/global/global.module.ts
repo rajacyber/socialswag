@@ -23,15 +23,21 @@ import { UsersComponent } from './users/users.component';
 import { MasterClassDetailsComponent } from './master-class/master-class-details/master-class-details.component';
 import { AuditLogComponent } from './audit-log/audit-log.component';
 import { LiveLearningComponent } from './live-learning/live-learning.component';
-import { ChannelsComponent } from './channels/channels.component';
+import { ChannelComponent } from './channels/channel/channel.component';
 import { GlobalSettingsComponent } from './global-settings/global-settings.component';
 import { CouponsComponent } from './coupons/coupons.component';
+import { ChannelsComponent } from './channels/channels.component';
+import { PostsComponent } from './channels/posts/posts.component';
+import { CelebritiesComponent } from './celebrities/celebrities.component';
+
 
 @NgModule({
   declarations: [
-    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent, LiveLearningComponent, ChannelsComponent,
-    GlobalSettingsComponent,
-    CouponsComponent
+    SettingsComponent, MasterClassComponent, UsersComponent, MasterClassDetailsComponent, AuditLogComponent, LiveLearningComponent, ChannelComponent,
+    GlobalSettingsComponent, CelebritiesComponent,
+    CouponsComponent,
+    ChannelsComponent,
+    PostsComponent
   ],
   imports: [
     CommonModule,

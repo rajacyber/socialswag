@@ -31,18 +31,42 @@
           </mat-form-field>
         </div>
       </div>-->
-      <div class="text-center secondary-content mt-4">
+      <!-- <div class="text-center secondary-content mt-4">
         <p class="mat-small danger" *ngIf="errMsg && errMsg !== ''">{{errMsg}}</p>
-        <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}}
+        <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}} -->
           <!-- <a target="_blank" [href]="baseService.cyberLabel.eulaLink">Terms of Service</a></p> -->
-      </div>
-      <div fxLayout="row mt-4">
+      <!-- </div> -->
+      <!-- <div fxLayout="row mt-4">
         <div fxFlexFill>
           <button type="submit"  [disabled]="loginForm.invalid" class="to-UC"
                   mat-raised-button color="primary" class="w-100" id="lgn1btn">Sign In
           </button>
         </div>
-      </div>
+      </div> -->
+
+      <form action="" #firebaseForm="ngForm" (ngSubmit)="authenticationService.checkSession()">
+        <div fxLayout="row">
+          <div fxFlexFill>
+            <mat-form-field class="w-100" appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput placeholder="Email" (click)="updateView('login')" autofocus type="text" trim="blur" required name="email"
+                     [(ngModel)]="loginUser.email" autocomplete="OFF">
+            </mat-form-field>
+            <mat-form-field class="w-100" appearance="outline">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" trim="blur" placeholder="Password" name="password"  [(ngModel)]="loginUser.password"
+                     required autocomplete="OFF">
+            </mat-form-field>
+          </div>
+        </div>
+        <div fxLayout="row mt-4">
+          <div fxFlexFill>
+            <button type="submit"  [disabled]="!firebaseForm.form.invalid" class="to-UC"
+                    mat-raised-button color="primary" class="w-100" id="lgn1btn">Sign In
+            </button>
+          </div>
+        </div>
+      </form>
       <!--<p class="mt-1 mb0">
         <a href="javascript:void(0)" (click)="updateView('recoverPassword')" class="black mat-caption">Forgot your
           password ?</a>

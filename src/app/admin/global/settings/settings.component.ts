@@ -53,8 +53,9 @@ export class SettingsComponent implements OnInit {
       {name: 'Socialswag Live', icon: 'Admin', id: 'social_live', isVisible: true },
       {name: 'Channels', icon: 'Devices3', id: 'channels', isVisible: true },
       {name: 'Coupons', icon: 'AADLogo', id: 'coupons', isVisible: true },
-      {name: 'Celebrities', icon: 'Group', id: 'users', isVisible: true },
+      {name: 'Celebrities', icon: 'Group', id: 'celebrity', isVisible: true },
       {name: 'Metadata', icon: 'GroupedList', id: 'metadata', isVisible: true },
+      {name: 'Users', icon: 'Group', id: 'user', isVisible: true },
       {name: 'Audit Log', icon: 'EventInfo', id: 'audit_log', isVisible: true },
       {name: 'Settings', icon: 'Settings', id: 'setting', isVisible: true },
     ];
