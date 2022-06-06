@@ -36,19 +36,27 @@ import {
       useValue: {showError: true},
     },
   ],
-})
+}) 
 export class MasterClassComponent implements OnInit {
   @ViewChild('snav', {static: false}) snav: MatSidenav;
   @ViewChild('status', {static: false}) status: MatSidenav;
   @ViewChild('cat', {static: false}) cat: MatSidenav;
+  @ViewChild('masterpricingmodel', {static: false}) masterpricingmodel: MatSidenav;
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('userSelect', {static: true}) userSelect!: MatSelect;
+  @ViewChild('masSelect', {static: true}) masSelect!: MatSelect;
  
 
   public userCtrl: FormControl = new FormControl();
+  public masterCtrl: FormControl = new FormControl();
+  public masterFilterCtrl: FormControl = new FormControl();
 
   public userFilterCtrl: FormControl = new FormControl();
   public filteredUsers: ReplaySubject<any> = new ReplaySubject<any>(1);
+
+  public filteredMaster: ReplaySubject<any> = new ReplaySubject<any>(1);
+  protected master: any = [];
+
   protected users: any = [];
   protected _onDestroy = new Subject<void>();
   public searching = false;
@@ -62,11 +70,14 @@ export class MasterClassComponent implements OnInit {
   language: any = [];
   pricing: any = [];
   allUser: any = [];
+  allMaster: any = [];
   selectedId: any = '';
   selectedLanguage: any = [];
   step = 0;
   priceStep = 0;
+  priceMasStep = 0;
   pricingIndex = 0;
+  pricingMasIndex = 0;
   uploadimage: any = {
     key_takeaways_images: ''
   };
@@ -90,6 +101,22 @@ export class MasterClassComponent implements OnInit {
       }
     ]
   }];
+  masterPricing: any = [
+    {
+      language: '',
+      pricing_currency: [
+        {
+          price: '',
+          device_type: '',
+          currency_code: '',
+          pricing_model: '',
+          recurring_interval: 0,
+          recurring_type: null
+        }
+      ]
+    }
+  ];
+  master_content_id: any = '';
   currencyList: any = [];
   pricingList: any = [{pricing: 'INR', selected: false}, {pricing: 'USD', selected: false}];
   mode: any = ['Onetime', 'Yearly', 'Monthly'];
@@ -148,6 +175,9 @@ export class MasterClassComponent implements OnInit {
   public cs: CompanySharedService, public masterService: MasterService) { 
     this.subscribedKeys.addCategory = masterService.addCategory.subscribe((value: any) => {
       this.addMasterClassCategory();     
+    });
+    this.subscribedKeys.addPricing = masterService.addPricing.subscribe((value: any) => {
+      this.addMasterClassPricing();     
     });
     this.subscribedKeys.addCategory = masterService.reasonEVE.subscribe((value: any) => {
       this.reason = value;
@@ -410,10 +440,29 @@ export class MasterClassComponent implements OnInit {
     .subscribe(() => {
       this.filterUsers();
     });
+    this.masterFilterCtrl.valueChanges
+    .pipe(takeUntil(this._onDestroy))
+    .subscribe(() => {
+      this.filterMaster();
+    });
     this.getCelebrityUserList();
     this.getStatus();
   }
 
+  private filterMaster(): void {
+    if (!this.master) {
+      return;
+    }
+    // get the search keyword
+    let search = this.masterFilterCtrl.value;
+    if (!search) {
+      this.filteredMaster.next(this.master.slice());
+      return;
+    } else {
+      search = search.toLowerCase();
+    }
+    this.getMasterClassList(search);
+  }
   private filterUsers(): void {
     if (!this.users) {
       return;
@@ -501,23 +550,55 @@ export class MasterClassComponent implements OnInit {
     this.priceNextStep();
   }
 
+  addMasPrice(): void {
+    this.masterPricing.push({
+      language: '',
+      pricing_country: [
+        {
+          price: '',
+          currency_code: '',
+          pricing_model: '',
+          recurring_interval: null,
+          device_type: '',
+          recurring_type: ''
+        }
+      ]
+    });
+    this.priceMasNextStep();
+  }
+
   removePrice(index: any): void {
     this.price_model.splice(index, 1);
     this.pricePrevStep();
   }
 
-  setPrincingIndexStep(index: number): void {
+  removeMasPrice(index: any): void {
+    this.masterPricing.splice(index, 1);
+    this.priceMasPrevStep();
+  }
+
+  setPricingIndexStep(index: number): void {
     this.pricingIndex = index;
   }
 
+  setMasPricingIndexStep(index: number): void {
+    this.pricingMasIndex = index;
+  }
   nextPricingIndexStep(): void {
     this.pricingIndex++;
   }
 
-  prevPriceingIndexStep(): void {
+  prevPricingIndexStep(): void {
     this.pricingIndex--;
   }
 
+  nextMasPricingIndexStep(): void {
+    this.pricingMasIndex++;
+  }
+
+  prevMasPricingIndexStep(): void {
+    this.pricingMasIndex--;
+  }
   addCurrency(index: any): void {
     this.price_model[index].pricing_country.push({
       price: '',
@@ -532,9 +613,25 @@ export class MasterClassComponent implements OnInit {
 
   removeCurrency(index: any, idx: any): void {
     this.price_model[index].pricing_country.splice(idx, 1);
-    this.prevPriceingIndexStep();
+    this.prevPricingIndexStep();
   }
 
+  addMasCurrency(index: any): void {
+    this.masterPricing[index].pricing_country.push({
+      price: '',
+      currency_code: '',
+      pricing_model: '',
+      recurring_interval: null,
+      device_type: '',
+      recurring_type: ''
+    });
+    this.nextMasPricingIndexStep();
+  }
+
+  removeMasCurrency(index: any, idx: any): void {
+    this.masterPricing[index].pricing_country.splice(idx, 1);
+    this.prevMasPricingIndexStep();
+  }
   addVideoLang(): void {
     this.videoDetails.push(
       {
@@ -600,6 +697,12 @@ export class MasterClassComponent implements OnInit {
     this.cat.open();
   }
 
+  addMasterClassPricing(): void {
+    this.getLanguageAndCountry();
+    this.getCategory();
+    this.getMasterClassList();
+    this.masterpricingmodel.open();
+  }
   isPrimary(index: any, event:any): void {
     (event.checked) ? this.description.map((x: any, i: any) => x.is_default = (i === index) ? true : false) : null;
   }
@@ -614,6 +717,22 @@ export class MasterClassComponent implements OnInit {
     });
   }
 
+  savePricing(): void {
+    this.loaderService.display(true);
+    const data = {
+      content_id: this.master_content_id,
+      pricing_country: this.masterPricing
+    }
+    this.baseService.doRequest(`/api/contentdata/updateContentPricing`,
+      'post', data).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if(result) {
+        this.masterpricingmodel.close();
+        this.toast.sToast('success', 'Pricing added successfully!.');
+      }
+      else {this.toast.sToast('error', 'Error!.'); }
+    });
+  }
 
   stepperAction(url:any, data: any, index: any, msg: any): void {
     this.loaderService.display(true, msg);
@@ -662,6 +781,17 @@ export class MasterClassComponent implements OnInit {
     this.priceStep--;
   }
 
+  priceMasSetStep(index: number): void {
+    this.priceMasStep = index;
+  }
+
+  priceMasNextStep(): void {
+    this.priceMasStep++;
+  }
+
+  priceMasPrevStep(): void {
+    this.priceMasStep--;
+  }
   videoSetStep(index: number): void {
     this.videoStep = index;
   }
@@ -923,6 +1053,34 @@ export class MasterClassComponent implements OnInit {
     });
   }
 
+  getMasterClassList(search?: any): void {
+    let cq: any;
+    cq =  {
+      query: {
+        bool: {
+           must: [{match: {'data_type.keyword': 'MasterClass'}}]
+        }
+      }
+    };
+    if (search && search !== '') {
+      cq.query.bool.must.push({ match_bool_prefix: { title: search.toLowerCase() } });
+    }
+    let sort: any;
+    sort = [{}];
+    const q = JSON.stringify(cq);
+    const skip = 0;
+    const limit = 100;
+    this.baseService.doRequest(`/api/contentdata`, 'get', null,{q, skip, limit}).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if (result.data.length) {
+        this.allMaster = result.data
+        this.filteredMaster.next(result.data.slice());
+      } else {
+        this.filteredMaster.next([]);
+      }
+    });
+  }
+
   getCelebrityUserList(search?: any): void {
     let cq: any;
     cq =  {
@@ -967,6 +1125,15 @@ export class MasterClassComponent implements OnInit {
     }
   }
 
+  closeCurrentMaster(event: any): void {
+    console.log(event);
+    if (this.allMaster) {
+      this.filteredMaster.next(this.allMaster.slice());
+    }
+    if (!event) {
+      this.getMasterClassList();
+    }
+  }
   async getStatus(): Promise<any> {
     const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
     this.statusLists = defaultData.content_status;

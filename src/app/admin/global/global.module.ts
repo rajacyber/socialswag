@@ -29,6 +29,7 @@ import { CouponsComponent } from './coupons/coupons.component';
 import { ChannelsComponent } from './channels/channels.component';
 import { PostsComponent } from './channels/posts/posts.component';
 import { CelebritiesComponent } from './celebrities/celebrities.component';
+import { CarouselComponent } from './carousel/carousel.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { CelebritiesComponent } from './celebrities/celebrities.component';
     GlobalSettingsComponent, CelebritiesComponent,
     CouponsComponent,
     ChannelsComponent,
-    PostsComponent
+    PostsComponent,
+    CarouselComponent
   ],
   imports: [
     CommonModule,

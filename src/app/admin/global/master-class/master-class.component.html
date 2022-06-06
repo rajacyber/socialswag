@@ -58,6 +58,126 @@
       </mat-card>
     </mat-sidenav>
 
+    <mat-sidenav #masterpricingmodel [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
+      <mat-card class="w-100">
+        <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
+                (click)="masterpricingmodel.close();"><mat-icon>close</mat-icon>
+        </button>
+        <mat-card-header>
+          <mat-card-title>Add Pricing</mat-card-title>
+        </mat-card-header>
+        <form #addPricing="ngForm">
+          <mat-form-field class="col-md-8 w-70p" appearance="outline">
+            <mat-select class="inp-width" [formControl]="masterCtrl" required (selectionChange)="master_content_id = $event.value" (openedChange)="closeCurrentMaster($event)" placeholder="Search master" #masSelect>
+              <mat-option>
+                <ngx-mat-select-search [formControl]="masterFilterCtrl" [placeholderLabel]="'Search Master'"
+                  [noEntriesFoundLabel]="'No matching master found'" [searching]="searching"></ngx-mat-select-search>
+              </mat-option>
+              <mat-option *ngFor="let mas of filteredMaster | async" [value]="mas._id">
+                {{mas.title}}
+              </mat-option>
+            </mat-select>
+            <mat-error> Master is required</mat-error>
+          </mat-form-field>
+          <ng-container *ngFor="let item of masterPricing; let i = index">
+            <mat-expansion-panel class="mt-2" [expanded]="priceMasStep === i" (opened)="priceMasSetStep(i)" hideToggle>
+              <mat-expansion-panel-header>
+                <mat-panel-title class="mt-2">Select Price</mat-panel-title>
+                <div class="ml-2 mt-2">
+                  <button mat-button="" *ngIf="i===0" class="tprime px-1 mr-2" (click)="addPrice()" appPreventMultiClick>
+                    <span class="d-flex flex-row align-items-center">
+                      <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                      <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                    </span>
+                  </button>
+                  <button mat-button="" *ngIf="i!==0"class="mat-warn px-1 mr-2" (click)="removeMasPrice(i)" appPreventMultiClick matTooltip="Delete language">
+                    <span class="d-flex flex-row align-items-center">
+                      <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                      <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                    </span>
+                  </button>
+                </div>
+              </mat-expansion-panel-header>
+              <mat-card class="mt-2 mb-2">
+                <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                  <mat-label>Language</mat-label>
+                  <mat-select [multiple]="false" required placeholder="Choose language" name="langLists{{i}}" [(ngModel)]="item.language">
+                    <mat-option *ngFor="let lang of languagesList" [value]="lang" [id]="lang"> {{lang}} </mat-option>
+                  </mat-select>
+                  <mat-error> Language is required</mat-error>
+                </mat-form-field>
+                <div *ngFor="let list of item.pricing_currency; let j = index" class="row ml-2 mr-2">
+                  <mat-expansion-panel class="mt-2" [expanded]="pricingMasIndex === j" (opened)="setMasPricingIndexStep(j)" hideToggle>
+                    <mat-expansion-panel-header>
+                      <mat-panel-title class="mt-2">Select Currency</mat-panel-title>
+                      <div class="ml-2 mt-2">
+                        <button mat-button="" *ngIf="j===0" class="tprime px-1 mr-2" (click)="addMasCurrency(j)" appPreventMultiClick>
+                          <span class="d-flex flex-row align-items-center">
+                            <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+                            <span class="ibtn pl-1" id="DepAssetAddAsset">Add</span>
+                          </span>
+                        </button>
+                        <button mat-button="" *ngIf="j!==0"class="mat-warn px-1 mr-2" (click)="removeMasCurrency(i, j)" appPreventMultiClick matTooltip="Delete key takeaway">
+                          <span class="d-flex flex-row align-items-center">
+                            <i class="ms-Icon ms-font-lg ms-Icon--Delete px-1 ms-fontColor-themeDanger"></i>
+                            <span class="ibtn pl-1" id="aDeleteCompany">Delete</span>
+                          </span>
+                        </button>
+                      </div>
+                    </mat-expansion-panel-header>
+                    <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
+                      <mat-label>Price</mat-label>
+                      <input matInput type="number" [(ngModel)]="list.price" placeholder="Enter price" required name="price{{i}}" id="name">
+                      <mat-error> Price is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                      <mat-label>Currency Code</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose currency code" name="currencyLists{{i}}" [(ngModel)]="list.currency_code">
+                        <mat-option *ngFor="let currency of currencyList" [value]="currency" [id]="currency"> {{currency}} </mat-option>
+                      </mat-select>
+                      <mat-error> Currency code is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                      <mat-label>Device Type</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose device type" name="device{{i}}" [(ngModel)]="list.device_type">
+                        <mat-option *ngFor="let device of deviceList" [value]="device" [id]="device"> {{device}} </mat-option>
+                      </mat-select>
+                      <mat-error> Currency code is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">
+                      <mat-label>Pricing Type</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose pricing type" name="pricingModelLists{{i}}" [(ngModel)]="list.pricing_model">
+                        <mat-option *ngFor="let model of pricingModelList" [value]="model" [id]="model"> {{model}} </mat-option>
+                      </mat-select>
+                      <mat-error> Pricing type is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline" *ngIf="list.pricing_model !== 'OneTime'">
+                      <mat-label>Recurring Type</mat-label>
+                      <mat-select [multiple]="false" required placeholder="Choose recurring type" name="recurringTypeLists{{i}}" [(ngModel)]="list.recurring_type">
+                        <mat-option *ngFor="let type of recurringTypeList" [value]="type" [id]="type"> {{type}} </mat-option>
+                      </mat-select>
+                      <mat-error> Recurring type is required</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p" *ngIf="list.pricing_model !== 'OneTime'">
+                      <mat-label>Recurring Interval</mat-label>
+                      <input matInput type="number" [(ngModel)]="list.recurring_interval" placeholder="Enter recurring interval" required name="recurring{{i}}" id="recurring">
+                      <mat-error> Recurring interval is required</mat-error>
+                    </mat-form-field>
+                  </mat-expansion-panel>  
+                </div>
+              </mat-card>
+            </mat-expansion-panel>
+            <div mat-dialog-actions class="mt-2">
+              <button type="button" [disabled]="!addPricing.form.valid" mat-raised-button color="primary" class="mr-2"
+                      (click)="savePricing()" id="usrSavebtn">Save
+              </button>
+              <button mat-raised-button (click)="masterpricingmodel.close();">Cancel</button>
+            </div>
+          </ng-container>
+        </form>
+      </mat-card>
+    </mat-sidenav>
+
     <mat-sidenav #status [mode]="'over'" fixedTopGap="56" position="end" class="w-70p z-index-150">
       <mat-card class="w-100">
         <button class="float-right r-1p mt--10" mat-icon-button aria-label="close modal icon" matTooltip="Close"
@@ -387,7 +507,7 @@
                       <mat-error> Language is required</mat-error>
                     </mat-form-field>
                     <div *ngFor="let list of item.pricing_country; let j = index" class="row ml-2 mr-2">
-                      <mat-expansion-panel class="mt-2" [expanded]="pricingIndex === j" (opened)="setPrincingIndexStep(j)" hideToggle>
+                      <mat-expansion-panel class="mt-2" [expanded]="pricingIndex === j" (opened)="setPricingIndexStep(j)" hideToggle>
                         <mat-expansion-panel-header>
                           <mat-panel-title class="mt-2">Select Currency</mat-panel-title>
                           <div class="ml-2 mt-2">
@@ -407,7 +527,7 @@
                         </mat-expansion-panel-header>
                         <mat-form-field appearance="outline" class="ml-3 col-md-8 w-70p">
                           <mat-label>Price</mat-label>
-                          <input matInput type="number" [(ngModel)]="list.price" placeholder="Enter price" required name="price{{i}}" id="name">
+                          <input matInput type="text" [(ngModel)]="list.price" placeholder="Enter price" required name="price{{i}}" id="name">
                           <mat-error> Price is required</mat-error>
                         </mat-form-field>
                         <mat-form-field class="ml-3 col-md-8 w-70p" appearance="outline">

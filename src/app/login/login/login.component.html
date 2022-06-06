@@ -36,15 +36,15 @@
         <p class="mat-caption">By logging in, you agree to the {{baseService.cyberLabel.productName}} -->
           <!-- <a target="_blank" [href]="baseService.cyberLabel.eulaLink">Terms of Service</a></p> -->
       <!-- </div> -->
-      <!-- <div fxLayout="row mt-4">
+      <div fxLayout="row mt-4">
         <div fxFlexFill>
           <button type="submit"  [disabled]="loginForm.invalid" class="to-UC"
                   mat-raised-button color="primary" class="w-100" id="lgn1btn">Sign In
           </button>
         </div>
-      </div> -->
+      </div>
 
-      <form action="" #firebaseForm="ngForm" (ngSubmit)="authenticationService.checkSession()">
+      <!-- <form action="" #firebaseForm="ngForm" (ngSubmit)="authenticationService.checkSession()">
         <div fxLayout="row">
           <div fxFlexFill>
             <mat-form-field class="w-100" appearance="outline">
@@ -66,7 +66,7 @@
             </button>
           </div>
         </div>
-      </form>
+      </form> -->
       <!--<p class="mt-1 mb0">
         <a href="javascript:void(0)" (click)="updateView('recoverPassword')" class="black mat-caption">Forgot your
           password ?</a>

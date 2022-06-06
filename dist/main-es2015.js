@@ -16621,6 +16621,7 @@ class MasterService {
     constructor(contentService) {
         this.contentService = contentService;
         this.addCategory = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
+        this.addPricing = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
         this.contentEVE = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
         this.reasonEVE = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
     }
@@ -16629,6 +16630,9 @@ class MasterService {
     }
     addCategoryData() {
         this.addCategory.next({});
+    }
+    addPricingData() {
+        this.addPricing.next({});
     }
     contentId(value) {
         this.contentEVE.next(value);

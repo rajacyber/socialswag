@@ -57,6 +57,7 @@ export class SettingsComponent implements OnInit {
       {name: 'Metadata', icon: 'GroupedList', id: 'metadata', isVisible: true },
       {name: 'Users', icon: 'Group', id: 'user', isVisible: true },
       {name: 'Audit Log', icon: 'EventInfo', id: 'audit_log', isVisible: true },
+      {name: 'Carousel', icon: 'HourGlass', id: 'carousel', isVisible: true },
       {name: 'Settings', icon: 'Settings', id: 'setting', isVisible: true },
     ];
   }
