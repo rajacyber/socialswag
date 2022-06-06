@@ -9,7 +9,7 @@ import {ConfirmDialogService} from '../../../_services/confirmdialog.service';
 import {MyToastrService} from '../../../_services/toastr.service';
 import {MatSidenav} from '@angular/material/sidenav';
 import {AuthenticationService} from '../../../_services/authentication.service';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 
 @Component({
   selector: 'app-users',
@@ -52,7 +52,7 @@ export class UsersComponent implements OnInit {
   apiClient: any = {};
   apiMFA: any = {};
 
-  countryList: any = [];
+  countryList: any = [{"name":"Learner"}, {"name":"Admin"}, {"name":"Master"}];
   languagesList: any = [];
   fromMaxDate = new Date();
   thumbnail_image: any;
@@ -60,6 +60,7 @@ export class UsersComponent implements OnInit {
   images: any = {};
   user_id: any;
   Objectkeys = Object.keys;
+  adduser: boolean=false;
 
 
   constructor(public baseService: BaseRequestService, private httpClient: HttpClient, 
@@ -81,10 +82,10 @@ export class UsersComponent implements OnInit {
       columns: [
         {
           header: 'Name',
-          col: 'name',
-          columnDef: 'name',
+          col: 'displayName',
+          columnDef: 'displayName',
           filter: '',
-          cell: '(element: any) => `${element.name}`',
+          cell: '(element: any) => `${element.displayName}`',
           order: 0,
           visible: true,
           isToolTip: false,
@@ -124,10 +125,10 @@ export class UsersComponent implements OnInit {
           imgPath: ''
         }, {
           header: 'Phone Number',
-          col: 'phone',
-          columnDef: 'phone',
+          col: 'phoneNumber',
+          columnDef: 'phoneNumber',
           filter: '',
-          cell: '(element: any) => `${element.phone}`',
+          cell: '(element: any) => `${element.phoneNumber}`',
           order: 3,
           visible: true,
           isToolTip: false,
@@ -169,9 +170,9 @@ export class UsersComponent implements OnInit {
           iscolumnSearch: true
         }, {
           header: 'Created on',
-          columnDef: 'c',
-          filter: 'DD-MMM-YYYY',
-          cell: '(element: any) => `${element.c}`',
+          columnDef: 'metadata.creationTime',
+          filter: '',
+          cell: '(element: any) => `${element.metadata.creationTime}`',
           order: 2,
           visible: true,
           isToolTip: false,
@@ -220,7 +221,7 @@ export class UsersComponent implements OnInit {
           dateCol: {start: '', end: ''},
           width: '150px'
         }],
-      sortOptions: {active: 'name', direction: 'asc'},
+      sortOptions: {active: 'metadata.creationTime', direction: 'desc'},
       faClass: 'Users',
       _pageData: [],
       tableOptions: {
@@ -233,12 +234,26 @@ export class UsersComponent implements OnInit {
         floatingFilter: true,
         rowSelection: false,
         showAction: true,
-        actionMenuItems: [{
-          text: 'Upload Images',
-          icon: 'cloud_upload',
-          callback: 'uploadFn',
+        actionMenuItems: [
+        // {
+        //   text: 'Upload Images',
+        //   icon: 'cloud_upload',
+        //   callback: 'uploadFn',
+        //   isGlobal: true
+        // },
+        {
+          text: 'Edit',
+          icon: 'edit',
+          callback: 'editFn',
+          isGlobal: false
+        },
+        {
+          text: 'Delete',
+          icon: 'delete_forver',
+          callback: 'deleteFn',
           isGlobal: true
-        }],
+          }
+      ],
         pagination: true,
         pageOptions: [5, 10, 25, 100],
         pageSize: 10,
@@ -391,6 +406,17 @@ export class UsersComponent implements OnInit {
       this.user_id = data.row._id;
       this.upload.open();
     }
+    if (data.action.text === 'Edit') {
+      this.user_id = data.row.uid;
+      this.userData = { email: data.row.email, displayName:data.row.displayName, phoneNumber:data.row.phoneNumber, rolei:Object.keys(data.row.customClaims)[0], modifiy:true};
+      this.snav.open(); 
+    }
+    if (data.action.text === 'Delete') {
+      this.user_id = data.row._id;
+      this.userData= data.row;
+      this.deleteUserConfirmationDialog()
+    }
+
   }
 
   deleteAPIkey(): void {
@@ -418,13 +444,15 @@ export class UsersComponent implements OnInit {
 
 
   addUser(): void {
-    this.userData = {name: '', phone: '', email: '', dob: '', role: ''};
+    this.adduser = true;
+    this.userData = { email: '',  role: '', displayName:'', phoneNumber:'', rolei:''};
     this.snav.open();
   }
 
   backFunUpload(): void {
     this.upload.close();
     this.images = {};
+    this.adduser=false;
     this.preview_image = this.thumbnail_image = '';
   }
 
@@ -473,18 +501,50 @@ export class UsersComponent implements OnInit {
   saveUser(): any {
     this.loaderService.display(true);
     let data: any;
-    data = this.userData;
-    this.baseService.doRequest(`/api/entity/createCelebrityUser`, 'post', data)
-      .subscribe((result: any) => {
+    data = JSON.parse(JSON.stringify(this.userData));
+    data.role={};
+    data.role[this.userData.rolei] = true; 
+    data.password="Admin123"
+      this.httpClient.post<any>('https://us-central1-socialswag-dev.cloudfunctions.net/server/api/v1/users',
+      data ).subscribe(result => {
         this.loaderService.display(false);
         console.log(result);
-        if (result[0]) {
-          this.toast.sToast('success', 'Celebrity User Added Successfully!');
+        // if (result[0]) {
+          this.toast.sToast('success', 'User added successfully!');
           this.backFun();
           this.addUsr = false;
-        } else {
-          this.toast.sToast('error', result[1]);
-        }
+        // } else {
+          // this.toast.sToast('error', result[1]);
+        // }
+      }, error =>{
+        this.loaderService.display(false);
+        if(error.error && error.error.data && error.error.data.message){
+        this.toast.sToast('error', error.error.data.message)}
+      });
+  }
+
+  updateUser(): any {
+    this.loaderService.display(true);
+    let data: any;
+    data = JSON.parse(JSON.stringify(this.userData));
+    data.role={};
+    data.role[this.userData.rolei] = true; 
+    data.password="Admin123"
+      this.httpClient.patch<any>('https://us-central1-socialswag-dev.cloudfunctions.net/server/api/v1/users',
+      {data:data, 'uid':this.user_id} ).subscribe(result => {
+        this.loaderService.display(false);
+        console.log(result);
+        // if (result[0]) {
+          this.toast.sToast('success', 'User updated successfully!');
+          this.backFun();
+          this.addUsr = false;
+        // } else {
+          // this.toast.sToast('error', result[1]);
+        // }
+      }, error =>{
+        this.loaderService.display(false);
+        if(error.error && error.error.data && error.error.data.message){
+        this.toast.sToast('error', error.error.data.message)}
       });
   }
 
@@ -651,21 +711,26 @@ export class UsersComponent implements OnInit {
     //   return false;
     // }
     const titleName = 'Confirmation';
-    const message = 'Are you sure you want to delete this ' + this.user.firstName + ' user?';
+    const message = 'Are you sure you want to delete ' + this.userData.displayName + ' user?';
     const cancelText = 'No';
     const acceptText = 'Yes';
     this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText);
     this.confirmDialog.dialogResult.subscribe((res: any) => {
       if (res) {
         this.loaderService.display(true);
-        this.baseService.doRequest(
-          `/api/kusers/${this.user.id}`, 'delete').subscribe((result: any) => {
-          this.loaderService.display(false);
-          this.toast.sToast('success', 'User removed successfully');
-          setTimeout(() => {
-            this.getUsers();
-          }, 5000);
-        });
+        let reqOpts = {}
+          let data={'uid':this.userData.uid}
+          this.httpClient.delete<any>('https://us-central1-socialswag-dev.cloudfunctions.net/server/api/v1/users',
+          {params:data}).subscribe(result => { 
+            if (result) {
+                this.toast.sToast('success', `${this.userData.displayName} removed successfully`)
+            }
+          }, (error: any) => {
+            this.loaderService.display(false);
+            if(error && error.error && error.error.data && error.error.data.message){
+              this.toast.sToast('error', error.error.data.message)
+            }
+            })
       }
     });
   }
@@ -706,19 +771,7 @@ export class UsersComponent implements OnInit {
     this.showHideLoading(true);
     this.loaderService.display(true, 'Getting users...');
     let cq: any;
-    cq = {
-      query: {
-        bool: {
-          must: [
-            {
-              match: {
-                'kind.keyword': 'CELEBRITY'
-              }
-            }
-          ]
-        }
-      }
-    };
+    cq = {query: {}};
     this.userTableOptions.query = cq;
     let sort: any;
     sort = [{}];
@@ -749,8 +802,23 @@ export class UsersComponent implements OnInit {
     const limit = this.userTableOptions.tableOptions.pageSize;
     const s = JSON.stringify(sort);
     const fields = JSON.stringify(['_id', 'phone', 'email', 'name', 'languages', 'country.name', 'c', 'u']);
-    this.baseService.doRequest(`/api/entity`, 'get', null,
-      {q, skip, s, limit}).subscribe((result: any) => {
+    let da ={q,skip,limit,s}
+    let reqOpts = {
+      params: new HttpParams(),
+    };
+    
+    for (const key in cq) {
+      if (cq.hasOwnProperty(key)) {
+        reqOpts.params = reqOpts.params.append(key, JSON.stringify(cq[key]));
+      }}
+      reqOpts.params = reqOpts.params.append('skip', JSON.stringify(skip))
+      reqOpts.params = reqOpts.params.append('limit', JSON.stringify(limit))
+      reqOpts.params = reqOpts.params.append('sort', JSON.stringify(sort))
+    // https://us-central1-socialswag-dev.cloudfunctions.net/server/api/v1
+    this.httpClient.get<any>('https://us-central1-socialswag-dev.cloudfunctions.net/server/api/v1/users',
+         {params:reqOpts.params}).subscribe(result => {
+    // this.baseService.doRequest(`/api/users`, 'get', null,
+    //   {skip,limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if (result) {
         result.data.map((item: any) => {
@@ -762,6 +830,10 @@ export class UsersComponent implements OnInit {
       } else {
         this.toast.sToast('error', result);
         this.showHideLoading(false);
+      }
+    }, error =>{
+      if(error.data && error.data.message){
+        this.toast.sToast('error', error.data.message);
       }
     });
   }

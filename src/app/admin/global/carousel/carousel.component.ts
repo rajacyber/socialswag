@@ -12,6 +12,8 @@ import {AuthenticationService} from '../../../_services/authentication.service';
 import {HttpClient} from '@angular/common/http';
 import { ReplaySubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CarouselService } from 'src/app/_services/carousel.service';
+import { any } from 'prop-types';
 
 @Component({
   selector: 'app-carousel',
@@ -28,12 +30,12 @@ export class CarouselComponent implements OnInit {
   protected dataList: any = [];
   protected _onDestroy = new Subject<void>();
   public searching = false;
-  
+  subscribedKeys:any={};
   allDataList: any = [];
   carouselTableOptions: any;
   carousel: any;
   companyLevelAccess = 'allCompanies';
-  carouselData: any;
+  carouselData: any={};
   carousel_image: any = '';
   apiData: any;
   filterQuery: any;
@@ -63,8 +65,9 @@ export class CarouselComponent implements OnInit {
   dropdownSettings: any;
   apiClient: any = {};
   apiMFA: any = {};
-
+  datapresent:boolean=false;
   countryList: any = [];
+  celebrityList:any=[];
   languagesList: any = [];
   fromMaxDate = new Date();
   image_uploads: any;
@@ -75,13 +78,20 @@ export class CarouselComponent implements OnInit {
   carouselSize: any;
   dataType: any;
   levelList: any;
+  thumbnail_image: any='';
+  levelData:any={'level':''};
+  @ViewChild('cat', {static: false}) cat: MatSidenav;
+
 
 
   constructor(public baseService: BaseRequestService, private httpClient: HttpClient, 
               public loaderService: LoaderService, private aS: AuthenticationService,
               public modalService: ModalService, public toast: MyToastrService,
               private readonly router: Router, public confirmDialog: ConfirmDialogService,
-              public cs: CommonService) {
+              public cs: CommonService, public carouselService:CarouselService) {
+                this.subscribedKeys.addCategory = carouselService.addlevel.subscribe((value: any) => {
+                  this.addCarouselLevel();     
+                });
     this.dropdownSettings = {
       singleSelection: false,
       idField: '_id',
@@ -95,11 +105,11 @@ export class CarouselComponent implements OnInit {
     this.carouselTableOptions = {
       columns: [
         {
-          header: 'Name',
-          col: 'name',
-          columnDef: 'name',
+          header: 'Level',
+          col: 'level',
+          columnDef: 'level',
           filter: '',
-          cell: '(element: any) => `${element.name}`',
+          cell: '(element: any) => `${element.level}`',
           order: 0,
           visible: true,
           isToolTip: false,
@@ -117,11 +127,11 @@ export class CarouselComponent implements OnInit {
           imgPath: '',
           iscolumnSearch: true
         }, {
-          header: 'Email',
-          col: 'email',
-          columnDef: 'email',
+          header: 'Headline',
+          col: 'headline',
+          columnDef: 'headline',
           filter: '',
-          cell: '(element: any) => `${element.email}`',
+          cell: '(element: any) => `${element.headline}`',
           order: 2,
           visible: true,
           isToolTip: false,
@@ -138,11 +148,11 @@ export class CarouselComponent implements OnInit {
           img: false,
           imgPath: ''
         }, {
-          header: 'Phone Number',
-          col: 'phone',
-          columnDef: 'phone',
+          header: 'Description',
+          col: 'carousel_desc',
+          columnDef: 'carousel_desc',
           filter: '',
-          cell: '(element: any) => `${element.phone}`',
+          cell: '(element: any) => `${element.carousel_desc}`',
           order: 3,
           visible: true,
           isToolTip: false,
@@ -161,11 +171,11 @@ export class CarouselComponent implements OnInit {
           imgPath: '',
           iscolumnSearch: true
         }, {
-          header: 'Languages',
-          col: 'languages',
-          columnDef: 'languages',
+          header: 'Position',
+          col: 'position',
+          columnDef: 'position',
           filter: '',
-          cell: '(element: any) => `${element.languages}`',
+          cell: '(element: any) => `${element.position}`',
           order: 2,
           visible: true,
           isToolTip: false,
@@ -181,12 +191,13 @@ export class CarouselComponent implements OnInit {
           addingText: '',
           img: false,
           imgPath: ''
-        }, {
-          header: 'Country',
-          col: 'country.name',
-          columnDef: 'country.name',
+        }, 
+        {
+          header: 'Product',
+          col: 'data_type',
+          columnDef: 'data_type',
           filter: '',
-          cell: '(element: any) => `${element.country.name}`',
+          cell: '(element: any) => `${element.data_type}`',
           order: 2,
           visible: true,
           isToolTip: false,
@@ -203,13 +214,109 @@ export class CarouselComponent implements OnInit {
           img: false,
           imgPath: '',
           iscolumnSearch: true
-        }],
-      sortOptions: {active: 'name', direction: 'asc'},
+        },
+        {
+          header: 'Carousel Size',
+          col: 'carousel_size',
+          columnDef: 'carousel_size',
+          filter: '',
+          cell: '(element: any) => `${element.carousel_size}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          iscolumnSearch: true,
+          width:'100px'
+        },
+        {
+          header: 'Image Link',
+          col: 'image_upload',
+          columnDef: 'image_upload',
+          filter: '',
+          cell: '(element: any) => `${element.image_upload}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          iscolumnSearch: true
+        },
+        {
+          header: 'Content Title',
+          col: 'contentdata_ref.title',
+          columnDef: 'contentdata_ref.title',
+          filter: '',
+          cell: '(element: any) => `${element.contentdata_ref.title}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          iscolumnSearch: true,
+          width:'100px'
+        },
+        {
+          header: 'Entity Title',
+          col: 'entity_ref.title',
+          columnDef: 'entity_ref.title',
+          filter: '',
+          cell: '(element: any) => `${element.entity_ref.title}`',
+          order: 2,
+          visible: true,
+          isToolTip: false,
+          isToolTipCol: '',
+          hasMultiData: false,
+          class: '',
+          color: '',
+          isProgressCntrl: false,
+          isColoredCntrl: false,
+          colList: [],
+          isfaicon: false,
+          isAddingText: false,
+          addingText: '',
+          img: false,
+          imgPath: '',
+          iscolumnSearch: true,
+          width:'100px'
+        }
+      ],
+      sortOptions: {active: 'data_type', direction: 'asc'},
       faClass: 'Celebritycarousel',
       _pageData: [],
       tableOptions: {
         id: 'carousels',
-        title: 'Celebrities',
+        title: 'Carousels',
         isServerSide: true, 
         // add: (this.aS.hasPermission('kcarousels', 'create')),
         selectText: 'carousel(s)',
@@ -217,12 +324,26 @@ export class CarouselComponent implements OnInit {
         floatingFilter: true,
         rowSelection: false,
         showAction: true,
-        actionMenuItems: [{
+        actionMenuItems: [
+          {
           text: 'Upload Images',
           icon: 'cloud_upload',
           callback: 'uploadFn',
-          isGlobal: true
-        }],
+          isGlobal: false
+          },
+          {
+            text: 'Edit',
+            icon: 'edit',
+            callback: 'editFn',
+            isGlobal: false
+          },
+          {
+            text: 'Delete',
+            icon: 'delete_forver',
+            callback: 'deleteFn',
+            isGlobal: true
+            }
+      ],
         pagination: true,
         pageOptions: [5, 10, 25, 100],
         pageSize: 10,
@@ -277,12 +398,29 @@ export class CarouselComponent implements OnInit {
     // }
   }
 
-
+  savelevel(){
+    console.log("level data", this.levelData);
+    let d = this.levelData
+    this.baseService.doRequest(`/api/carousel/createCarouselLevel`, 'post', d)
+      .subscribe((result: any) => {
+        this.loaderService.display(false);
+        console.log("level data posted", result);
+        if (result.level) {
+          this.cat.close()
+          this.levelData={'level':''}
+          this.toast.sToast('success', 'level Added Successfully!');
+          this.getLevel();
+        } else {
+          this.toast.sToast('error', result[1]);
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.carouselTableOptions.pageData = [];
     setTimeout(() => {
       this.getcarousels();
+      this.getUsers();
     }, 1000);
     this.dataFilterCtrl.valueChanges
     .pipe(takeUntil(this._onDestroy))
@@ -310,7 +448,19 @@ export class CarouselComponent implements OnInit {
 
   closeCurrentData(event: any): void {
     if (this.allDataList) {
-      this.filteredData.next(this.allDataList.slice());
+      // console.log("filteredData before", this.filteredData)
+      // this.filteredData.next(this.allDataList.slice());
+      // console.log("filteredData after", this.filteredData)
+      // this.datapresent=false;
+    let d:any=[];
+    console.log("datatype updated", this.carouselData.data_types);
+    this.allDataList.forEach((ele:any) =>{
+      if(ele.data_type === this.carouselData.data_types){
+        d.push(ele);
+      }
+    })
+    this.filteredData.next(d.slice());
+    console.log("this.filteredData", this.filteredData)
     }
     if (!event) {
       this.getDataList();
@@ -321,10 +471,12 @@ export class CarouselComponent implements OnInit {
     let cq: any;
     cq =  {
       query: {
+        bool: {             
+          must: [  {
         bool: {
-           must: [{match: {'data_type.keyword': 'MasterClass'}}]
+           should: [{match: {'data_type': 'MasterClass'}}, {match: {'data_type': 'Channel'}}]
         }
-      }
+      }]}}
     };
     if (search && search !== '') {
       cq.query.bool.must.push({ match_bool_prefix: { name: search.toLowerCase() } });
@@ -337,8 +489,27 @@ export class CarouselComponent implements OnInit {
     this.baseService.doRequest(`/api/contentdata`, 'get', null,{q, skip, limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if (result.data.length) {
+        result.data.forEach( (ele:any) =>{
+          if(ele.data_type === 'Channel'){
+            if(ele.entity_ref){
+              ele.displayData = ele.entity_ref.name;
+            }
+          }
+          if(ele.data_type === 'MasterClass'){
+            if(ele.title){
+              ele.displayData = ele.title;
+            }
+          }
+        })
         this.allDataList = result.data
         this.filteredData.next(result.data.slice());
+        console.log("allDataList", this.allDataList)
+        console.log("filteredData", this.filteredData)
+        if(this.carouselTitle === 'Edit Carousel'){
+         
+          this.updatedataType(this.carouselData.data_types)
+          this.snav.open();      
+        }
       } else {
         this.filteredData.next([]);
       }
@@ -354,8 +525,12 @@ export class CarouselComponent implements OnInit {
       reader.onload = (ev) => {
         // @ts-ignore
         this[key] = reader.result;
+        console.log("this.key", reader.result);
+        this.carouselData.image_uploads = reader.result
       };
     }
+    console.log("this.image", this.images);
+    console.log("this.image_uploads", this.image_uploads)
   }
 
   imagesUpload(): void {
@@ -406,9 +581,11 @@ export class CarouselComponent implements OnInit {
   }
 
   async getLanguageAndCountry(): Promise<any> {
-    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post', {}).toPromise();
+    const defaultData = await this.baseService.doRequest(`/api/utilities/getContent`, 'post',{}
+    ).toPromise();
     this.carouselSize = defaultData.carousel_size;
     this.dataType = defaultData.data_type;
+    // this.dataType = ['Channel', 'MasterClass', 'Other']
     await this.getLevel();
   }
 
@@ -417,33 +594,8 @@ export class CarouselComponent implements OnInit {
     this._onDestroy.complete();
   }
 
-  getCompany(): void {
-    let cq;
-    cq = {query: {bool: {must: [{exists: {field: 'description'}}], must_not: [{exists: {field: 'companyRef'}}]}}};
-    const q = JSON.stringify(cq);
-    const skip = 0;
-    const limit = 10000;
-    const sort = JSON.stringify([{'name.keyword': {order: 'asc'}}]);
-    const fields = JSON.stringify(['name']);
-    this.baseService.doRequest(`/api/company/`, 'get', null,
-      {q, skip, limit, sort, fields}).subscribe((result: any) => {
-      if (result) {
-        this.companyList = result.data;
-        this.companyList.forEach(
-          (obj: any) => {
-            obj.selected = false;
-          }
-        );
-        if (this.carouselData.id) {
-          this.updateAcl(this.carouselData);
-        }
-      }
-    });
-  }
-
   getAcl(): void {
     this.selectedComp = [];
-    this.getCompany();
     this.modalService.open('Aclmodal');
   }
 
@@ -486,6 +638,18 @@ export class CarouselComponent implements OnInit {
       this.carousel_id = data.row._id;
       this.upload.open();
     }
+    if(data.action.text === 'Edit'){
+      this.carouselTitle = 'Edit Carousel'
+      this.carousel_id = data.row._id;
+      if(this.carouselTitle === 'Edit Carousel'){
+        this.dataCtrl.setValue(data.row.contentdata_ref.id)
+      
+      this.editcarousel(this.carousel_id, data)
+      this.getDataList()}
+    }
+    if(data.action.text === 'Delete'){
+      this.carousel = data.row;
+    this.deletecarouselConfirmationDialog()}
   }
   
   deleteAPIkey(): void {
@@ -541,12 +705,11 @@ export class CarouselComponent implements OnInit {
     const skip = 0;
     const limit = 10000;
     const sort = JSON.stringify([{'level.keyword': {order: 'asc'}}]);
-    const fields = JSON.stringify(['name']);
+    const fields = JSON.stringify(['level']);
     this.baseService.doRequest(`/api/carousel`, 'get', null,
       {q, skip, limit, sort,}).subscribe((result: any) => {
       if (result.data.length) {
         this.levelList = result.data;
-        
       }
     });
   }
@@ -556,13 +719,26 @@ export class CarouselComponent implements OnInit {
     this.toast.sToast('success', 'Copied');
   }
 
-  updateCountry($event: any): void {
-    console.log($event);
-    
+  updatedataType($event: any): void {
+    this.datapresent=false;
+    let d:any=[];
+    console.log("datatype updated", $event);
+    this.allDataList.forEach((ele:any) =>{
+      if(ele.data_type === $event){
+        d.push(ele);
+      }
+    })
+    this.filteredData.next(d.slice());
+    console.log("this.filteredData", this.filteredData)
+    if(d && d.length>0){
+      this.datapresent=true;
+    }
   }
 
   addCarousel(): void {
-    this.carouselData = {levels: '', carousel_descs: '', positions: '', data_types: '', carousel_sizes: '', navigate_links: '', content_id: ''};
+    this.carouselTitle="Add Carousel";
+    this.carouselData = {levels: '', carousel_descs: '', positions: '', data_types: '', carousel_sizes: '', navigate_links: '', content_id: '',celebrity_id:''};
+    console.log('new carousel', this.carouselData)
     this.snav.open();
     this.getDataList();
   }
@@ -574,7 +750,6 @@ export class CarouselComponent implements OnInit {
 
   backFun(): void {
     this.snav.close();
-    this.carouselData = {};
     this.getcarousels();
   }
 
@@ -593,20 +768,17 @@ export class CarouselComponent implements OnInit {
   }
 
   editcarousel(id: string, element: any): any {
-    // setTimeout(() => { this.getRoles(); }, 5000);
-    this.carouselTitle = 'Edit';
     this.carousel = element.row;
-    this.carouselData = element.row;
-    this.carouselData.roleid = (element.row.roles.realmMappings[0]) ? element.row.roles.realmMappings[0].id : '';
-    this.snav.open();
-    this.selectedRole = this.carouselData.role;
-    if (this.carouselData.attributes && ((this.carouselData.attributes.includes && this.carouselData.attributes.includes[0]
-      && this.carouselData.attributes.includes[0].length) || (this.carouselData.attributes.excludes
-      && this.carouselData.attributes.excludes[0] && this.carouselData.attributes.excludes[0].length))) {
-      this.companyLevelAccess = 'specificCompanies';
-    } else {
-      this.companyLevelAccess = (this.selectedRole !== 'admin') ?  'specificCompanies' : 'allCompanies';
-    }
+    this.carouselData.levels = element.row.level;
+    this.carouselData.carousel_descs = element.row.carousel_desc;
+    this.carouselData.positions = element.row.position;
+    this.carouselData.data_types = element.row.data_type;
+    this.carouselData.carousel_sizes = element.row.carousel_size;
+    this.carouselData.navigate_links = element.row.navigate_link;
+    this.carouselData.image_uploads = element.row.image_upload;
+    if(element.row.contentdata_ref && element.row.contentdata_ref.id){
+    this.carouselData.content_id = element.row.contentdata_ref.id}
+    this.image_uploads = element.row.image_upload;
   }
 
   updateAcl(carousel: any): void {
@@ -689,7 +861,7 @@ export class CarouselComponent implements OnInit {
     this.loaderService.display(true);
     let data: any;
     data = this.carouselData;
-    this.baseService.doRequest(`/api/carousel/uploadCarousel`, 'post', data)
+    this.baseService.doRequest(`/api/carousel/uploadCarousel`, 'post', {data:data})
       .subscribe((result: any) => {
         this.loaderService.display(false);
         console.log(result);
@@ -703,27 +875,11 @@ export class CarouselComponent implements OnInit {
       });
   }
 
-  updateCarousel(data: any, form: NgForm): any {
+  updateCarousel(data: any): any {
     this.loaderService.display(true);
-    let params: any;
-    params = {
-      attributes: {},
-      email: this.carouselData.email, id: this.carousel.id,
-      firstName: data.firstName, lastName: data.lastName, role: this.roleHash[data.roleid]
-    };
-    if (this.companyLevelAccess === 'specificCompanies') {
-      if (this.acl.companies === 'allowed') {
-        params.attributes.includes = this.selectedComp.join(',');
-        params.attributes.excludes = '';
-      } else {
-        params.attributes.includes = '';
-        params.attributes.excludes = this.selectedComp.join(',');
-      }
-    } else {
-      params.attributes.excludes = '';
-      params.attributes.includes = '';
-    }
-    this.baseService.doRequest(`/api/kcarousels`, 'put', params)
+    this.loaderService.display(true);
+    data.carousel_id = this.carousel._id
+    this.baseService.doRequest(`/api/uploadCarouselDetails`, 'put', data)
       .subscribe((result: any) => {
         this.loaderService.display(false);
         if (result[0]) {
@@ -901,7 +1057,7 @@ export class CarouselComponent implements OnInit {
     //   return false;
     // }
     const titleName = 'Confirmation';
-    const message = 'Are you sure you want to delete this ' + this.carousel.firstName + ' carousel?';
+    const message = 'Are you sure you want to delete this carousel?';
     const cancelText = 'No';
     const acceptText = 'Yes';
     this.confirmDialog.confirmDialog(titleName, message, cancelText, acceptText);
@@ -961,8 +1117,8 @@ export class CarouselComponent implements OnInit {
         bool: {
           must: [
             {
-              match: {
-                'kind.keyword': 'CELEBRITY'
+              exists: {
+                'field': 'carousel_size'
               }
             }
           ]
@@ -998,13 +1154,14 @@ export class CarouselComponent implements OnInit {
     const skip = this.currentPage;
     const limit = this.carouselTableOptions.tableOptions.pageSize;
     const s = JSON.stringify(sort);
-    const fields = JSON.stringify(['_id', 'phone', 'email', 'name', 'languages', 'country.name', 'c', 'u']);
-    this.baseService.doRequest(`/api/entity`, 'get', null,
+    const fields = JSON.stringify(['_id', 'c', 'u', 'level', 'headline', 'carousel_desc', 'position', 'data_type', 'carousel_size', 'image_upload', 'navigate_link', 'contentdata_ref.id', 'contentdata_ref.title', 'contentdata_ref.data_type','entity_ref.id', 'entity_ref.title', 'entity_ref.data_type' ]);
+    this.baseService.doRequest(`/api/carousel`, 'get', null,
       {q, skip, s, limit}).subscribe((result: any) => {
       this.loaderService.display(false);
       if (result) {
         result.data.map((item: any) => {
-          item.country = (item.country) ? item.country : { name: ''}
+          item.contentdata_ref = (item.contentdata_ref) ? item.contentdata_ref : { title: '', id:'', data_type:''}
+          item.entity_ref = (item.entity_ref) ? item.entity_ref : { title: '', id:'', data_type:''}
         })
         this.carouselTableOptions.pageData = result.data;
         this.carouselTableOptions.tableOptions.pageTotal = result.total;
@@ -1015,4 +1172,46 @@ export class CarouselComponent implements OnInit {
       }
     });
   }
+
+  addCarouselLevel(): void {
+    this.cat.open();
+  }
+
+  getUsers(): void {
+    this.showHideLoading(true);
+    this.loaderService.display(true, 'Getting users...');
+    let cq: any;
+    cq = {
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                'kind.keyword': 'CELEBRITY'
+              }
+            }
+          ]
+        }
+      }
+    };
+    const q = JSON.stringify(cq);
+    const skip = 0
+    const limit = 10000;
+    const fields = JSON.stringify(['_id', 'phone', 'email', 'name', 'languages', 'country.name', 'c', 'u']);
+    this.baseService.doRequest(`/api/entity`, 'get', null,
+      {q, skip, limit}).subscribe((result: any) => {
+      this.loaderService.display(false);
+      if (result) {
+        result.data.map((item: any) => {
+          item.country = (item.country) ? item.country : { name: ''}
+        })
+        this.celebrityList = result.data;
+        this.showHideLoading(false);
+      } else {
+        this.toast.sToast('error', result);
+        this.showHideLoading(false);
+      }
+    });
+  }
+
 }

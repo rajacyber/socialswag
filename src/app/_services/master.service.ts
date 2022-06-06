@@ -8,6 +8,7 @@ import { ContentDataService } from '../api/services';
 export class MasterService {
   addCategory = new EventEmitter();
   contentEVE = new EventEmitter();
+  addPricing = new EventEmitter();
   reasonEVE = new EventEmitter();
   constructor(
     public contentService: ContentDataService
@@ -16,6 +17,10 @@ export class MasterService {
   }
   reasonData(value: any): void {
     this.reasonEVE.next(value);
+  }
+
+  addPricingData(): void {
+    this.addPricing.next({});
   }
 
   addCategoryData(): void {

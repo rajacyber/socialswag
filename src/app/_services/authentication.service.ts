@@ -9,6 +9,7 @@ import {LoaderService} from './loader.service';
 import {MyToastrService} from './toastr.service';
 
 interface User {
+  roles: any[];
   email: string;
   family_name: string;
   given_name: string;

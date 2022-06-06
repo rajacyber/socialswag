@@ -30,6 +30,8 @@ import { ChannelsComponent } from './channels/channels.component';
 import { PostsComponent } from './channels/posts/posts.component';
 import { CelebritiesComponent } from './celebrities/celebrities.component';
 import { CarouselComponent } from './carousel/carousel.component';
+import { PricingComponent } from './pricing/pricing.component';
+import { NotificationComponent } from './notification/notification.component';
 
 
 @NgModule({
@@ -39,7 +41,9 @@ import { CarouselComponent } from './carousel/carousel.component';
     CouponsComponent,
     ChannelsComponent,
     PostsComponent,
-    CarouselComponent
+    CarouselComponent,
+    PricingComponent,
+    NotificationComponent
   ],
   imports: [
     CommonModule,

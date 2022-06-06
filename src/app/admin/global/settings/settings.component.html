@@ -41,7 +41,14 @@
             <span class="ibtn pl-1" id="DepAssetAddAsset">Add Category</span>
           </span>
         </button>
-        
+      </ng-container>
+      <ng-container *ngIf="cView === 'Carousel'">
+        <button mat-button="" class="tprime px-1 mr-2" appPreventMultiClick (click)="carouselService.addLevelData()">
+          <span class="d-flex flex-row align-items-center">
+            <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
+            <span class="ibtn pl-1" id="DepAssetAddAsset">Add level</span>
+          </span>
+        </button>
       </ng-container>
       <ng-container *ngIf="cView === 'Notification Rules'"></ng-container>
       <ng-container *ngIf="cView === 'Integrations'"></ng-container>
@@ -112,6 +119,16 @@
     <div class="row mt-3 mx-0" *ngIf="cView === 'Carousel'">
       <div class="col-12">
         <app-carousel></app-carousel>
+      </div>
+    </div>
+    <div class="row mt-3 mx-0" *ngIf="cView === 'Pricing'">
+      <div class="col-12">
+        <app-pricing></app-pricing>
+      </div>
+    </div>
+    <div class="row mt-3 mx-0" *ngIf="cView === 'notification'">
+      <div class="col-12">
+        <app-notification></app-notification>
       </div>
     </div>
   </as-split-area>
