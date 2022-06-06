@@ -43,15 +43,6 @@
         </button>
         
       </ng-container>
-      <ng-container *ngIf="cView === 'Masterclasses'">
-        <button mat-button="" class="tprime px-1 mr-2" appPreventMultiClick (click)="masterService.addPricingData()">
-          <span class="d-flex flex-row align-items-center">
-            <i class="ms-Icon ms-font-lg ms-Icon--BoxAdditionSolid px-1 ms-fontColor-themePrimary"></i>
-            <span class="ibtn pl-1" id="DepAssetAddAsset">Add Pricing</span>
-          </span>
-        </button>
-        
-      </ng-container>
       <ng-container *ngIf="cView === 'Notification Rules'"></ng-container>
       <ng-container *ngIf="cView === 'Integrations'"></ng-container>
       <ng-container *ngIf="cView === 'Alerts'"></ng-container>
